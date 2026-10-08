@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taller Plan Estratégico Logístico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: app de trabajo por clases — barra superior con la empresa y el avance, ruta de 12 talleres a la izquierda, formato del taller a la derecha */
+:root{
+  --sena:#39A900;--sena-deep:#2a7d00;--sena-soft:#e9f6df;--sand:#f3efe6;--bg:#f7f8f4;--card:#fff;--fg:#17201a;--muted:#56635a;--line:#d9dfd3;
+  --sea:#0f6e8c;--sun:#e39b1b;--alert:#c2412d;--alert-soft:#fbe9e5;--violet:#6b4fa3;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif;--mono:"JetBrains Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sena:#5cc91f;--sena-deep:#7ad94a;--sena-soft:#1d2b16;--sand:#22261f;--bg:#121612;--card:#1a1f1a;--fg:#eef2ea;--muted:#a6b2a3;--line:#2f382d;--sea:#4fb3d3;--sun:#f0b44a;--alert:#ef7a63;--alert-soft:#2e1d19;--violet:#a98ee0;color-scheme:dark}}
+:root[data-theme="dark"]{--sena:#5cc91f;--sena-deep:#7ad94a;--sena-soft:#1d2b16;--sand:#22261f;--bg:#121612;--card:#1a1f1a;--fg:#eef2ea;--muted:#a6b2a3;--line:#2f382d;--sea:#4fb3d3;--sun:#f0b44a;--alert:#ef7a63;--alert-soft:#2e1d19;--violet:#a98ee0;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+h1,h2,h3{font-family:var(--display);line-height:1.08;margin:0;text-wrap:balance}
+h1{font-size:clamp(1.9rem,4vw,2.8rem)}h2{font-size:clamp(1.5rem,3vw,2.1rem)}h3{font-size:1.25rem}
+p{margin:0}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.eyebrow{font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--sena-deep)}
+.muted{color:var(--muted)}.note{font-size:.88rem;color:var(--muted)}
+
+/* barra superior */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:1.2rem}
+.brand i{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:8px;background:var(--sena);color:#fff;font-style:normal;font-size:.95rem}
+.co{flex:1;min-width:200px;display:flex;flex-direction:column}
+.co b{font-family:var(--display);font-size:1.15rem}
+.prog{display:flex;align-items:center;gap:10px;min-width:180px}
+.bar{flex:1;height:10px;border-radius:5px;background:var(--line);overflow:hidden;min-width:100px}
+.bar span{display:block;height:100%;background:var(--sena);transition:width .3s}
+.btn{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:9px;padding:7px 12px;font-weight:700;font-size:.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn.pri{background:var(--sena);border-color:var(--sena);color:#fff}
+.btn.wa{background:#1f9d55;border-color:#1f9d55;color:#fff}
+.btn.mail{background:var(--sea);border-color:var(--sea);color:#fff}
+.btn.dl{background:var(--violet);border-color:var(--violet);color:#fff}
+
+/* layout */
+.wrap{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;padding-block:20px;padding-inline:16px;max-width:1320px;margin:0 auto}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+nav.route{display:flex;flex-direction:column;gap:6px;align-self:start;position:sticky;top:84px}
+@media (max-width:900px){nav.route{position:static;flex-direction:row;overflow-x:auto;padding-bottom:6px}}
+.rt{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;text-align:left;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);min-width:0}
+@media (max-width:900px){.rt{min-width:220px}}
+.rt .num{grid-row:span 2;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.1rem;background:var(--sand);color:var(--muted)}
+.rt .t{font-weight:700;font-size:.92rem;line-height:1.2}
+.rt .d{font-size:.75rem;color:var(--muted);font-family:var(--mono)}
+.rt.on{border-color:var(--sena);box-shadow:inset 4px 0 0 var(--sena)}
+.rt.done .num{background:var(--sena);color:#fff}
+.rt.ph{border-style:dashed}
+.phase{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+@media (max-width:900px){.phase{display:none}}
+
+main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:clamp(14px,2vw,22px);display:flex;flex-direction:column;gap:12px;min-width:0}
+.hero{border-top:8px solid var(--c,var(--sena))}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:3px 10px;border-radius:999px;background:var(--sena-soft);color:var(--sena-deep);font-weight:700;font-size:.8rem}
+.chip.alt{background:var(--sand);color:var(--muted)}
+.prod{padding:12px 14px;border-radius:10px;background:var(--sena-soft)}
+.steps{counter-reset:s;list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:36px 1fr;gap:10px;align-items:start}
+.steps li::before{content:counter(s);width:32px;height:32px;border-radius:8px;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.1rem}
+.tip{padding:10px 14px;border-radius:10px;border:1px dashed var(--sun);background:color-mix(in srgb,var(--sun) 8%,var(--card))}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>label,.field>.lbl{font-weight:700}
+.field .help{font-size:.85rem;color:var(--muted)}
+input[type=text],input[type=number],textarea,select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+textarea{min-height:84px;resize:vertical}
+.tw{overflow-x:auto;border-radius:10px;border:1px solid var(--line)}
+table.f{border-collapse:collapse;width:100%;min-width:620px}
+table.f th{background:var(--sena);color:#fff;text-align:left;font-family:var(--display);font-size:1rem;padding:7px 8px;font-weight:700}
+table.f td{border-top:1px solid var(--line);padding:5px;vertical-align:top}
+table.f td.rl{font-weight:700;padding:8px;background:var(--sand);width:15%}
+table.f td input,table.f td textarea{min-height:0;padding:6px 8px;font-size:.92rem}
+table.f td textarea{min-height:52px}
+table.f td.calc{font-family:var(--mono);font-weight:500;color:var(--sena-deep);padding:9px 8px;white-space:nowrap}
+.calcbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+.res div{padding:10px 12px;border-radius:10px;background:var(--sena-soft)}
+.res b{display:block;font-family:var(--mono);font-size:1.3rem;color:var(--sena-deep)}
+.cls{display:inline-block;padding:1px 9px;border-radius:999px;font-weight:700;font-size:.8rem}
+.cls.A{background:var(--alert);color:#fff}.cls.B{background:var(--sun);color:#17201a}.cls.C{background:var(--line);color:var(--fg)}
+.acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 18px;border-radius:999px;font-weight:700;z-index:20}
+.agenda{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px}
+.agenda div{padding:8px 10px;border-radius:10px;background:var(--sand);font-size:.88rem}
+.agenda b{display:block;font-family:var(--mono);font-size:.8rem;color:var(--sena-deep)}
+.maptbl{width:100%;border-collapse:collapse;min-width:560px}
+.maptbl th,.maptbl td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top;font-size:.92rem}
+.maptbl th{background:var(--sena);color:#fff;font-family:var(--display);font-size:1rem}
+footer.f{color:var(--muted);font-size:.85rem;padding:16px;text-align:center;border-top:1px solid var(--line)}
+
+/* plan compilado */
+.doc{background:var(--card);color:var(--fg)}
+.doc h2{margin-top:18px;border-bottom:3px solid var(--sena);padding-bottom:4px}
+.doc h3{margin-top:12px;color:var(--sena-deep)}
+.doc table{border-collapse:collapse;width:100%;margin:6px 0 10px;font-size:.9rem}
+.doc th,.doc td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+.doc th{background:var(--sena-soft)}
+.doc .empty{color:var(--alert);font-style:italic}
+@media print{.top,nav.route,.noprint,footer.f{display:none!important}.wrap{display:block;padding:0}.card{border:0;padding:0}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><i>LL</i>LogiLab SENA</div>
+  <div class="co"><span class="eyebrow">Plan Estratégico Logístico de</span><b id="coName">— escojan su empresa en la clase 1 —</b></div>
+  <div class="prog"><div class="bar"><span id="progBar" style="width:0%"></span></div><span class="note" id="progTxt">0/12</span></div>
+  <button class="btn" id="goPlan">📄 Mi plan</button>
+</header>
+
+<div class="wrap">
+  <nav class="route" id="route" aria-label="Ruta de talleres"></nav>
+  <main id="main"></main>
+</div>
+<footer class="f">LogiLab SENA · Gestión Logística · Competencia 210101007 · <b>By Carlos Barrios · Instructor</b> · <a href="../../">← Portal</a></footer>
+
+<script>
+(function(){
+/* ======== RUTA DE TALLERES ======== */
+const T=[
+{id:'T1',fase:'Diagnóstico',ev:'3.3.1',fecha:'Mié 14 oct',c:'var(--sena)',t:'Escoger la empresa y conocerla',
+ obj:'Seleccionar la empresa real de Riohacha sobre la que el equipo hará todo el plan y levantar su ficha técnica.',
+ prod:'Matriz de selección y ficha técnica de la empresa.',
+ pasos:['Cada integrante propone una empresa que conozca y a la que pueda entrar: tienda, distribuidora, panadería, ferretería, droguería, hotel, restaurante o transportadora.','Calificar las 3 mejores opciones de 1 a 5 en cada criterio de la matriz. Gana la de mayor puntaje.','Pedir permiso al dueño o administrador. Explicar que es un ejercicio académico del SENA y que el plan se le entregará gratis al final.','Visitar la empresa o llamar al contacto y llenar la ficha técnica.'],
+ tip:'Una buena empresa para este trabajo compra, guarda y vende o entrega productos. Si solo presta un servicio sin inventario, el plan quedará corto.',
+ campos:[
+  {k:'equipo',type:'text',l:'Equipo e integrantes',ph:'Equipo 2: Ana Pérez, Luis Gómez, Daniela Ríos, Jorge Uriana'},
+  {k:'matriz',type:'table',l:'Matriz de selección (1 = bajo, 5 = alto)',cols:['Empresa','Acceso a información','Maneja inventario','Tiene distribución','Disposición del dueño','Total'],rows:3,num:[1,2,3,4],calc:{t:5,op:'sum',c:[1,2,3,4]},ph:['Ej.: Panadería La Esperanza','','','','']},
+  {k:'empresa',type:'text',l:'Empresa seleccionada (nombre comercial)',ph:'Ej.: Panadería La Esperanza',main:true},
+  {k:'ficha',type:'table',l:'Ficha técnica de la empresa',rowLabels:['Sector y actividad','Dirección o barrio','Años de funcionamiento','Número de empleados','Productos principales','Clientes principales','Proveedores principales','Cargo de la persona que nos atiende'],cols:['Dato','Respuesta'],rl:true}
+ ]},
+{id:'T2',fase:'Diagnóstico',ev:'3.3.1',fecha:'Jue 15 oct',c:'var(--sena)',t:'Dibujar la cadena y los procesos',
+ obj:'Mapear de dónde viene y hacia dónde va lo que mueve la empresa, y cómo trabaja por dentro.',
+ prod:'Mapa de la cadena de suministro y tabla de procesos logísticos internos.',
+ pasos:['Preguntar en la empresa: ¿a quién le compran?, ¿cómo llega la mercancía?, ¿a quién le venden?, ¿cómo la entregan?','Llenar la tabla de eslabones, de izquierda a derecha.','Recorrer la empresa y observar cada proceso interno: compras, recepción, almacenamiento, alistamiento, despacho y devoluciones.','Medir o preguntar cuánto tiempo toma cada proceso y anotar un problema por proceso.','Dibujar el mapa en papelógrafo con flechas de los 4 flujos: materiales, información, dinero y energía.'],
+ tip:'Anoten solo lo que vieron o les dijeron. Separen hechos de interpretaciones, como en la sesión 1.',
+ campos:[
+  {k:'cadena',type:'table',l:'Eslabones de la cadena',rowLabels:['Proveedores','Transporte de entrada','La empresa (almacén)','Transporte de salida','Clientes'],cols:['Eslabón','¿Quiénes son?','¿Qué se mueve?','¿Cada cuánto?','Problema observado'],rl:true},
+  {k:'procesos',type:'table',l:'Procesos logísticos internos',rowLabels:['Compras','Recepción','Almacenamiento','Alistamiento (picking)','Despacho','Devoluciones'],cols:['Proceso','¿Cómo se hace hoy?','¿Quién lo hace?','Tiempo aproximado','Problema'],rl:true},
+  {k:'flujos',type:'area',l:'Los 4 flujos en una frase cada uno',ph:'Materiales: la harina llega de Barranquilla cada 15 días…\nInformación: el pedido se hace por WhatsApp…\nDinero: se paga de contado al distribuidor…\nEnergía: horno a gas y neveras con energía eléctrica…'}
+ ]},
+{id:'T3',fase:'Diagnóstico',ev:'3.3.1',fecha:'Mié 21 oct',c:'var(--sena)',t:'Escuchar a clientes y proveedores',
+ obj:'Aplicar la guía de entrevista de la sesión 2 y descubrir qué necesita cada eslabón.',
+ prod:'Resultados de entrevistas y matriz de necesidades por eslabón.',
+ pasos:['Usar la guía de entrevista de la sesión 2 y adaptarla a la empresa escogida.','Entrevistar como mínimo a 4 actores: el dueño o administrador, un proveedor, un empleado y un cliente.','Registrar en la tabla la necesidad y la queja principal de cada entrevistado.','Llenar la matriz de necesidades por eslabón usando las 6 dimensiones: precio, tiempo, frecuencia, cantidad, calidad y servicio.','Escribir los 3 hallazgos más importantes, cada uno con su evidencia.'],
+ tip:'No escriban nombres ni teléfonos de los entrevistados en el informe. Usen el cargo: "cliente frecuente", "proveedor de harina".',
+ campos:[
+  {k:'entrevistas',type:'table',l:'Resultados de entrevistas',cols:['Actor (cargo)','Fecha','Necesidad principal','Queja principal'],rows:5},
+  {k:'necesidades',type:'table',l:'Matriz de necesidades por eslabón',rowLabels:['Proveedor','Transporte','La empresa','Cliente intermedio','Cliente final'],cols:['Eslabón','Necesidad principal','Problema observado','Fuente del dato'],rl:true},
+  {k:'hallazgos',type:'area',l:'Tres hallazgos con su evidencia',ph:'1. Se agota el pan de la tarde 3 de 5 días (observación y entrevista al administrador)…'}
+ ]},
+{id:'T4',fase:'Diagnóstico',ev:'3.3.1',fecha:'Jue 22 oct',c:'var(--sena)',t:'Entorno y DOFA',
+ obj:'Analizar los factores externos con PESTEL y resumir el diagnóstico en una matriz DOFA.',
+ prod:'PESTEL, DOFA y conclusión del diagnóstico. Con los talleres 1 a 4 se escribe el informe ICONTEC (evidencia 3.3.1).',
+ pasos:['Buscar al menos 3 datos oficiales (DANE, Cámara de Comercio, Alcaldía) y llenar el PESTEL de la empresa.','Clasificar lo encontrado: lo interno que ayuda (fortalezas) o estorba (debilidades), y lo externo que ayuda (oportunidades) o amenaza (amenazas).','Escoger los 3 puntos más importantes de cada cuadrante de la DOFA.','Escribir la conclusión del diagnóstico: los 3 problemas logísticos que el plan debe resolver.','Tarea: redactar el informe de diagnóstico con normas ICONTEC (mínimo 5 páginas) uniendo los talleres 1 a 4.'],
+ tip:'Fortaleza y debilidad son de adentro de la empresa. Oportunidad y amenaza vienen de afuera. Ese es el error más común.',
+ campos:[
+  {k:'pestel',type:'table',l:'PESTEL de la empresa',rowLabels:['Político','Económico','Social','Tecnológico','Ecológico','Legal'],cols:['Factor','Hecho o variable','Impacto (alto, medio, bajo)','Efecto en la cadena'],rl:true},
+  {k:'dofa',type:'table',l:'Matriz DOFA',rowLabels:['Debilidades','Oportunidades','Fortalezas','Amenazas'],cols:['Cuadrante','1','2','3'],rl:true},
+  {k:'conclusion',type:'area',l:'Conclusión: los 3 problemas logísticos que el plan va a resolver',ph:'1. Abastecimiento: …\n2. Inventario: …\n3. Distribución: …'}
+ ]},
+{id:'T5',fase:'Políticas',ev:'3.3.2',fecha:'Mié 28 oct',c:'var(--sea)',t:'Rumbo estratégico logístico',
+ obj:'Alinear la logística con lo que la empresa quiere lograr: misión y visión logística y objetivos SMART.',
+ prod:'Misión y visión logística y 4 objetivos logísticos SMART alineados con los objetivos de la empresa.',
+ pasos:['Preguntar al dueño: ¿qué quiere lograr la empresa en los próximos 3 años? Esos son los objetivos corporativos.','Escribir la misión logística: qué hace la logística, para quién y cómo.','Escribir la visión logística: cómo se verá la logística de la empresa en 3 años.','Redactar 4 objetivos logísticos SMART: específicos, medibles, alcanzables, relevantes y con tiempo. Cada uno debe responder a un problema de la conclusión del taller 4.','Conectar cada objetivo logístico con el objetivo corporativo al que aporta.'],
+ tip:'Fórmula SMART: verbo + qué + cuánto + para cuándo. Ejemplo: "Reducir los agotados de pan de la tarde del 60 % al 10 % de los días en 6 meses".',
+ campos:[
+  {k:'corp',type:'area',l:'Objetivos corporativos de la empresa (lo que dijo el dueño)',ph:'Crecer en ventas, abrir un segundo punto…'},
+  {k:'mision',type:'area',l:'Misión logística',ph:'Garantizar que nuestros clientes encuentren pan fresco…'},
+  {k:'vision',type:'area',l:'Visión logística a 3 años',ph:'En 2029 seremos…'},
+  {k:'objetivos',type:'table',l:'Objetivos logísticos SMART',cols:['Objetivo logístico SMART','Problema que resuelve','Objetivo corporativo al que aporta','Plazo'],rows:4}
+ ]},
+{id:'T6',fase:'Políticas',ev:'3.3.2',fecha:'Jue 29 oct',c:'var(--sea)',t:'Política de compras y proveedores',
+ obj:'Evaluar a los proveedores y definir las reglas de aprovisionamiento de la empresa.',
+ prod:'Evaluación de proveedores y política de aprovisionamiento.',
+ pasos:['Listar los 4 proveedores más importantes de la empresa.','Calificar cada uno de 1 a 5 en precio, cumplimiento, calidad y crédito. La app suma el total.','Decidir con qué proveedores seguir, cuáles negociar y si hace falta buscar un segundo proveedor.','Escribir la política de aprovisionamiento con reglas claras: cuántos proveedores por producto, cada cuánto se compra, quién autoriza y cómo se recibe.'],
+ tip:'Una política es una regla que se cumple siempre. "Comprar bien" no es política. "Todo producto crítico tendrá mínimo 2 proveedores" sí lo es.',
+ campos:[
+  {k:'prov',type:'table',l:'Evaluación de proveedores (1 a 5)',cols:['Proveedor','Precio','Cumplimiento','Calidad','Crédito','Total'],rows:4,num:[1,2,3,4],calc:{t:5,op:'sum',c:[1,2,3,4]}},
+  {k:'decision',type:'area',l:'Decisión sobre proveedores',ph:'Seguimos con…, negociamos con…, buscamos un segundo proveedor de…'},
+  {k:'politicaCompras',type:'area',l:'Política de aprovisionamiento (mínimo 5 reglas)',ph:'1. Todo producto crítico tendrá mínimo 2 proveedores.\n2. Los pedidos se hacen los lunes y jueves.\n3. …'}
+ ]},
+{id:'T7',fase:'Políticas',ev:'3.3.2',fecha:'Mié 4 nov',c:'var(--sea)',t:'Política de inventarios',
+ obj:'Clasificar los productos con el método ABC y calcular cuándo y cuánto pedir.',
+ prod:'Clasificación ABC, punto de reorden y política de inventarios.',
+ pasos:['Listar 10 productos de la empresa con sus unidades vendidas al mes y su costo unitario.','La app calcula el valor, el porcentaje acumulado y la clase A, B o C.','Para un producto clase A, calcular el stock de seguridad y el punto de reorden con la calculadora.','Escribir la política de inventarios: cada cuánto se revisa, cómo se rota (PEPS), qué stock de seguridad tiene cada clase.'],
+ tip:'Clase A: pocos productos que mueven cerca del 80 % de la plata. Esos se controlan todos los días. Los C se revisan de vez en cuando.',
+ campos:[
+  {k:'abc',type:'abc',l:'Clasificación ABC',rows:10},
+  {k:'rop',type:'rop',l:'Punto de reorden de un producto clase A'},
+  {k:'politicaInv',type:'area',l:'Política de inventarios (mínimo 5 reglas)',ph:'1. Los productos A se cuentan todos los días al cierre.\n2. Se despacha primero lo que entró primero (PEPS).\n3. …'}
+ ]},
+{id:'T8',fase:'Políticas',ev:'3.3.2',fecha:'Jue 5 nov',c:'var(--sea)',t:'Política de distribución y transporte',
+ obj:'Organizar cómo llegan los productos al cliente: zonas, frecuencias, vehículos y costos.',
+ prod:'Plan de distribución y política de distribución. Con los talleres 5 a 8 se escribe el informe técnico de políticas (evidencia 3.3.2).',
+ pasos:['Identificar las zonas o clientes a los que la empresa entrega o que vienen a comprar.','Para cada zona, anotar la frecuencia de entrega, el vehículo y el costo aproximado por viaje.','Proponer mejoras: agrupar entregas por zona, horarios fijos, pedido mínimo.','Escribir la política de distribución y la de devoluciones.','Tarea: redactar el informe técnico de políticas en PDF uniendo los talleres 5 a 8.'],
+ tip:'Si la empresa no hace domicilios, analicen cómo el cliente se lleva la mercancía y la entrega que la empresa recibe de sus proveedores.',
+ campos:[
+  {k:'zonas',type:'table',l:'Zonas o clientes de distribución',cols:['Zona o cliente','Frecuencia de entrega','Vehículo','Costo por viaje ($)','Problema'],rows:4,num:[3]},
+  {k:'politicaDist',type:'area',l:'Política de distribución y devoluciones (mínimo 5 reglas)',ph:'1. Entregas por zona: norte lunes y jueves, sur martes y viernes.\n2. Pedido mínimo para domicilio: …\n3. …'}
+ ]},
+{id:'T9',fase:'Estrategias',ev:'3.3.3',fecha:'Mié 11 nov',c:'var(--sun)',t:'Estrategias con Balanced Scorecard',
+ obj:'Convertir los objetivos en estrategias concretas usando las 4 perspectivas del Cuadro de Mando Integral.',
+ prod:'Cuadro de Mando Integral logístico y mapa causa-efecto.',
+ pasos:['Tomar los objetivos SMART del taller 5 y ubicarlos en la perspectiva que les corresponde.','Para cada perspectiva, escribir qué van a hacer (la estrategia), con qué indicador lo miden y cuál es la meta.','Revisar que las 4 perspectivas se conecten: aprender → mejores procesos → clientes satisfechos → mejores resultados financieros.','Dibujar el mapa causa-efecto en papelógrafo con flechas de abajo hacia arriba.'],
+ tip:'Lean el cuadro de abajo hacia arriba: si el personal aprende (aprendizaje), los procesos mejoran, el cliente queda contento y la plata llega (financiera).',
+ campos:[
+  {k:'bsc',type:'table',l:'Cuadro de Mando Integral logístico',rowLabels:['Financiera','Clientes','Procesos internos','Aprendizaje y crecimiento'],cols:['Perspectiva','Objetivo estratégico','Estrategia (qué vamos a hacer)','Indicador','Meta'],rl:true},
+  {k:'causa',type:'area',l:'Mapa causa-efecto en palabras',ph:'Capacitar al personal en inventarios → se reducen los agotados → el cliente encuentra lo que busca → aumentan las ventas.'}
+ ]},
+{id:'T10',fase:'Estrategias',ev:'3.3.3',fecha:'Jue 12 nov',c:'var(--sun)',t:'Costos, reversa y tecnología',
+ obj:'Demostrar que las estrategias valen la pena con costo-beneficio y costeo ABC, y sumar logística de reversa y tecnología.',
+ prod:'Análisis costo-beneficio, costeo ABC por actividad, plan de reversa y tecnología. Con los talleres 9 y 10 se escribe el documento de estrategias (evidencia 3.3.3).',
+ pasos:['Estimar cuánto cuesta implementar cada estrategia y cuánto ahorra o deja de ganancia al año. La app calcula la relación beneficio/costo.','Costeo ABC: para cada actividad logística, anotar cuánto cuesta al mes y cuántas veces se hace. La app calcula el costo por vez.','Diseñar la logística de reversa: qué regresa (envases, devoluciones, residuos) y qué se hace con eso.','Escoger herramientas tecnológicas al alcance de la empresa: WhatsApp Business, facturación electrónica, código de barras, hoja de cálculo compartida (versión sencilla de EDI/ECR).','Tarea: redactar el documento técnico de estrategias (máximo 15 páginas) con los talleres 9 y 10.'],
+ tip:'Relación beneficio/costo mayor que 1 = la estrategia se paga sola. Menor que 1 = hay que replantearla.',
+ campos:[
+  {k:'bc',type:'table',l:'Costo-beneficio de las estrategias',cols:['Estrategia','Costo de implementar ($)','Beneficio al año ($)','Relación B/C'],rows:3,num:[1,2],calc:{t:3,op:'div',c:[2,1]}},
+  {k:'abcCost',type:'table',l:'Costeo ABC por actividad logística',rowLabels:['Comprar','Recibir','Almacenar','Alistar','Despachar'],cols:['Actividad','Costo mensual ($)','Inductor (qué se cuenta)','Veces al mes','Costo por vez ($)'],rl:true,num:[1,3],calc:{t:4,op:'div',c:[1,3]}},
+  {k:'reversa',type:'area',l:'Logística de reversa',ph:'Qué regresa: … Cómo se recoge: … Qué se hace con eso: …'},
+  {k:'tec',type:'area',l:'Tecnologías para la cadena (EDI/ECR adaptado)',ph:'WhatsApp Business con catálogo para pedidos de clientes, hoja compartida de inventario con el proveedor…'}
+ ]},
+{id:'T11',fase:'Plan maestro',ev:'3.3.4',fecha:'Mié 18 nov',c:'var(--violet)',t:'Plan maestro: flujos, capacidad y caja',
+ obj:'Integrar todo en el plan maestro: cómo fluirán materiales, información, dinero y energía, con qué capacidad y con qué plata.',
+ prod:'Plan maestro con flujos, capacidad, trazabilidad y flujo de caja a 6 meses (evidencia 3.3.4).',
+ pasos:['Para cada flujo, escribir cómo funciona hoy y cómo funcionará con el plan.','Calcular la capacidad: cuánto cabe en el almacén, cuánto lleva el vehículo y cuántos pedidos al día se pueden atender (ritmo).','Definir la trazabilidad: cómo se sabe de dónde vino cada producto y a quién se le vendió.','Proyectar el flujo de caja de 6 meses con los ingresos y egresos que genera el plan. La app calcula el saldo.','Tarea: documento técnico del plan maestro (10 a 15 páginas) para sustentar en plenaria.'],
+ tip:'El flujo de caja no tiene que ser perfecto: usen valores estimados con el dueño y expliquen de dónde salen.',
+ campos:[
+  {k:'flujos2',type:'table',l:'Flujos del plan maestro',rowLabels:['Materiales','Información','Dinero','Energía'],cols:['Flujo','¿Cómo funciona hoy?','¿Cómo funcionará con el plan?','Herramienta de control'],rl:true},
+  {k:'capacidad',type:'table',l:'Capacidad y ritmo',rowLabels:['Capacidad del almacén','Capacidad del transporte','Ritmo (pedidos por día)','Horario de operación'],cols:['Recurso','Hoy','Con el plan'],rl:true},
+  {k:'traza',type:'area',l:'Trazabilidad',ph:'Cada lote se marca con la fecha de llegada y el proveedor…'},
+  {k:'caja',type:'table',l:'Flujo de caja proyectado del plan (6 meses)',rowLabels:['Mes 1','Mes 2','Mes 3','Mes 4','Mes 5','Mes 6'],cols:['Mes','Ingresos ($)','Egresos ($)','Saldo ($)'],rl:true,num:[1,2],calc:{t:3,op:'sub',c:[1,2]}}
+ ]},
+{id:'T12',fase:'Indicadores y cierre',ev:'3.3.5 · 3.4',fecha:'Jue 19 nov',c:'var(--alert)',t:'Indicadores y plan de acción',
+ obj:'Definir cómo se va a medir el plan y quién hace qué, cuándo y con cuánto. Cerrar el portafolio.',
+ prod:'Fichas técnicas de indicadores, plan de acción y portafolio técnico del plan estratégico logístico (evidencias 3.3.5 y 3.4).',
+ pasos:['Escoger 5 indicadores que midan los objetivos SMART y el Cuadro de Mando Integral.','Para cada uno llenar la ficha técnica: fórmula, naturaleza (eficacia, eficiencia o efectividad), frecuencia, responsable y rangos.','Armar el plan de acción: cada acción con responsable, fecha, presupuesto e indicador que la mide.','Escribir el resumen ejecutivo del plan en media página.','Abrir "Mi plan", revisar que no falte nada, descargarlo y prepararse para sustentarlo en el juego de negocios.'],
+ tip:'Rangos de gestión como semáforo: verde = vamos bien, amarillo = hay que mirar, rojo = hay que actuar ya.',
+ campos:[
+  {k:'kpi',type:'table',l:'Fichas técnicas de indicadores',cols:['Indicador','Fórmula','Naturaleza','Frecuencia','Responsable','Rangos (verde · amarillo · rojo)'],rows:5},
+  {k:'accion',type:'table',l:'Plan de acción',cols:['Acción','Responsable','Fecha','Presupuesto ($)','Indicador que la mide'],rows:6,num:[3]},
+  {k:'resumen',type:'area',l:'Resumen ejecutivo del plan (media página)',ph:'La empresa … presenta problemas de … Por eso el plan propone … Con una inversión de … se espera …'}
+ ]}
+];
+
+/* ======== ESTADO ======== */
+const KEY='pel-v1';
+let S={v:1,d:{},done:{},wa:''};
+try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}refreshTop()}
+function val(tid,k){return (S.d[tid]||{})[k]}
+function setv(tid,k,v){S.d[tid]=S.d[tid]||{};S.d[tid][k]=v;save()}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>isFinite(n)?Math.round(n).toLocaleString('es-CO'):'—';
+const num=v=>{const n=parseFloat(String(v??'').replace(/\./g,'').replace(',','.'));return isFinite(n)?n:NaN};
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2300)}
+function empresa(){return (val('T1','empresa')||'').trim()}
+
+/* ======== RUTA ======== */
+const route=document.getElementById('route');
+let cur=null;
+function drawRoute(){
+  let html=`<button class="rt ph${cur==='INICIO'?' on':''}" data-go="INICIO"><span class="num">★</span><span class="t">Cómo funciona</span><span class="d">Ruta y reglas</span></button>`;let ph='';
+  T.forEach((t,i)=>{if(t.fase!==ph){ph=t.fase;html+=`<div class="phase">${ph}</div>`}
+   html+=`<button class="rt${S.done[t.id]?' done':''}${cur===t.id?' on':''}" data-go="${t.id}"><span class="num">${S.done[t.id]?'✓':i+1}</span><span class="t">${t.t}</span><span class="d">${t.fecha} · ${t.ev}</span></button>`});
+  html+=`<div class="phase">Resultado</div><button class="rt ph${cur==='PLAN'?' on':''}" data-go="PLAN"><span class="num">📄</span><span class="t">Mi plan estratégico</span><span class="d">Documento completo</span></button>`;
+  route.innerHTML=html;route.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+}
+function refreshTop(){const n=T.filter(t=>S.done[t.id]).length;document.getElementById('progBar').style.width=(n/T.length*100)+'%';document.getElementById('progTxt').textContent=n+'/'+T.length+' talleres';document.getElementById('coName').textContent=empresa()||'— escojan su empresa en la clase 1 —'}
+document.getElementById('goPlan').onclick=()=>go('PLAN');
+function go(id){cur=id;try{localStorage.setItem(KEY+'-cur',id)}catch(e){}drawRoute();const m=document.getElementById('main');if(id==='INICIO')m.innerHTML=inicio();else if(id==='PLAN')m.innerHTML=plan();else{m.innerHTML=taller(T.find(t=>t.id===id));bindTaller(id)}if(id==='INICIO')bindInicio();if(id==='PLAN')bindPlan();window.scrollTo({top:0,behavior:'smooth'})}
+
+/* ======== INICIO ======== */
+function inicio(){
+  return `<section class="card hero"><span class="eyebrow">Competencia 210101007 · Gestión Logística · Proyecto Plan Maestro de Riohacha</span>
+  <h1>Taller: Plan Estratégico Logístico de una empresa real</h1>
+  <p class="muted" style="max-width:70ch">En 12 clases su equipo construye, paso a paso, el plan estratégico logístico de una empresa de Riohacha. Cada clase deja un entregable. Al terminar la clase 12, todos los entregables juntos son el plan completo y su portafolio de la competencia.</p>
+  <div class="acts"><button class="btn pri" data-go="T1">Empezar por la clase 1 →</button><button class="btn" data-go="PLAN">Ver mi plan</button></div></section>
+  <section class="card"><h2>La ruta: qué se hace en cada clase</h2><div class="tw"><table class="maptbl"><thead><tr><th>Clase</th><th>Fecha sugerida</th><th>Taller</th><th>Entregable</th><th>Evidencia</th></tr></thead><tbody>
+  ${T.map((t,i)=>`<tr><td><b>${i+1}</b></td><td>${t.fecha}</td><td>${t.t}</td><td>${t.prod}</td><td>${t.ev}</td></tr>`).join('')}</tbody></table></div></section>
+  <section class="card"><h2>Cómo se trabaja cada clase (3 horas)</h2><div class="agenda">
+  <div><b>20 min</b>El instructor explica el tema con un ejemplo.</div><div><b>2 h</b>El equipo sigue el paso a paso y llena el formato con datos de su empresa.</div><div><b>30 min</b>Socialización rápida y retroalimentación.</div><div><b>10 min</b>Entrega del taller por WhatsApp, correo o archivo.</div></div>
+  <p class="note">Entre clases: visitar la empresa, conseguir los datos que faltan y avanzar los informes.</p></section>
+  <section class="card"><h2>Reglas del juego</h2><ol class="steps">
+  <li>Una sola empresa real por equipo durante toda la competencia. No se cambia después de la clase 2.</li>
+  <li>Todo dato debe tener fuente: entrevista, observación o fuente oficial.</li>
+  <li>La app guarda automáticamente en este dispositivo. Al final de cada clase, descarguen el respaldo (.json) para no perder nada si cambian de celular o computador.</li>
+  <li>No se publican nombres ni teléfonos de personas de la empresa. Se usa el cargo.</li>
+  <li>Al final, el plan se le entrega a la empresa como agradecimiento.</li></ol></section>
+  <section class="card noprint"><h2>Respaldo del trabajo</h2><div class="acts">
+  <button class="btn dl" id="bExp">⬇ Descargar respaldo (.json)</button><label class="btn" for="fImp">⬆ Cargar respaldo</label><input type="file" id="fImp" accept=".json,application/json" hidden></div>
+  <p class="note">Úsenlo para pasar el trabajo de un dispositivo a otro o para que todo el equipo tenga la misma versión.</p></section>`;
+}
+function bindInicio(){document.querySelectorAll('#main [data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));bindBackup()}
+function bindBackup(){
+  const e=document.getElementById('bExp');if(e)e.onclick=()=>download(JSON.stringify(S,null,1),'respaldo-plan-'+slug()+'.json','application/json');
+  const f=document.getElementById('fImp');if(f)f.onchange=ev=>{const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||!o.d)throw 0;S=Object.assign({v:1,d:{},done:{},wa:''},o);save();drawRoute();toast('Respaldo cargado');go('INICIO')}catch(err){toast('Ese archivo no es un respaldo válido')}};r.readAsText(file)};
+}
+function slug(){return (empresa()||'mi-empresa').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+
+/* ======== TALLER ======== */
+function taller(t){
+  const i=T.indexOf(t);
+  return `<section class="card hero" style="--c:${t.c}"><div class="chips"><span class="chip">Clase ${i+1} de ${T.length}</span><span class="chip alt">${t.fecha}</span><span class="chip alt">Evidencia ${t.ev}</span><span class="chip alt">Fase: ${t.fase}</span></div>
+  <h1>${t.t}</h1><p class="muted" style="max-width:72ch">${t.obj}</p><div class="prod"><b>Entregable de hoy:</b> ${t.prod}</div></section>
+  <section class="card"><h2>Paso a paso</h2><ol class="steps">${t.pasos.map(p=>`<li><span>${p}</span></li>`).join('')}</ol><div class="tip">💡 ${t.tip}</div></section>
+  <section class="card"><h2>Formato del taller</h2>${t.campos.map(c=>campo(t.id,c)).join('')}</section>
+  <section class="card noprint"><h2>Entregar el taller</h2>
+  <label class="field"><span class="lbl">WhatsApp del instructor (con indicativo, sin +)</span><input type="text" id="wa" inputmode="numeric" placeholder="57300XXXXXXX" value="${esc(S.wa)}"></label>
+  <div class="acts"><button class="btn" id="bCopy">📋 Copiar texto</button><a class="btn wa" id="bWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn mail" id="bMail">✉ Correo</button><button class="btn dl" id="bDl">⬇ Descargar .txt</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button></div>
+  <label style="display:flex;gap:10px;align-items:center;font-weight:700"><input type="checkbox" id="doneChk" ${S.done[t.id]?'checked':''} style="width:22px;height:22px;accent-color:var(--sena)"> Terminamos este taller</label>
+  <div class="acts">${i>0?`<button class="btn" data-go="${T[i-1].id}">← Clase ${i}</button>`:''}${i<T.length-1?`<button class="btn pri" data-go="${T[i+1].id}">Clase ${i+2} →</button>`:`<button class="btn pri" data-go="PLAN">Ver mi plan completo →</button>`}</div></section>`;
+}
+function campo(tid,c){
+  const id=tid+'-'+c.k;
+  if(c.type==='text')return `<label class="field"><span class="lbl">${c.l}</span><input type="text" id="${id}" data-k="${c.k}" placeholder="${esc(c.ph||'')}" value="${esc(val(tid,c.k)||'')}"></label>`;
+  if(c.type==='area')return `<label class="field"><span class="lbl">${c.l}</span><textarea id="${id}" data-k="${c.k}" placeholder="${esc(c.ph||'')}">${esc(val(tid,c.k)||'')}</textarea></label>`;
+  if(c.type==='table')return tableField(tid,c);
+  if(c.type==='abc')return abcField(tid,c);
+  if(c.type==='rop')return ropField(tid,c);
+  return '';
+}
+function rowsOf(c){return c.rowLabels?c.rowLabels.length:c.rows}
+function tableField(tid,c){
+  const data=val(tid,c.k)||[];const n=rowsOf(c);
+  let h=`<div class="field"><span class="lbl">${c.l}</span><div class="tw"><table class="f" data-t="${c.k}"><thead><tr>${c.cols.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>`;
+  for(let r=0;r<n;r++){h+='<tr>';c.cols.forEach((col,ci)=>{
+    if(c.rl&&ci===0){h+=`<td class="rl">${c.rowLabels[r]}</td>`;return}
+    if(c.calc&&ci===c.calc.t){h+=`<td class="calc" data-r="${r}">—</td>`;return}
+    const v=(data[r]||[])[ci]||'';const ph=(c.ph&&r===0)?(c.ph[ci]||''):'';
+    const isNum=c.num&&c.num.includes(ci);
+    h+=isNum?`<td><input type="text" inputmode="decimal" data-r="${r}" data-c="${ci}" value="${esc(v)}" placeholder="${esc(ph)}"></td>`:`<td><textarea data-r="${r}" data-c="${ci}" placeholder="${esc(ph)}">${esc(v)}</textarea></td>`});h+='</tr>'}
+  return h+'</tbody></table></div></div>';
+}
+function calcRow(c,row){
+  const g=i=>num((row||[])[i]);
+  if(c.calc.op==='sum'){const s=c.calc.c.map(g);return s.some(isNaN)&&s.every(isNaN)?'—':s.filter(x=>!isNaN(x)).reduce((a,b)=>a+b,0)}
+  if(c.calc.op==='div'){const a=g(c.calc.c[0]),b=g(c.calc.c[1]);if(isNaN(a)||isNaN(b)||b===0)return '—';const r=a/b;return c.k==='bc'?r.toFixed(2)+(r>=1?' ✅':' ⚠️'):money(r)}
+  if(c.calc.op==='sub'){const a=g(c.calc.c[0]),b=g(c.calc.c[1]);if(isNaN(a)&&isNaN(b))return '—';return money((isNaN(a)?0:a)-(isNaN(b)?0:b))}
+  return '—';
+}
+function abcField(tid,c){
+  const data=val(tid,c.k)||[];
+  let h=`<div class="field"><span class="lbl">${c.l}</span><span class="help">Escriban 10 productos. La app calcula el resto y ordena por valor.</span><div class="tw"><table class="f" data-abc="1"><thead><tr><th>Producto</th><th>Unidades al mes</th><th>Costo unitario ($)</th></tr></thead><tbody>`;
+  for(let r=0;r<c.rows;r++){const row=data[r]||[];h+=`<tr><td><input type="text" data-r="${r}" data-c="0" value="${esc(row[0]||'')}" placeholder="${r===0?'Ej.: Pan francés':''}"></td><td><input type="text" inputmode="decimal" data-r="${r}" data-c="1" value="${esc(row[1]||'')}"></td><td><input type="text" inputmode="decimal" data-r="${r}" data-c="2" value="${esc(row[2]||'')}"></td></tr>`}
+  return h+`</tbody></table></div><div class="tw"><table class="f" id="abcOut"></table></div></div>`;
+}
+function abcCalc(data){
+  const items=(data||[]).map(r=>({p:(r||[])[0],u:num((r||[])[1]),c:num((r||[])[2])})).filter(x=>x.p&&!isNaN(x.u)&&!isNaN(x.c)).map(x=>({...x,v:x.u*x.c})).sort((a,b)=>b.v-a.v);
+  const tot=items.reduce((a,b)=>a+b.v,0);let acc=0;
+  items.forEach(x=>{const pct=tot?x.v/tot*100:0;const before=acc;acc+=pct;x.pct=pct;x.acc=acc;x.cl=(acc<=80||before===0)?'A':acc<=95?'B':'C'});
+  return {items,tot};
+}
+function drawAbc(tid){
+  const o=document.getElementById('abcOut');if(!o)return;const {items,tot}=abcCalc(val(tid,'abc'));
+  if(!items.length){o.innerHTML='<tbody><tr><td class="note" style="padding:10px">Aquí aparece la clasificación cuando escriban productos con unidades y costo.</td></tr></tbody>';return}
+  o.innerHTML=`<thead><tr><th>Producto</th><th>Valor al mes ($)</th><th>% del valor</th><th>% acumulado</th><th>Clase</th></tr></thead><tbody>${items.map(x=>`<tr><td style="padding:8px">${esc(x.p)}</td><td class="calc">${money(x.v)}</td><td class="calc">${x.pct.toFixed(1)} %</td><td class="calc">${x.acc.toFixed(1)} %</td><td style="padding:8px"><span class="cls ${x.cl}">${x.cl}</span></td></tr>`).join('')}<tr><td style="padding:8px"><b>Total</b></td><td class="calc">${money(tot)}</td><td colspan="3"></td></tr></tbody>`;
+}
+function ropField(tid,c){
+  const d=val(tid,c.k)||{};
+  return `<div class="field"><span class="lbl">${c.l}</span><span class="help">Stock de seguridad = demanda diaria × días de protección. Punto de reorden = demanda diaria × tiempo de entrega + stock de seguridad.</span>
+  <div class="calcbox"><label class="field"><span>Producto</span><input type="text" data-rop="p" value="${esc(d.p||'')}" placeholder="Ej.: Harina de trigo (bulto)"></label>
+  <label class="field"><span>Demanda diaria (unidades)</span><input type="text" inputmode="decimal" data-rop="dd" value="${esc(d.dd||'')}"></label>
+  <label class="field"><span>Tiempo de entrega del proveedor (días)</span><input type="text" inputmode="decimal" data-rop="lt" value="${esc(d.lt||'')}"></label>
+  <label class="field"><span>Días de protección (stock de seguridad)</span><input type="text" inputmode="decimal" data-rop="ds" value="${esc(d.ds||'')}"></label></div>
+  <div class="res" id="ropOut"></div></div>`;
+}
+function ropCalc(d){d=d||{};const dd=num(d.dd),lt=num(d.lt),ds=num(d.ds);if([dd,lt,ds].some(isNaN))return null;const ss=dd*ds;return {ss,rop:dd*lt+ss}}
+function drawRop(tid){const o=document.getElementById('ropOut');if(!o)return;const r=ropCalc(val(tid,'rop'));o.innerHTML=r?`<div><span>Stock de seguridad</span><b>${money(r.ss)} und.</b></div><div><span>Punto de reorden</span><b>${money(r.rop)} und.</b></div><div><span>Regla</span><b style="font-size:1rem;font-family:var(--body)">Pedir cuando queden ${money(r.rop)} unidades</b></div>`:'<div><span class="note">Llenen los tres datos para ver el resultado.</span></div>'}
+
+function bindTaller(tid){
+  const t=T.find(x=>x.id===tid);
+  document.querySelectorAll('#main [data-k]').forEach(el=>el.addEventListener('input',()=>{setv(tid,el.dataset.k,el.value);if(el.dataset.k==='empresa')refreshTop()}));
+  t.campos.filter(c=>c.type==='table').forEach(c=>{const tb=document.querySelector(`#main table[data-t="${c.k}"]`);const upd=()=>{if(c.calc){const data=val(tid,c.k)||[];tb.querySelectorAll('td.calc').forEach(td=>{td.textContent=calcRow(c,data[+td.dataset.r])})}};
+    tb.querySelectorAll('[data-r]').forEach(el=>{if(el.tagName==='TD')return;el.addEventListener('input',()=>{const data=(val(tid,c.k)||[]).map(r=>r?[...r]:[]);const r=+el.dataset.r,ci=+el.dataset.c;data[r]=data[r]||[];data[r][ci]=el.value;setv(tid,c.k,data);upd()})});upd()});
+  const abc=document.querySelector('#main table[data-abc]');if(abc){abc.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{const data=(val(tid,'abc')||[]).map(r=>r?[...r]:[]);const r=+el.dataset.r;data[r]=data[r]||[];data[r][+el.dataset.c]=el.value;setv(tid,'abc',data);drawAbc(tid)}));drawAbc(tid)}
+  const rop=document.querySelectorAll('#main [data-rop]');if(rop.length){rop.forEach(el=>el.addEventListener('input',()=>{const d=Object.assign({},val(tid,'rop')||{});d[el.dataset.rop]=el.value;setv(tid,'rop',d);drawRop(tid)}));drawRop(tid)}
+  document.getElementById('doneChk').onchange=e=>{S.done[tid]=e.target.checked;save();drawRoute();if(e.target.checked)toast('¡Taller terminado!')};
+  const wa=document.getElementById('wa');wa.oninput=()=>{S.wa=wa.value.replace(/\D/g,'');save()};
+  const text=()=>tallerText(t);
+  document.getElementById('bCopy').onclick=()=>copy(text());
+  document.getElementById('bWa').onclick=e=>{e.currentTarget.href='https://wa.me/'+(S.wa||'')+'?text='+encodeURIComponent(text())};
+  document.getElementById('bMail').onclick=()=>{location.href='mailto:?subject='+encodeURIComponent(`${t.id} ${t.t} - ${empresa()||'Mi empresa'}`)+'&body='+encodeURIComponent(text());toast('Si no se abre el correo, use Copiar texto')};
+  document.getElementById('bDl').onclick=()=>download(text(),`${t.id}-${slug()}.txt`,'text/plain');
+  document.querySelectorAll('#main [data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+  bindBackup();
+}
+
+/* ======== TEXTO Y DOCUMENTO ======== */
+function fieldText(tid,c){
+  const v=val(tid,c.k);
+  if(c.type==='text'||c.type==='area')return `${c.l}:\n${(v||'—').trim()}\n`;
+  if(c.type==='table'){const n=rowsOf(c);let s=`${c.l}:\n`;for(let r=0;r<n;r++){const row=(v||[])[r]||[];const cells=c.cols.map((col,ci)=>{if(c.rl&&ci===0)return c.rowLabels[r];if(c.calc&&ci===c.calc.t)return calcRow(c,row);return row[ci]||''});if(cells.slice(c.rl?1:0).some(x=>x&&x!=='—'))s+='- '+c.cols.map((col,ci)=>`${col}: ${cells[ci]||'—'}`).join(' | ')+'\n'}return s}
+  if(c.type==='abc'){const {items,tot}=abcCalc(v);return `${c.l}:\n`+(items.map(x=>`- ${x.p}: $${money(x.v)} (${x.pct.toFixed(1)} %, acum. ${x.acc.toFixed(1)} %) Clase ${x.cl}`).join('\n')||'—')+`\nTotal: $${money(tot)}\n`}
+  if(c.type==='rop'){const r=ropCalc(v);const d=v||{};return `${c.l}:\nProducto: ${d.p||'—'} | Demanda diaria: ${d.dd||'—'} | Tiempo de entrega: ${d.lt||'—'} días | Días de protección: ${d.ds||'—'}\n`+(r?`Stock de seguridad: ${money(r.ss)} | Punto de reorden: ${money(r.rop)}\n`:'')}
+  return '';
+}
+function tallerText(t){const i=T.indexOf(t);return `PLAN ESTRATÉGICO LOGÍSTICO · ${empresa()||'Empresa sin definir'}\nEquipo: ${(val('T1','equipo')||'—')}\nClase ${i+1}: ${t.t} (Evidencia ${t.ev})\n\n`+t.campos.map(c=>fieldText(t.id,c)).join('\n')}
+
+function fieldHtml(tid,c){
+  const v=val(tid,c.k);const E='<p class="empty">Pendiente</p>';
+  if(c.type==='text'||c.type==='area')return `<h3>${c.l}</h3>`+(v&&v.trim()?`<p>${esc(v).replace(/\n/g,'<br>')}</p>`:E);
+  if(c.type==='table'){const n=rowsOf(c);let body='',any=false;for(let r=0;r<n;r++){const row=(v||[])[r]||[];const cells=c.cols.map((col,ci)=>{if(c.rl&&ci===0)return `<th>${c.rowLabels[r]}</th>`;if(c.calc&&ci===c.calc.t)return `<td>${calcRow(c,row)}</td>`;if(row[ci])any=true;return `<td>${esc(row[ci]||'').replace(/\n/g,'<br>')}</td>`}).join('');if(c.rl||row.some(x=>x))body+=`<tr>${cells}</tr>`}return `<h3>${c.l}</h3>`+(any?`<table><thead><tr>${c.cols.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`:E)}
+  if(c.type==='abc'){const {items,tot}=abcCalc(v);return `<h3>${c.l}</h3>`+(items.length?`<table><thead><tr><th>Producto</th><th>Valor al mes ($)</th><th>%</th><th>% acumulado</th><th>Clase</th></tr></thead><tbody>${items.map(x=>`<tr><td>${esc(x.p)}</td><td>${money(x.v)}</td><td>${x.pct.toFixed(1)} %</td><td>${x.acc.toFixed(1)} %</td><td>${x.cl}</td></tr>`).join('')}<tr><th>Total</th><th>${money(tot)}</th><td colspan="3"></td></tr></tbody></table>`:E)}
+  if(c.type==='rop'){const d=v||{};const r=ropCalc(d);return `<h3>${c.l}</h3>`+(r?`<table><tbody><tr><th>Producto</th><td>${esc(d.p||'')}</td></tr><tr><th>Demanda diaria</th><td>${esc(d.dd)}</td></tr><tr><th>Tiempo de entrega (días)</th><td>${esc(d.lt)}</td></tr><tr><th>Días de protección</th><td>${esc(d.ds)}</td></tr><tr><th>Stock de seguridad</th><td>${money(r.ss)}</td></tr><tr><th>Punto de reorden</th><td>${money(r.rop)}</td></tr></tbody></table>`:E)}
+  return '';
+}
+const SECC=[['1. Diagnóstico de la situación logística',['T1','T2','T3','T4']],['2. Direccionamiento y políticas logísticas',['T5','T6','T7','T8']],['3. Estrategias logísticas',['T9','T10']],['4. Plan maestro',['T11']],['5. Indicadores y plan de acción',['T12']]];
+function planBody(){
+  return `<div class="doc"><p class="eyebrow">SENA · Gestión Logística · Competencia 210101007</p><h1>Plan Estratégico Logístico</h1><h2 style="border:0;margin-top:4px">${esc(empresa()||'Empresa sin definir')}</h2><p><b>Equipo:</b> ${esc(val('T1','equipo')||'—')}</p><p class="muted">Proyecto formativo: Plan Maestro Modelo de Logística Comercial del Distrito de Riohacha · Instructor: Carlos Barrios</p>
+  ${SECC.map(([tt,ids])=>`<h2>${tt}</h2>`+ids.map(id=>{const t=T.find(x=>x.id===id);return `<h3 style="font-size:1.35rem;color:var(--fg)">${t.t}</h3>`+t.campos.filter(c=>!(id==='T1'&&(c.k==='empresa'||c.k==='equipo'))).map(c=>fieldHtml(id,c)).join('')}).join('')).join('')}</div>`;
+}
+function plan(){
+  const n=T.filter(t=>S.done[t.id]).length;
+  return `<section class="card noprint"><span class="eyebrow">Resultado de los 12 talleres</span><h1>Mi plan estratégico logístico</h1><p class="muted">Este documento se arma solo con lo que el equipo llenó en cada clase. Van ${n} de ${T.length} talleres terminados. Lo que dice <span style="color:var(--alert);font-style:italic">Pendiente</span> todavía falta.</p>
+  <div class="acts"><button class="btn pri" id="bWord">⬇ Descargar en Word (.doc)</button><button class="btn" id="bPrint">🖨 Imprimir o guardar PDF</button><button class="btn" id="bCopyAll">📋 Copiar todo</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button><label class="btn" for="fImp">⬆ Cargar respaldo</label><input type="file" id="fImp" accept=".json,application/json" hidden></div></section>
+  <section class="card">${planBody()}</section>`;
+}
+function bindPlan(){
+  document.getElementById('bPrint').onclick=()=>{try{window.print()}catch(e){toast('Use la opción imprimir del navegador')}};
+  document.getElementById('bWord').onclick=()=>{const css='body{font-family:Arial;font-size:11pt}h1{font-size:20pt}h2{font-size:15pt;color:#2a7d00;border-bottom:2px solid #39A900}h3{font-size:12pt;color:#2a7d00}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:4px;font-size:10pt;vertical-align:top}th{background:#e9f6df}.empty{color:#c2412d;font-style:italic}.eyebrow{font-size:9pt;color:#2a7d00}';
+    download(`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>${css}</style></head><body>${planBody()}</body></html>`,`Plan-Estrategico-Logistico-${slug()}.doc`,'application/msword')};
+  document.getElementById('bCopyAll').onclick=()=>copy(T.map(t=>tallerText(t)).join('\n\n'));
+  bindBackup();
+}
+
+/* ======== UTILIDADES ======== */
+function copy(s){if(navigator.clipboard)navigator.clipboard.writeText(s).then(()=>toast('Texto copiado'),()=>fb(s));else fb(s)}
+function fb(s){const ta=document.createElement('textarea');ta.value=s;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Seleccione y copie el texto manualmente')}setTimeout(()=>ta.remove(),100)}
+function download(content,name,type){try{const b=new Blob([(type==='application/json'?'':'\ufeff')+content],{type:type+';charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('Descarga iniciada')}catch(e){toast('No se pudo descargar: use Copiar texto')}}
+
+refreshTop();
+let start='INICIO';try{start=localStorage.getItem(KEY+'-cur')||'INICIO'}catch(e){}
+if(!(start==='INICIO'||start==='PLAN'||T.some(t=>t.id===start)))start='INICIO';
+go(start);
+})();
+</script>
+</body></html>
