@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LogiLab SENA · Sesiones</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+:root{--sena:#39A900;--sena-deep:#2a7d00;--sena-soft:#e9f6df;--bg:#f7f8f4;--card:#fff;--fg:#17201a;--muted:#56635a;--line:#d9dfd3;
+--display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root{--sena:#5cc91f;--sena-deep:#7ad94a;--sena-soft:#1d2b16;--bg:#121612;--card:#1a1f1a;--fg:#eef2ea;--muted:#a6b2a3;--line:#2f382d;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding-block:32px;padding-inline:16px;display:flex;flex-direction:column;gap:22px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:1.4rem}
+.brand i{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:9px;background:var(--sena);color:#fff;font-style:normal}
+h1{font-family:var(--display);font-size:clamp(2rem,5vw,3.2rem);margin:0;line-height:1.05}
+p{margin:0}.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+a.card{display:flex;flex-direction:column;gap:8px;padding:18px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--fg);text-decoration:none;border-top:6px solid var(--sena)}
+a.card:hover,a.card:focus-visible{border-color:var(--sena)}
+.tag{font-size:.78rem;font-weight:700;color:var(--sena-deep);background:var(--sena-soft);padding:2px 10px;border-radius:999px;align-self:flex-start}
+.card h2{font-family:var(--display);font-size:1.6rem;margin:0}
+footer{color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);padding-top:14px}
+</style></head>
+<body><div class="wrap">
+  <div class="brand"><i>LL</i>LogiLab SENA</div>
+  <div><h1>Sesiones de clase</h1><p class="muted">Gestión Logística · Competencia 210101007 · Plan Maestro de Logística Comercial de Riohacha</p></div>
+  <div class="grid" id="list"></div>
+  <p class="muted">Herramientas con entregas en línea y demás materiales: <a href="https://logilab-sena.netlify.app">logilab-sena.netlify.app</a></p>
+  <footer>LogiLab SENA · <b>By Carlos Barrios · Instructor</b></footer>
+</div>
+<script>
+/* Sesiones: la más reciente primero */
+const SESIONES=[
+ {t:"Diagnóstico Situacional · Sesión 2",d:"Actividad 3.3.1: técnicas de recolección, PESTEL, necesidades por eslabón, demostración silenciosa, guía de entrevista y entrega.",r:"logistica/s2-diagnostico-situacional/",f:"Jueves 8 oct 2026"},
+ {t:"Plan Maestro Riohacha · Sesión 1",d:"Actividades 3.1 y 3.2: fábula, relato documental con ficha de observación, Canvas del Plan Maestro y eventos sorpresa.",r:"logistica/s1-plan-maestro-riohacha/",f:"Miércoles 7 oct 2026"}];
+document.getElementById('list').innerHTML=SESIONES.map(s=>`<a class="card" href="${s.r}"><span class="tag">${s.f}</span><h2>${s.t}</h2><p class="muted">${s.d}</p></a>`).join('');
+</script>
+</body></html>

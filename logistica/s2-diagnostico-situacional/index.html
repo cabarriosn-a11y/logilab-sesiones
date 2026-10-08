@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diagnóstico Situacional · Sesión 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: proyector 16:9 — barra de control arriba, una diapositiva a la vez, navegación abajo */
+:root{
+  --sena:#39A900; --sena-deep:#2a7d00; --sena-soft:#e9f6df;
+  --sand:#f3efe6; --bg:#f7f8f4; --card:#ffffff; --fg:#17201a; --muted:#56635a; --line:#d9dfd3;
+  --sea:#0f6e8c; --sun:#e39b1b; --alert:#c2412d; --violet:#6b4fa3;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"JetBrains Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --sena:#5cc91f; --sena-deep:#7ad94a; --sena-soft:#1d2b16; --sand:#22261f; --bg:#121612; --card:#1a1f1a; --fg:#eef2ea; --muted:#a6b2a3; --line:#2f382d;
+  --sea:#4fb3d3; --sun:#f0b44a; --alert:#ef7a63; --violet:#a98ee0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --sena:#5cc91f; --sena-deep:#7ad94a; --sena-soft:#1d2b16; --sand:#22261f; --bg:#121612; --card:#1a1f1a; --fg:#eef2ea; --muted:#a6b2a3; --line:#2f382d;
+  --sea:#4fb3d3; --sun:#f0b44a; --alert:#ef7a63; --violet:#a98ee0; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:clamp(15px,1.25vw,20px);line-height:1.5;display:flex;flex-direction:column}
+h1,h2,h3{font-family:var(--display);line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.4rem,5.6vw,5rem);font-weight:800}
+h2{font-size:clamp(1.8rem,3.4vw,3rem);font-weight:700}
+h3{font-size:clamp(1.15rem,1.7vw,1.6rem);font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sena-deep)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+
+/* barra superior */
+.top{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:1.25rem}
+.brand i{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--sena);color:#fff;font-style:normal;font-size:1rem}
+.now{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);flex:1;min-width:200px}
+.now b{color:var(--fg)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--sena-soft);color:var(--sena-deep);font-weight:700;font-size:.8rem}
+.timer{display:flex;gap:6px;align-items:center}
+.timer .clock{font-family:var(--mono);font-size:1.35rem;min-width:5.2ch;text-align:center;font-variant-numeric:tabular-nums}
+.timer .clock.low{color:var(--alert)}
+.tbtn{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:4px 9px;font-size:.85rem}
+.tbtn.go{background:var(--sena);border-color:var(--sena);color:#fff}
+
+/* diapositivas */
+main{flex:1;min-height:0;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;overflow:auto;padding:clamp(18px,3.2vw,48px) clamp(16px,4vw,64px);display:none;flex-direction:column;gap:clamp(14px,2vw,26px)}
+.slide.on{display:flex;animation:in .35s ease}
+@keyframes in{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.on{animation:none}}
+.grid{display:grid;gap:clamp(12px,1.6vw,20px)}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:clamp(14px,1.6vw,22px);min-width:0}
+.lead{font-size:1.15em;color:var(--muted);max-width:62ch}
+
+/* bottom nav */
+.nav{display:flex;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid var(--line);background:var(--card);flex-wrap:wrap}
+.nav .dots{display:flex;gap:5px;flex:1;flex-wrap:wrap}
+.dot{width:26px;height:8px;border-radius:4px;border:0;background:var(--line);padding:0}
+.dot.on{background:var(--sena)}
+.navbtn{border:0;border-radius:8px;padding:6px 14px;background:var(--sena);color:#fff;font-weight:700}
+.navbtn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.foot{font-size:.78rem;color:var(--muted)}
+
+/* portada */
+.cover{justify-content:center;background:
+  radial-gradient(1200px 500px at 85% 110%, color-mix(in srgb,var(--sena) 22%,transparent), transparent 60%),
+  radial-gradient(700px 400px at 0% 0%, color-mix(in srgb,var(--sea) 14%,transparent), transparent 60%)}
+.cover .meta{display:flex;flex-wrap:wrap;gap:8px}
+.cover .meta span{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:.85rem}
+.kanas{display:flex;gap:6px;margin-top:6px}
+.kanas span{height:10px;flex:1;max-width:60px;border-radius:2px}
+
+/* agenda */
+.agenda{display:grid;gap:8px}
+.ag{display:grid;grid-template-columns:8.5ch 1fr auto;gap:14px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.ag time{font-family:var(--mono);font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ag.live{border-color:var(--sena);box-shadow:inset 5px 0 0 var(--sena)}
+.ag .tag{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sand);color:var(--muted);white-space:nowrap}
+
+/* temas */
+.topic{display:flex;gap:14px;align-items:flex-start}
+.topic .n{font-family:var(--display);font-weight:800;font-size:2.2rem;color:var(--sena);line-height:.9;min-width:1.4ch}
+
+/* fábula */
+.fable{max-width:72ch;font-size:1.08em;line-height:1.65}
+.fable p+p{margin-top:.8em}
+.fable .drop::first-letter{font-family:var(--display);font-size:3.4em;float:left;line-height:.85;padding-right:8px;color:var(--sena)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.who{border-top:6px solid var(--sena)}
+.who.bad{border-top-color:var(--alert)}
+.q{counter-increment:q;display:flex;gap:12px;align-items:flex-start}
+.q::before{content:counter(q);font-family:var(--display);font-weight:800;font-size:1.6rem;color:#fff;background:var(--sena);border-radius:8px;min-width:42px;height:42px;display:grid;place-items:center}
+
+/* cadena */
+.chain{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.link{flex:1 1 140px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;position:relative;min-width:0}
+.link b{display:block;font-family:var(--display);font-size:1.2rem}
+.link small{color:var(--muted)}
+.flows{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
+.flow{border-radius:10px;padding:12px 14px;color:var(--fg);background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c)}
+.flow b{font-family:var(--display);font-size:1.25rem}
+
+/* documental */
+.doc{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px}
+@media (max-width:800px){.doc{grid-template-columns:1fr}}
+.scene{background:linear-gradient(160deg,color-mix(in srgb,var(--sea) 18%,var(--card)),var(--card));border:1px solid var(--line);border-radius:14px;padding:clamp(16px,2.2vw,30px);display:flex;flex-direction:column;gap:12px;min-height:300px}
+.scene .hora{font-family:var(--mono);font-size:1.6rem;color:var(--sea)}
+.scene .txt{font-size:1.18em;line-height:1.6}
+.scene .guide{margin-top:auto;padding:10px 14px;border-radius:10px;background:var(--sena-soft);color:var(--fg)}
+.scene-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ficha{width:100%;border-collapse:collapse;font-size:.95em}
+.ficha th,.ficha td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.ficha th{background:var(--sena);color:#fff;font-family:var(--display);font-size:1.1rem;letter-spacing:.02em}
+.ficha td.ex{color:var(--muted);font-style:italic}
+
+/* canvas */
+.canvas{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.cb{border-radius:12px;padding:14px;background:var(--card);border:1px solid var(--line);border-top:8px solid var(--c);min-width:0;display:flex;flex-direction:column;gap:6px}
+.cb ul{margin:0;padding-left:1.1em;color:var(--muted);font-size:.93em}
+.cb .rap{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.c1{grid-column:span 2}.c2{grid-column:span 2}.c3{grid-column:span 2}.c4{grid-column:span 3}.c5{grid-column:span 3}
+@media (max-width:800px){.canvas{grid-template-columns:1fr}.c1,.c2,.c3,.c4,.c5{grid-column:auto}}
+.sectors{display:flex;flex-wrap:wrap;gap:8px}
+.sector{padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.sector b{color:var(--sena-deep)}
+
+/* evento */
+.deck{display:grid;place-items:center;gap:16px}
+.card-ev{width:min(760px,100%);border-radius:18px;padding:clamp(20px,3vw,40px);background:var(--card);border:2px solid var(--alert);display:flex;flex-direction:column;gap:14px;min-height:260px}
+.card-ev .k{font-family:var(--mono);color:var(--alert);letter-spacing:.1em;font-size:.8rem;text-transform:uppercase}
+.card-ev h3{font-size:clamp(1.5rem,2.6vw,2.4rem)}
+.card-ev .ask{padding:10px 14px;border-radius:10px;background:var(--sand)}
+.big{border:0;border-radius:12px;padding:12px 22px;background:var(--alert);color:#fff;font-weight:700;font-size:1.05rem}
+
+/* ruta */
+.route{display:grid;gap:8px}
+.rt{display:grid;grid-template-columns:6ch 1fr 7ch;gap:12px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.rt .code{font-family:var(--mono);font-weight:500;color:var(--sena-deep)}
+.rt .h{font-family:var(--mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.rt.today{background:var(--sena-soft);border-color:var(--sena)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px}
+.bar span{display:block;height:100%;background:var(--sena)}
+
+/* entrega */
+.form{display:grid;gap:10px}
+.form label{font-weight:700;font-size:.9rem}
+.form input,.form textarea,.form select{width:100%;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.form textarea{min-height:64px;resize:vertical}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.act{border:0;border-radius:10px;padding:9px 14px;font-weight:700;color:#fff;background:var(--sena);text-decoration:none;display:inline-block}
+.act.wa{background:#1f9d55}.act.mail{background:var(--sea)}.act.dl{background:var(--violet)}
+.toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-weight:700}
+.note{font-size:.85rem;color:var(--muted)}
+</style>
+<style>
+/* Extras de la sesión 2 */
+.quiz{display:grid;gap:10px}
+.qi{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.qi .opts{display:flex;gap:6px;flex-wrap:wrap}
+.opt{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:6px 12px;font-weight:700}
+.opt.ok{background:var(--sena);border-color:var(--sena);color:#fff}
+.opt.bad{background:var(--alert);border-color:var(--alert);color:#fff}
+.fb{grid-column:1/-1;font-size:.9rem;color:var(--muted)}
+@media (max-width:640px){.qi{grid-template-columns:1fr}}
+.steps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:18px}
+@media (max-width:800px){.steps{grid-template-columns:1fr}}
+.steplist{display:grid;gap:6px;align-content:start}
+.st{display:flex;gap:10px;align-items:center;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);text-align:left}
+.st b{font-family:var(--display);font-size:1.3rem;min-width:1.4ch;color:var(--line)}
+.st.done{color:var(--fg)}.st.done b{color:var(--sena)}
+.st.cur{border-color:var(--sena);box-shadow:inset 5px 0 0 var(--sena);color:var(--fg)}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,2vw,26px);display:flex;flex-direction:column;gap:12px;min-width:0}
+.stage table{width:100%;border-collapse:collapse;font-size:.92em}
+.stage th,.stage td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+.stage th{background:var(--sena);color:#fff;font-family:var(--display);font-size:1.05rem}
+.silence{display:inline-flex;gap:8px;align-items:center;padding:4px 12px;border-radius:999px;background:var(--fg);color:var(--bg);font-weight:700;font-size:.85rem}
+.tech{border-top:6px solid var(--c)}
+.dims{display:flex;flex-wrap:wrap;gap:8px}
+.dims span{padding:6px 12px;border-radius:999px;background:var(--sena-soft);color:var(--sena-deep);font-weight:700}
+.bank{display:grid;gap:12px}
+.bank details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.bank summary{font-weight:700;cursor:pointer}
+.bank label{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:.95em}
+.picked{counter-reset:p;display:grid;gap:6px;padding:0;margin:0;list-style:none}
+.picked li{counter-increment:p;display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+.picked li::before{content:counter(p);font-family:var(--display);font-weight:800;color:var(--sena);min-width:1.4ch}
+.picked li span{flex:1;min-width:0}
+.picked li button{border:0;background:transparent;color:var(--alert);font-weight:700}
+.wtable{width:100%;border-collapse:collapse;min-width:640px}
+.wtable th,.wtable td{border:1px solid var(--line);padding:6px;vertical-align:top}
+.wtable th{background:var(--sena);color:#fff;font-family:var(--display);font-size:1.05rem;text-align:left}
+.wtable td:first-child{font-weight:700;width:16%}
+.wtable textarea,.wtable select{width:100%;font:inherit;font-size:.92em;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);padding:6px}
+.wtable textarea{min-height:56px;resize:vertical}
+.check{display:grid;gap:6px}
+.check label{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.check input{width:20px;height:20px;accent-color:var(--sena);flex:none;margin-top:2px}
+.meter{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.meter span{display:block;height:100%;background:var(--sena);transition:width .3s}
+.icontec{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+.icontec div{padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.icontec b{display:block;font-family:var(--mono);font-size:1.05rem;color:var(--sena-deep)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><i>LL</i>LogiLab SENA</div>
+  <div class="now"><span id="clockNow">--:--</span> · <span>Ahora:</span> <b id="nowBlock">—</b> <span class="pill" id="nowLeft"></span></div>
+  <div class="timer" aria-label="Cronómetro de actividad">
+    <button class="tbtn" data-min="5">5'</button>
+    <button class="tbtn" data-min="10">10'</button>
+    <button class="tbtn" data-min="15">15'</button>
+    <button class="tbtn" data-min="25">25'</button>
+    <span class="clock" id="clk">00:00</span>
+    <button class="tbtn go" id="tPlay">Iniciar</button>
+    <button class="tbtn" id="tReset">Reiniciar</button>
+  </div>
+</header>
+
+<main id="deck">
+
+<!-- 1 PORTADA -->
+<section class="slide cover on" data-title="Portada">
+  <div class="eyebrow">Competencia 210101007 · RAP 45591 · Actividad 3.3.1 · Fase Análisis</div>
+  <h1>Diagnóstico<br>situacional</h1>
+  <p class="lead">Sesión 2 del Plan Maestro de Logística Comercial de Riohacha. Hoy convertimos el bloque ① del Canvas en un diagnóstico con método: qué preguntar, a quién y cómo analizarlo.</p>
+  <div class="meta">
+    <span>Jueves · 1:00 – 4:00 pm</span><span>Ambiente polivalente</span><span>Estrategia: demostración silenciosa</span><span>Evidencia: informe ICONTEC</span>
+  </div>
+  <div class="kanas" aria-hidden="true">
+    <span style="background:var(--sena)"></span><span style="background:var(--alert)"></span><span style="background:var(--fg)"></span><span style="background:var(--sun)"></span><span style="background:var(--sena)"></span><span style="background:var(--alert)"></span>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+<!-- 2 AGENDA -->
+<section class="slide" data-title="Agenda">
+  <div class="eyebrow">Ruta de la tarde</div>
+  <h2>Agenda de hoy</h2>
+  <div class="agenda" id="agenda"></div>
+  <p class="note">El bloque en curso se resalta solo según la hora del computador.</p>
+</section>
+
+<!-- 3 RETOMA -->
+<section class="slide" data-title="Retoma">
+  <div class="eyebrow">Retoma de la sesión 1 · 5 minutos</div>
+  <h2>¿Hecho o interpretación?</h2>
+  <p class="lead">Un diagnóstico se construye con hechos. Antes de seguir, comprobemos que el grupo los distingue.</p>
+  <div class="quiz" id="quiz"></div>
+  <div class="box" style="background:var(--sena-soft)"><b>Puente con el Canvas:</b> las preguntas que escribieron en rojo en el bloque ① Diagnóstico son el punto de partida de hoy. Al final de la sesión, cada equipo tendrá el instrumento para salir a responderlas.</div>
+</section>
+
+<!-- 4 TEMAS -->
+<section class="slide" data-title="Temas">
+  <div class="eyebrow">Lo que vamos a trabajar</div>
+  <h2>Temas de la sesión</h2>
+  <div class="grid g2">
+    <div class="box topic"><span class="n">1</span><div><h3>Diagnóstico situacional</h3><p>Qué es, para qué sirve y qué partes tiene dentro del Plan Maestro.</p></div></div>
+    <div class="box topic"><span class="n">2</span><div><h3>Técnicas de recolección</h3><p>Observación, entrevista, encuesta y fuentes secundarias. Cuándo usar cada una.</p></div></div>
+    <div class="box topic"><span class="n">3</span><div><h3>Análisis del macroentorno (PESTEL)</h3><p>Variables políticas, económicas, sociales, tecnológicas, ambientales y legales.</p></div></div>
+    <div class="box topic"><span class="n">4</span><div><h3>Necesidades del cliente por eslabón</h3><p>Precio, tiempo, frecuencia, cantidad, calidad y servicio en cada eslabón de la cadena.</p></div></div>
+    <div class="box topic"><span class="n">5</span><div><h3>Informe bajo normas ICONTEC</h3><p>Estructura mínima, presentación y referencias.</p></div></div>
+    <div class="box topic"><span class="n">6</span><div><h3>Taller: diagnóstico de su subsector</h3><p>Instrumento de entrevista, PESTEL y matriz de necesidades por equipo.</p></div></div>
+  </div>
+</section>
+
+<!-- 5 DIAGNÓSTICO -->
+<section class="slide" data-title="¿Qué es?">
+  <div class="eyebrow">Fundamento teórico</div>
+  <h2>¿Qué es un diagnóstico situacional logístico?</h2>
+  <p class="lead">Es una fotografía técnica de cómo funciona hoy una cadena de suministro y su entorno. Responde a <b>dónde estamos</b> antes de decidir <b>a dónde vamos</b>. Sin diagnóstico, las políticas y estrategias del plan se basan en suposiciones.</p>
+  <div class="grid g3">
+    <div class="box" style="border-top:6px solid var(--sea)"><div class="eyebrow">Mira hacia afuera</div><h3>Macroentorno</h3><p>Lo que la empresa no controla pero la afecta: economía, normas, clima, tecnología, sociedad.</p></div>
+    <div class="box" style="border-top:6px solid var(--sena)"><div class="eyebrow">Mira la cadena</div><h3>Eslabones y clientes</h3><p>Quién le vende a quién, qué necesita cada uno y dónde se rompe el servicio.</p></div>
+    <div class="box" style="border-top:6px solid var(--alert)"><div class="eyebrow">Mira el resultado</div><h3>Hallazgos y brechas</h3><p>Los problemas priorizados que el plan debe resolver, comparados con los objetivos propuestos.</p></div>
+  </div>
+  <div class="box"><b>Ruta de trabajo:</b> definir el objetivo → escoger las técnicas → recolectar datos → organizar (PESTEL y matriz de necesidades) → analizar y priorizar → concluir y conectar con las políticas del plan.</div>
+</section>
+
+<!-- 6 TÉCNICAS -->
+<section class="slide" data-title="Técnicas">
+  <div class="eyebrow">Técnicas de recolección de información</div>
+  <h2>¿Cómo conseguimos los datos?</h2>
+  <div class="grid g2">
+    <div class="box tech" style="--c:var(--sena)"><h3>Observación directa</h3><p>Ir al lugar y registrar hechos con una ficha: tiempos de descargue, filas, estado de la mercancía.</p><p class="note">Úsela para: procesos, tiempos y condiciones físicas.</p></div>
+    <div class="box tech" style="--c:var(--sea)"><h3>Entrevista semiestructurada</h3><p>Conversación guiada con 8 a 10 preguntas a un actor clave: tendero, administrador de hotel, transportador.</p><p class="note">Úsela para: necesidades, problemas y causas.</p></div>
+    <div class="box tech" style="--c:var(--sun)"><h3>Encuesta corta</h3><p>Preguntas cerradas a muchas personas: frecuencia de compra, gasto, satisfacción.</p><p class="note">Úsela para: cifras y comparaciones.</p></div>
+    <div class="box tech" style="--c:var(--violet)"><h3>Fuentes secundarias</h3><p>Datos ya publicados: DANE, Cámara de Comercio de La Guajira, Plan de Desarrollo Distrital de Riohacha, Banco de la República.</p><p class="note">Úsela para: el macroentorno. Siempre cite la fuente.</p></div>
+  </div>
+  <div class="box"><h3 style="margin-bottom:8px">Dimensiones de la necesidad del cliente</h3><div class="dims"><span>Precio</span><span>Tiempo de entrega</span><span>Frecuencia</span><span>Cantidad</span><span>Calidad y estado</span><span>Servicio e información</span></div></div>
+</section>
+
+<!-- 7 PESTEL -->
+<section class="slide" data-title="PESTEL">
+  <div class="eyebrow">Análisis del macroentorno</div>
+  <h2>PESTEL aplicado a la logística</h2>
+  <div class="grid g3">
+    <div class="box" style="border-left:8px solid var(--alert)"><h3>P · Político</h3><p>Políticas del Distrito, control fronterizo, programas de apoyo a mipymes, orden público en las vías.</p></div>
+    <div class="box" style="border-left:8px solid var(--sena)"><h3>E · Económico</h3><p>Inflación, precio del dólar, tasas de interés, informalidad, temporadas de turismo.</p></div>
+    <div class="box" style="border-left:8px solid var(--sun)"><h3>S · Social</h3><p>Hábitos de compra, población, diversidad cultural, empleo, demanda turística.</p></div>
+    <div class="box" style="border-left:8px solid var(--sea)"><h3>T · Tecnológico</h3><p>Pagos digitales, software de inventario, rastreo GPS, comercio electrónico.</p></div>
+    <div class="box" style="border-left:8px solid var(--violet)"><h3>E · Ecológico</h3><p>Calor, escasez de agua, lluvias que dañan vías, residuos y empaques.</p></div>
+    <div class="box" style="border-left:8px solid var(--muted)"><h3>L · Legal</h3><p>Facturación electrónica, normas sanitarias, tránsito y cargue/descargue, normas laborales.</p></div>
+  </div>
+  <p class="note">Para cada factor escriba: el hecho, su impacto (alto, medio o bajo) y el efecto concreto en la cadena de suministro.</p>
+</section>
+
+<!-- 8 DEMOSTRACIÓN SILENCIOSA -->
+<section class="slide" data-title="Demostración silenciosa">
+  <div class="eyebrow">Demostración silenciosa · Ejemplo: panaderías de barrio en Riohacha</div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
+    <h2>Así se construye un diagnóstico</h2>
+    <span class="silence">🤫 Observe y anote los pasos. No hay explicación oral.</span>
+  </div>
+  <div class="steps">
+    <div class="steplist" id="stepList"></div>
+    <div class="stage" id="stage" aria-live="polite"></div>
+  </div>
+  <div class="scene-nav">
+    <button class="navbtn ghost" id="dPrev">← Paso</button>
+    <span class="pill" id="dNum">1 / 6</span>
+    <button class="navbtn" id="dNext">Paso →</button>
+  </div>
+</section>
+
+<!-- 9 INSTRUMENTO -->
+<section class="slide" data-title="Taller 1: instrumento">
+  <div class="eyebrow">Taller 1 · Por equipos · 20 minutos</div>
+  <h2>Diseñen su guía de entrevista</h2>
+  <p class="lead">Escojan entre 8 y 10 preguntas para entrevistar a actores reales de su subsector. Mezclen preguntas de varias categorías y agreguen las suyas a partir de las preguntas en rojo de su Canvas.</p>
+  <div class="grid g2">
+    <div class="bank" id="bank"></div>
+    <div class="box" style="display:flex;flex-direction:column;gap:10px">
+      <h3>Nuestra guía (<span id="pCount">0</span> preguntas)</h3>
+      <ol class="picked" id="picked"></ol>
+      <div class="form">
+        <label for="qNew">Pregunta propia del equipo</label>
+        <div style="display:flex;gap:8px"><input id="qNew" placeholder="Ej.: ¿Qué hace cuando un proveedor no le llega a tiempo?"><button class="navbtn" id="qAdd">Agregar</button></div>
+      </div>
+      <p class="note">A quién entrevistar: un actor de cada eslabón (proveedor, transportador, comerciante y cliente final).</p>
+    </div>
+  </div>
+</section>
+
+<!-- 10 TALLER PESTEL -->
+<section class="slide" data-title="Taller 2: PESTEL">
+  <div class="eyebrow">Taller 2 · Por equipos · Macroentorno de su subsector</div>
+  <h2>PESTEL de su subsector</h2>
+  <div style="overflow-x:auto">
+    <table class="wtable" id="pestelT">
+      <thead><tr><th>Factor</th><th>Hecho o variable</th><th>Impacto</th><th>Efecto en la cadena</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p class="note">Si no tiene el dato, escríbalo como pregunta y márquelo con "?" para buscarlo en fuentes secundarias.</p>
+</section>
+
+<!-- 11 MATRIZ NECESIDADES -->
+<section class="slide" data-title="Taller 2: necesidades">
+  <div class="eyebrow">Taller 2 · Por equipos · Necesidades por eslabón</div>
+  <h2>Matriz de necesidades de los clientes</h2>
+  <div style="overflow-x:auto">
+    <table class="wtable" id="necT">
+      <thead><tr><th>Eslabón</th><th>¿Quién es en su subsector?</th><th>Necesidad principal</th><th>Problema observado</th><th>Fuente del dato</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 12 ICONTEC -->
+<section class="slide" data-title="Informe ICONTEC">
+  <div class="eyebrow">Evidencia 3.3.1 · Informe individual · Mínimo 5 páginas</div>
+  <h2>Estructura del informe de diagnóstico</h2>
+  <div class="grid g2">
+    <div class="box">
+      <h3 style="margin-bottom:8px">Contenido</h3>
+      <ol style="margin:0;padding-left:1.2em;display:grid;gap:4px">
+        <li>Portada y tabla de contenido</li>
+        <li>Introducción</li>
+        <li>Objetivos del diagnóstico</li>
+        <li>Metodología: técnicas e instrumentos usados</li>
+        <li>Análisis del macroentorno: variables económicas, políticas y ambientales (PESTEL)</li>
+        <li>Caracterización de la cadena: eslabones y necesidades de los clientes</li>
+        <li>Hallazgos priorizados</li>
+        <li>Conclusiones conectadas con los objetivos del proyecto formativo</li>
+        <li>Referencias y anexos (guía de entrevista, fichas, fotos)</li>
+      </ol>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="icontec">
+        <div><b>3 cm</b>Margen superior e izquierdo</div>
+        <div><b>2 cm</b>Margen derecho e inferior</div>
+        <div><b>NTC 1486</b>Presentación de trabajos escritos</div>
+        <div><b>NTC 5613</b>Referencias bibliográficas</div>
+        <div><b>NTC 4490</b>Referencias de fuentes electrónicas</div>
+      </div>
+      <div class="box" style="background:var(--sena-soft)"><b>Criterio de evaluación:</b> el informe relaciona los resultados del diagnóstico con las políticas de planeación de la empresa y los objetivos propuestos.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 LISTA DE CHEQUEO -->
+<section class="slide" data-title="Lista de chequeo">
+  <div class="eyebrow">Autoevaluación · Galería entre equipos</div>
+  <h2>Lista de chequeo del diagnóstico</h2>
+  <div class="meter" aria-hidden="true"><span id="chkBar" style="width:0%"></span></div>
+  <p class="note" id="chkTxt">0 de 8 criterios cumplidos</p>
+  <div class="check" id="check"></div>
+</section>
+
+<!-- 14 CIERRE -->
+<section class="slide" data-title="Cierre y tarea">
+  <div class="eyebrow">Cierre · Trabajo de campo</div>
+  <h2>Tarea para el miércoles</h2>
+  <div class="grid g3">
+    <div class="box" style="border-top:6px solid var(--sena)"><div class="eyebrow">Paso 1</div><h3>Apliquen la entrevista</h3><p>Mínimo <b>3 actores reales</b> de su subsector, de eslabones distintos. Registren fecha, lugar y nombre del negocio.</p></div>
+    <div class="box" style="border-top:6px solid var(--sea)"><div class="eyebrow">Paso 2</div><h3>Busquen 3 datos oficiales</h3><p>Uno económico, uno político y uno ambiental para su PESTEL, con fuente citada.</p></div>
+    <div class="box" style="border-top:6px solid var(--sun)"><div class="eyebrow">Paso 3</div><h3>Traigan evidencias</h3><p>Respuestas, fotos (con permiso) y la ficha de observación. Con eso escribimos el informe.</p></div>
+  </div>
+  <div class="box"><b>Ética del trabajo de campo:</b> preséntese como aprendiz SENA, explique para qué es la información, pida permiso antes de grabar o tomar fotos y no publique datos personales.</div>
+</section>
+
+<!-- 15 ENTREGA -->
+<section class="slide" data-title="Entrega">
+  <div class="eyebrow">Entrega del taller · Por equipo</div>
+  <h2>Envíe el diagnóstico preliminar de su equipo</h2>
+  <div class="grid g2">
+    <div class="form box">
+      <div><label for="fTeam">Equipo e integrantes</label><input id="fTeam" placeholder="Equipo 2: Ana, Luis, Daniela, Jorge"></div>
+      <div><label for="fSector">Subsector</label><input id="fSector" placeholder="Hotelería y turismo"></div>
+      <div><label for="fFind">Tres hallazgos preliminares</label><textarea id="fFind"></textarea></div>
+      <div><label for="fWa">WhatsApp del instructor (con indicativo, sin +)</label><input id="fWa" placeholder="57300XXXXXXX" inputmode="numeric"></div>
+    </div>
+    <div class="form box">
+      <p>El envío junta automáticamente la <b>guía de entrevista</b>, el <b>PESTEL</b> y la <b>matriz de necesidades</b> que llenaron en esta página.</p>
+      <div style="overflow:auto;max-height:260px"><pre id="preview" style="white-space:pre-wrap;font-family:var(--mono);font-size:.78rem;margin:0"></pre></div>
+      <div class="acts">
+        <button class="act" id="bCopy">Copiar texto</button>
+        <a class="act wa" id="bWa" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+        <button class="act mail" id="bMail">Preparar correo</button>
+        <button class="act dl" id="bDl">Descargar .txt</button>
+      </div>
+      <p class="note">Si un botón no funciona en su dispositivo, use "Copiar texto" y péguelo en WhatsApp o en un correo al instructor.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<nav class="nav">
+  <button class="navbtn ghost" id="prev" aria-label="Anterior">←</button>
+  <div class="dots" id="dots"></div>
+  <span class="foot" id="slideName"></span>
+  <button class="navbtn" id="next" aria-label="Siguiente">→</button>
+  <button class="tbtn" id="fs">Pantalla completa</button>
+  <a class="tbtn" href="../../" style="text-decoration:none">← Portal</a>
+  <span class="foot">LogiLab SENA · By Carlos Barrios · Instructor</span>
+</nav>
+
+<script>
+(function(){
+const LS='pm2-';
+function get(k){try{return localStorage.getItem(LS+k)}catch(e){return null}}
+function set(k,v){try{localStorage.setItem(LS+k,v)}catch(e){}}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* navegación */
+const slides=[...document.querySelectorAll('.slide')];let cur=0;const dots=document.getElementById('dots');
+slides.forEach((s,i)=>{const b=document.createElement('button');b.className='dot';b.title=s.dataset.title;b.setAttribute('aria-label',s.dataset.title);b.onclick=()=>go(i);dots.appendChild(b)});
+function go(i){cur=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,k)=>s.classList.toggle('on',k===cur));[...dots.children].forEach((d,k)=>d.classList.toggle('on',k===cur));document.getElementById('slideName').textContent=(cur+1)+'/'+slides.length+' · '+slides[cur].dataset.title;set('slide',cur);if(slides[cur].dataset.title==='Entrega')upd()}
+document.getElementById('prev').onclick=()=>go(cur-1);document.getElementById('next').onclick=()=>go(cur+1);
+document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1)});
+document.getElementById('fs').onclick=()=>{try{if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen()}catch(e){}};
+
+/* agenda y reloj */
+const AG=[
+ ['13:00','13:15','Retoma: hecho o interpretación y puente con el Canvas','Inicio'],
+ ['13:15','13:40','Fundamentos: diagnóstico, técnicas, PESTEL y necesidades','Teoría'],
+ ['13:40','14:05','Demostración silenciosa: diagnóstico de panaderías','3.3.1'],
+ ['14:05','14:30','Taller 1: guía de entrevista por equipos','Taller'],
+ ['14:30','14:45','Receso','—'],
+ ['14:45','15:30','Taller 2: PESTEL y matriz de necesidades del subsector','Taller'],
+ ['15:30','15:45','Galería con lista de chequeo','Evaluación'],
+ ['15:45','16:00','Estructura ICONTEC, tarea de campo y entrega','Cierre']];
+const agEl=document.getElementById('agenda');
+function fmt(t){let[h,m]=t.split(':').map(Number);h=h>12?h-12:h;return h+':'+String(m).padStart(2,'0')}
+function mins(t){const[h,m]=t.split(':').map(Number);return h*60+m}
+AG.forEach(a=>{const d=document.createElement('div');d.className='ag';d.innerHTML=`<time>${fmt(a[0])}–${fmt(a[1])}</time><span>${a[2]}</span><span class="tag">${a[3]}</span>`;agEl.appendChild(d)});
+function tick(){const n=new Date(),nm=n.getHours()*60+n.getMinutes();document.getElementById('clockNow').textContent=n.toLocaleTimeString('es-CO',{hour:'numeric',minute:'2-digit'});let f=-1;AG.forEach((a,i)=>{if(nm>=mins(a[0])&&nm<mins(a[1]))f=i});[...agEl.children].forEach((c,i)=>c.classList.toggle('live',i===f));const nb=document.getElementById('nowBlock'),nl=document.getElementById('nowLeft');if(f>=0){nb.textContent=AG[f][2];nl.textContent='quedan '+(mins(AG[f][1])-nm)+' min';nl.hidden=false}else{nb.textContent=nm<780?'La sesión empieza a la 1:00 pm':'Sesión finalizada';nl.hidden=true}}
+tick();setInterval(tick,15000);
+
+/* cronómetro */
+let left=0,run=false,iv=null;const clk=document.getElementById('clk'),play=document.getElementById('tPlay');
+function show(){clk.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');clk.classList.toggle('low',left>0&&left<=60)}
+function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();[0,.35,.7].forEach(t=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.2,c.currentTime+t);o.start(c.currentTime+t);o.stop(c.currentTime+t+.2)})}catch(e){}}
+document.querySelectorAll('[data-min]').forEach(b=>b.onclick=()=>{left=+b.dataset.min*60;show()});
+play.onclick=()=>{if(run){clearInterval(iv);run=false;play.textContent='Iniciar';return}if(left<=0)return;run=true;play.textContent='Pausar';iv=setInterval(()=>{left--;show();if(left<=0){clearInterval(iv);run=false;play.textContent='Iniciar';beep()}},1000)};
+document.getElementById('tReset').onclick=()=>{clearInterval(iv);run=false;left=0;play.textContent='Iniciar';show()};
+
+/* quiz */
+const QZ=[
+ ['El camión tardó 50 minutos en descargar en el Mercado Nuevo.','H','Es un hecho: se midió con el reloj.'],
+ ['Los tenderos no saben administrar su inventario.','I','Es una interpretación: es un juicio sobre las personas. ¿Qué se observó exactamente?'],
+ ['3 de 5 tiendas visitadas se quedaron sin agua embotellada antes del mediodía.','H','Es un hecho: se contó y se puede verificar.'],
+ ['El turismo es la solución para la economía de Riohacha.','I','Es una opinión: habría que demostrarla con datos.'],
+ ['El hotel pidió el doble de huevos para el puente festivo.','H','Es un hecho: está en el pedido.']];
+const qz=document.getElementById('quiz');
+QZ.forEach((q,i)=>{const d=document.createElement('div');d.className='qi';d.innerHTML=`<span>${i+1}. ${q[0]}</span><span class="opts"><button class="opt" data-v="H">Hecho</button><button class="opt" data-v="I">Interpretación</button></span><span class="fb" hidden></span>`;d.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{d.querySelectorAll('.opt').forEach(x=>x.classList.remove('ok','bad'));b.classList.add(b.dataset.v===q[1]?'ok':'bad');const fb=d.querySelector('.fb');fb.hidden=false;fb.textContent=(b.dataset.v===q[1]?'Correcto. ':'Revise. ')+q[2]});qz.appendChild(d)});
+
+/* demostración silenciosa */
+const DS=[
+ ['Definir el objetivo',`<h3>Objetivo del diagnóstico</h3><p style="font-size:1.15em">Caracterizar las necesidades de los clientes en la cadena de abastecimiento de las panaderías de barrio de Riohacha y los factores del entorno que la afectan.</p><p class="note">Verbo en infinitivo + qué + dónde + para qué.</p>`],
+ ['Escoger técnicas',`<h3>Metodología</h3><table><tr><th>Técnica</th><th>A quién</th><th>Instrumento</th></tr><tr><td>Entrevista</td><td>3 panaderos, 1 distribuidor de harina, 2 tenderos</td><td>Guía de 9 preguntas</td></tr><tr><td>Observación</td><td>Cargue y entrega de pan a tiendas, 5:00–7:00 am</td><td>Ficha hecho / interpretación</td></tr><tr><td>Fuentes secundarias</td><td>DANE, Cámara de Comercio</td><td>Tabla de datos con fuente</td></tr></table>`],
+ ['Mapear la cadena',`<h3>Eslabones de la cadena</h3><div class="chain"><div class="link"><b>Molino / distribuidor</b><small>Harina, azúcar, margarina desde Barranquilla</small></div><div class="link"><b>Transporte</b><small>Camión del distribuidor por la Troncal</small></div><div class="link"><b>Panadería</b><small>Producción diaria, horno a gas</small></div><div class="link"><b>Tienda de barrio</b><small>Recibe pan a primera hora</small></div><div class="link"><b>Hogar</b><small>Compra diaria en poca cantidad</small></div></div>`],
+ ['Analizar el entorno',`<h3>PESTEL (extracto)</h3><table><tr><th>Factor</th><th>Hecho</th><th>Impacto</th><th>Efecto en la cadena</th></tr><tr><td>Económico</td><td>El precio de la harina depende del trigo importado y del dólar</td><td>Alto</td><td>Sube el costo de compra; el panadero reduce el tamaño del pan</td></tr><tr><td>Ecológico</td><td>Cortes de energía y calor intenso</td><td>Alto</td><td>Se daña la masa y los productos refrigerados</td></tr><tr><td>Tecnológico</td><td>Crecen los pagos con billeteras digitales</td><td>Medio</td><td>Mejor registro de ventas si se adopta</td></tr><tr><td>Legal</td><td>Facturación electrónica y concepto sanitario</td><td>Medio</td><td>Exige registros y orden en el inventario</td></tr></table>`],
+ ['Necesidades por eslabón',`<h3>Matriz de necesidades</h3><table><tr><th>Eslabón</th><th>Necesidad principal</th><th>Problema observado</th></tr><tr><td>Distribuidor</td><td>Pedidos estables y pago a tiempo</td><td>Pedidos irregulares, de última hora</td></tr><tr><td>Panadería</td><td>Harina a precio estable y energía continua</td><td>Cortes de luz que dañan la producción</td></tr><tr><td>Tienda</td><td>Pan antes de las 6:00 am</td><td>Entregas tarde en 2 de 5 tiendas observadas</td></tr><tr><td>Hogar</td><td>Pan fresco, cerca y a buen precio</td><td>Pan de la tarde ya no está fresco</td></tr></table>`],
+ ['Hallazgos y conclusión',`<h3>Hallazgos priorizados</h3><ol><li><b>Abastecimiento:</b> costo de harina inestable y sin acuerdos de compra.</li><li><b>Energía:</b> sin respaldo ante cortes de luz.</li><li><b>Distribución:</b> rutas de entrega sin horario fijo.</li></ol><div class="box" style="background:var(--sena-soft)"><b>Conclusión:</b> el plan maestro debe incluir una política de compras con acuerdos de precio, un plan de contingencia energética y rutas de entrega con horario. Estas conclusiones pasan a la evidencia 3.3.2 (políticas).</div>`]];
+let di=0;const sl=document.getElementById('stepList'),stg=document.getElementById('stage');
+DS.forEach((d,i)=>{const b=document.createElement('button');b.className='st';b.innerHTML=`<b>${i+1}</b>${d[0]}`;b.onclick=()=>demo(i);sl.appendChild(b)});
+function demo(i){di=Math.max(0,Math.min(DS.length-1,i));stg.innerHTML=DS[di][1];[...sl.children].forEach((b,k)=>{b.classList.toggle('done',k<=di);b.classList.toggle('cur',k===di)});document.getElementById('dNum').textContent=(di+1)+' / '+DS.length}
+document.getElementById('dPrev').onclick=()=>demo(di-1);document.getElementById('dNext').onclick=()=>demo(di+1);demo(0);
+
+/* banco de preguntas */
+const BANK={
+ 'Perfil del negocio':['¿Hace cuánto funciona su negocio y cuántas personas trabajan en él?','¿Qué productos vende o mueve más?'],
+ 'Aprovisionamiento':['¿A quién le compra y desde qué ciudad le llega la mercancía?','¿Cada cuánto hace pedidos y cómo los hace (llamada, WhatsApp, visita)?','¿Cuánto se demora en llegar un pedido?','¿Qué hace cuando un proveedor le queda mal?'],
+ 'Inventario':['¿Cómo sabe cuándo debe volver a pedir?','¿Lleva registro de inventario? ¿En cuaderno, Excel o software?','¿Qué productos se le agotan con más frecuencia?'],
+ 'Distribución y clientes':['¿Quiénes son sus clientes principales?','¿Qué le exigen más sus clientes: precio, rapidez, calidad o crédito?','¿Cómo entrega o cómo se lleva el cliente la mercancía?'],
+ 'Entorno':['¿Cómo le afectan las temporadas turísticas y los festivos?','¿Cómo le afectan los cortes de energía, el calor o las lluvias?','¿Le han afectado bloqueos de vías? ¿Qué hizo?','¿Qué normas o trámites le exigen (facturación, sanidad)?'],
+ 'Mejora':['Si pudiera mejorar una sola cosa de su abastecimiento, ¿cuál sería?','¿Usaría una herramienta digital para pedir o controlar inventario?']};
+let picked=[];try{picked=JSON.parse(get('picked')||'[]')}catch(e){picked=[]}
+const bank=document.getElementById('bank');
+Object.entries(BANK).forEach(([cat,qs])=>{const d=document.createElement('details');d.open=cat==='Aprovisionamiento';d.innerHTML=`<summary>${cat}</summary>`+qs.map(q=>`<label><input type="checkbox" data-q="${esc(q)}"> <span>${q}</span></label>`).join('');bank.appendChild(d)});
+bank.querySelectorAll('input').forEach(cb=>{cb.checked=picked.includes(cb.dataset.q);cb.onchange=()=>{const q=cb.dataset.q;if(cb.checked){if(!picked.includes(q))picked.push(q)}else picked=picked.filter(x=>x!==q);renderPicked()}});
+function renderPicked(){set('picked',JSON.stringify(picked));const ol=document.getElementById('picked');ol.innerHTML=picked.map((q,i)=>`<li><span>${esc(q)}</span><button data-i="${i}" aria-label="Quitar">✕</button></li>`).join('')||'<li><span class="note">Marque preguntas del banco o agregue las suyas.</span></li>';ol.querySelectorAll('button').forEach(b=>b.onclick=()=>{const q=picked[+b.dataset.i];picked.splice(+b.dataset.i,1);bank.querySelectorAll('input').forEach(cb=>{if(cb.dataset.q===q)cb.checked=false});renderPicked()});document.getElementById('pCount').textContent=picked.length}
+document.getElementById('qAdd').onclick=()=>{const i=document.getElementById('qNew');const v=i.value.trim();if(v&&!picked.includes(v)){picked.push(v);i.value='';renderPicked()}};
+document.getElementById('qNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('qAdd').click()}});
+renderPicked();
+
+/* tablas de trabajo */
+function buildTable(id,rows,cols){const tb=document.querySelector('#'+id+' tbody');rows.forEach((r,ri)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${r}</td>`+cols.map((c,ci)=>{const key=id+'-'+ri+'-'+ci;if(c==='sel')return `<td><select id="${key}"><option value="">—</option><option>Alto</option><option>Medio</option><option>Bajo</option></select></td>`;return `<td><textarea id="${key}" placeholder="${c}"></textarea></td>`}).join('');tb.appendChild(tr)});tb.querySelectorAll('textarea,select').forEach(el=>{const v=get(el.id);if(v)el.value=v;el.addEventListener('input',()=>set(el.id,el.value));el.addEventListener('change',()=>set(el.id,el.value))})}
+const PF=['Político','Económico','Social','Tecnológico','Ecológico','Legal'];
+const NE=['Proveedor','Transporte','Mayorista / distribuidor','Minorista','Cliente final'];
+buildTable('pestelT',PF,['Ej.: precio del dólar sube','sel','Ej.: encarece las compras']);
+buildTable('necT',NE,['Nombre o tipo de actor','Precio, tiempo, frecuencia…','Lo que se rompe','Entrevista, observación, DANE…']);
+
+/* lista de chequeo */
+const CK=['El objetivo del diagnóstico está escrito en infinitivo y es claro.','La metodología dice qué técnicas se usarán y con quién.','La cadena del subsector tiene sus eslabones identificados.','El PESTEL tiene al menos un factor económico, uno político y uno ambiental con su efecto en la cadena.','Cada eslabón tiene una necesidad principal y un problema observado.','Los datos tienen fuente (entrevista, observación o fuente oficial).','Hay al menos 3 hallazgos priorizados.','Las conclusiones se conectan con los objetivos del Plan Maestro.'];
+const ck=document.getElementById('check');
+CK.forEach((c,i)=>{const l=document.createElement('label');l.innerHTML=`<input type="checkbox" id="ck${i}"> <span>${c}</span>`;ck.appendChild(l)});
+function ckUpd(){const n=ck.querySelectorAll('input:checked').length;document.getElementById('chkBar').style.width=(n/CK.length*100)+'%';document.getElementById('chkTxt').textContent=n+' de '+CK.length+' criterios cumplidos'}
+ck.querySelectorAll('input').forEach(cb=>{cb.checked=get(cb.id)==='1';cb.onchange=()=>{set(cb.id,cb.checked?'1':'0');ckUpd()}});ckUpd();
+
+/* entrega */
+['fTeam','fSector','fFind','fWa'].forEach(id=>{const el=document.getElementById(id);const v=get(id);if(v)el.value=v;el.addEventListener('input',()=>{set(id,el.value);upd()})});
+function val(id){const e=document.getElementById(id);return (e&&e.value.trim())||'—'}
+function txt(){let t=`DIAGNÓSTICO PRELIMINAR · SESIÓN 2 (3.3.1)\nCompetencia 210101007 · Gestión Logística\n\nEquipo: ${val('fTeam')}\nSubsector: ${val('fSector')}\n\nGUÍA DE ENTREVISTA\n`;t+=picked.length?picked.map((q,i)=>(i+1)+'. '+q).join('\n'):'—';t+='\n\nPESTEL\n';PF.forEach((f,i)=>{t+=`- ${f}: ${val('pestelT-'+i+'-0')} | Impacto: ${val('pestelT-'+i+'-1')} | Efecto: ${val('pestelT-'+i+'-2')}\n`});t+='\nNECESIDADES POR ESLABÓN\n';NE.forEach((f,i)=>{t+=`- ${f}: ${val('necT-'+i+'-0')} | Necesidad: ${val('necT-'+i+'-1')} | Problema: ${val('necT-'+i+'-2')} | Fuente: ${val('necT-'+i+'-3')}\n`});t+=`\nHALLAZGOS PRELIMINARES\n${val('fFind')}`;return t}
+function upd(){document.getElementById('preview').textContent=txt();const n=document.getElementById('fWa').value.replace(/\D/g,'');document.getElementById('bWa').href='https://wa.me/'+n+'?text='+encodeURIComponent(txt())}
+document.getElementById('bWa').addEventListener('click',upd);
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function fallback(){const ta=document.createElement('textarea');ta.value=txt();document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Seleccione y copie el texto manualmente')}setTimeout(()=>ta.remove(),100)}
+document.getElementById('bCopy').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(txt()).then(()=>toast('Texto copiado'),fallback);else fallback()};
+document.getElementById('bMail').onclick=()=>{location.href='mailto:?subject='+encodeURIComponent('Diagnóstico preliminar - '+(document.getElementById('fTeam').value||'Equipo'))+'&body='+encodeURIComponent(txt());toast('Si no se abre el correo, use Copiar texto')};
+document.getElementById('bDl').onclick=()=>{try{const b=new Blob([txt()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='diagnostico-preliminar.txt';document.body.appendChild(a);a.click();a.remove();toast('Si no se descarga, use Copiar texto')}catch(e){toast('Descarga no disponible: use Copiar texto')}};
+
+let start=0;const s=+get('slide');if(s>=0&&s<slides.length)start=s;go(start);upd();
+})();
+</script>
+</body></html>
