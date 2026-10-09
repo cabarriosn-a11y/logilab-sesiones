@@ -325,6 +325,74 @@ const EJS = [
    pasos:["Nueva hoja <b>Caja a paleta</b> con la unidad de su producto (medidas y peso del recuadro).","Escojan su paleta. Si es de 1200 × 1200, créenla en <b>Ventana › Cajas y paletas estándar</b>.","Ajusten las <b>dimensiones máximas de la carga</b> al largo y ancho de su paleta (sin voladizo); dejen 1345 mm y 1500 kg.","<b>Recalcular</b>, escojan la solución con más unidades y comparen con el patrón manual de la S2.","Brecha (%) = (total QPM − total S2) ÷ total S2 × 100."],
    f:[["e6_pal","Paleta usada en QPM","x","Ej.: CHEP 1200x1000"],["e6_capa","Unidades por capa (QPM)","n"],["e6_capas","Capas (QPM)","n"],["e6_tot","Unidades por paleta (QPM)","n"],["e6_kg","Peso total con paleta (kg)","n"],["e6_h","Altura total con paleta (mm)","n"],["e6_lim","Factor limitante","s",LIMITES],["e6_brecha","Brecha frente al patrón de la S2 (%)","n"],["e6_conc","Recomendación al Jefe de carga: ¿qué paleta armarían y por qué? Mencionen la condición especial de su producto.","t"]]}
 ];
+/* Paso a paso campo por campo de cada ejercicio: [paso, dónde, qué hacer]. "!" al inicio del paso = advertencia. */
+const CFG = {
+  e1: [
+    ["1", "Menú Archivo", "<b>Nueva hoja de datos › Caja a paleta</b>. Ojo: NO es «Empaque primario a paleta». La ventana debe mostrar el bloque de la <b>caja</b>, no «Inf. de Empaque Primario» ni «Cajas Std.»."],
+    ["2", "Caja · dimensiones", "Longitud <b>400</b> · Ancho <b>300</b> · Altura <b>250</b> mm"],
+    ["3", "Caja · peso", "<b>12</b> kg"],
+    ["4", "Dimensiones permitidas verticales", "Marquen <b>solo Altura</b> (la caja va con su cara de arriba hacia arriba). Desmarquen Longitud y Ancho."],
+    ["5", "Dimensiones Paleta", "Escojan <b>CHEP 1200x1000</b>: se llena solo con 1200 × 1000 × 145 mm y 30 kg"],
+    ["6", "Propiedades de la carga", "Mínimas 500 × 500 × 200 · Máximas <b>1200 × 1000 × 1345</b> · Peso Máximo <b>1500</b> kg (son los valores por defecto)"],
+    ["7", "Menú Herramientas", "<b>Recalcular</b>"],
+    ["8", "Lista de soluciones (arriba a la derecha)", "Escojan la solución con <b>más cajas</b>; abran <b>Ventana › Informe detallado</b> y copien los datos a la hoja"],
+    ["✓", "Para comprobar", "Si todo quedó bien, QPM muestra <b>10 cajas por capa × 5 capas = 50 cajas</b>. Con esta guía ya pueden hacer solos los demás."]
+  ],
+  e2: [
+    ["1", "Menú Archivo", "<b>Nueva hoja de datos › Caja a paleta</b>"],
+    ["2", "Caja · dimensiones y peso", "Longitud <b>600</b> · Ancho <b>400</b> · Altura <b>100</b> mm · Peso <b>30</b> kg"],
+    ["3", "Dimensiones permitidas verticales", "<b>Solo Altura</b> (las baldosas no se paran de canto)"],
+    ["4", "Paleta y carga", "<b>CHEP 1200x1000</b> · carga máxima 1200 × 1000 × <b>1345</b> mm · Peso Máximo <b>1500</b> kg"],
+    ["5", "Herramientas", "<b>Recalcular</b> → anoten cajas por capa, capas, total y peso del informe"],
+    ["6", "Propiedades de la carga", "Cambien <b>Peso Máximo a 2000</b> kg → <b>Recalcular</b> → anoten el nuevo total"],
+    ["7", "Propiedades de la carga", "Devuelvan el Peso Máximo a <b>1500</b> kg"]
+  ],
+  e3: [
+    ["1", "Menú Archivo", "<b>Nueva hoja de datos › Empaque primario a paleta</b>"],
+    ["2", "Inf. de Empaque Primario", "Forma del EP <b>Rectangular</b> · Longitud <b>180</b> · Ancho <b>110</b> · Altura <b>60</b> mm · Peso <b>0,52</b> kg · verticales: <b>las tres marcadas</b> (QPM puede parar las bolsas)"],
+    ["3", "Caja · Construcción", "<b>RSC - Regular Slotted Container</b> · corrugado <b>125-250#B Flute</b> (se llena 6,35 × 6,35 × 12,7)"],
+    ["4", "EP / Caja", "<b>12</b>"],
+    ["5", "Restricciones de las cajas", "Longitud, Ancho y Altura externas: mínimo <b>50</b>, máximo <b>600</b> · Largo/Ancho <b>1 a 3</b> · Longitud/Altura <b>0,5 a 3</b> · Altura/Ancho <b>0,5 a 3</b>"],
+    ["6", "Cajas Std.", "Escojan la opción que <b>NO</b> usa cajas estándar (no «Llenar cajas standard»): así QPM diseña la caja"],
+    ["7", "Paleta y carga", "<b>CHEP 1200x1000</b> · carga por defecto (1345 mm, 1500 kg)"],
+    ["8", "Herramientas", "<b>Recalcular</b> → copien la caja externa (L × A × H) y cómo acomodó las 12 bolsas. La hoja calcula las relaciones con sus datos."],
+    ["!", "Si sale el error", "Revisen que EP/Caja diga 12 (no 0 ni 6) y que Cajas Std. no esté en «Llenar cajas standard»"]
+  ],
+  e4: [
+    ["1", "Ventana › Cajas y paletas estándar", "En la tabla de abajo <b>«ISO – Dimensiones externas»</b>, hagan clic en una fila → <b>Editar › Duplicar</b>"],
+    ["2", "Fila duplicada (doble clic en cada celda)", "Longitud <b>605</b> · Ancho <b>470</b> · Altura <b>400</b> · Tipo <b>NB</b> · presionen <b>Enter</b> después de cada celda y cierren la ventana"],
+    ["3", "Herramientas › Opciones › Restricciones de las cajas", "Máximo peso de caja <b>100</b> kg → <b>OK</b>"],
+    ["4", "Menú Archivo", "<b>Nueva hoja de datos › Empaque primario a paleta</b>"],
+    ["5", "Inf. de Empaque Primario", "Rectangular · Longitud <b>160</b> · Ancho <b>64</b> · Altura <b>1,6</b> mm · Peso <b>0,092</b> kg · las tres verticales marcadas"],
+    ["6", "Restricciones de las cajas", "Longitud externa máxima <b>1000</b> (por defecto dice 600 y la caja mide 605: con 600 sale el error) · Ancho y Altura máx. 600"],
+    ["7", "Cajas Std.", "<b>Llenar cajas standard</b> · Tipo <b>NB</b> (no «Box» ni «NP») · holgura 25 × 25 × 25 · y en <b>EP / Caja</b> dejen <b>0</b> para que QPM calcule cuántos caben"],
+    ["8", "Paleta y carga", "<b>CHEP 1200x1000</b> · carga por defecto"],
+    ["9", "Herramientas", "<b>Recalcular</b> → abran el informe detallado: packs por caja, peso de la caja y cajas por paleta"],
+    ["!", "Si sale el error", "1) Tipo debe ser NB; 2) Longitud máx. ≥ 605; 3) la caja NB debe estar en la tabla ISO de dimensiones externas con sus 3 medidas guardadas"]
+  ],
+  e5: [
+    ["1", "Para reproducir el caso A", "Empaque primario a paleta · EP 160 × 64 × 1,6 mm, 0,092 kg · EP/Caja <b>6</b> · Cajas Std. sin usar cajas estándar · Recalcular"],
+    ["2", "Para reproducir el caso B", "Igual que el ejercicio 4 pero con Longitud externa máxima en <b>600</b>"],
+    ["3", "Para reproducir el caso C", "Igual que el ejercicio 4 pero con Tipo <b>NP</b>"],
+    ["4", "Después", "Corrijan un dato a la vez y vuelvan a Recalcular: el dato que hace desaparecer el error es la causa"]
+  ]
+};
+function cfgTabla(rows){
+  return `<details class="cal" open><summary>Paso a paso en QPM, campo por campo</summary><table class="mx" style="margin-top:8px"><thead><tr><th style="width:44px">Paso</th><th style="width:30%">Dónde</th><th>Qué hacer o escribir</th></tr></thead><tbody>${rows.map(([n,d,q]) => `<tr${n === "!" ? ' style="background:var(--danger-soft)"' : n === "✓" ? ' style="background:var(--ok-soft)"' : ""}><td><b>${n === "!" ? "⚠" : n}</b></td><td><b>${d}</b></td><td>${q}</td></tr>`).join("")}</tbody></table></details>`;
+}
+function cfgProducto(e){
+  const pal = e.dp[0] === 1200 && e.dp[1] === 1000 ? "<b>CHEP 1200x1000</b>" : e.dp[1] === 800 ? "<b>EUR 1200x800</b> (si no aparece, escriban 1200 × 800 × 144 mm y 25 kg)" : "créenla en <b>Ventana › Cajas y paletas estándar</b>: 1200 × 1200 × 144 mm, 30 kg, y escójanla";
+  return cfgTabla([
+    ["1", "Menú Archivo", "<b>Nueva hoja de datos › Caja a paleta</b>"],
+    ["2", `Caja · dimensiones y peso (su ${e.u})`, `Longitud <b>${e.d[0]}</b> · Ancho <b>${e.d[1]}</b> · Altura <b>${e.d[2]}</b> mm · Peso <b>${String(e.pu).replace(".", ",")}</b> kg`],
+    ["3", "Dimensiones permitidas verticales", `<b>Solo Altura</b> (${e.u === "tambor" ? "el tambor va de pie" : e.u === "saco" ? "el saco va acostado" : "la caja va con su cara de arriba hacia arriba"})`],
+    ["4", "Dimensiones Paleta", pal],
+    ["5", "Propiedades de la carga", `Máximas <b>${e.dp[0]} × ${e.dp[1]} × 1345</b> mm (sin voladizo) · Peso Máximo <b>1500</b> kg`],
+    ["6", "Herramientas", "<b>Recalcular</b> → solución con más unidades → Ventana › Informe detallado"],
+    ["7", "Brecha", `(total QPM − ${e.capa * e.capas}) ÷ ${e.capa * e.capas} × 100`]
+  ]);
+}
+
 const TICKET = [
   "¿En qué se diferencian los modos «Caja a paleta», «Empaque primario a paleta» y «Llenar cajas standard»? Da un ejemplo de cuándo usarías cada uno.",
   "En el ejercicio de tu producto, ¿cuál fue el factor limitante (área, altura o peso) y en qué dato del informe de QPM lo viste?",
@@ -358,7 +426,8 @@ $("ejs").innerHTML = EJS.map(e => `<article class="station" id="st_${e.id}">
     ${e.datos ? `<div class="dl">${e.datos.map(([k,v]) => `<div><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join("")}</div>` : ""}
     ${e.id === "e6" ? `<div id="pedido6" class="notice warn">Escojan grupo y equipo arriba para ver los datos de su producto.</div>` : ""}
     ${e.casos ? e.casos.map(c => `<div class="case"><h4>${esc(c.t)}</h4><pre class="cfg">${esc(c.cfg)}</pre><div class="grid2">${e.f.filter(x => x[0].startsWith("e5_" + c.k)).map(campo).join("")}</div></div>`).join("") : ""}
-    <details class="cal" open><summary>Pasos en QPM</summary><ol class="steps" style="margin-top:8px">${e.pasos.map(p => `<li>${p}</li>`).join("")}</ol></details>
+    ${CFG[e.id] ? cfgTabla(CFG[e.id]) : ""}
+    <details class="cal"${CFG[e.id] || e.id === "e6" ? "" : " open"}><summary>${CFG[e.id] || e.id === "e6" ? "Resumen y preguntas guía" : "Pasos en QPM"}</summary><ol class="steps" style="margin-top:8px">${e.pasos.map(p => `<li>${p}</li>`).join("")}</ol></details>
     ${e.nota ? `<div class="notice warn" style="margin:0">${esc(e.nota)}</div>` : ""}
     ${e.casos ? "" : `<div class="grid3">${e.f.map(campo).join("")}</div>`}
     ${e.id === "e3" ? `<div class="verdict" id="e3_ver" hidden></div>` : ""}
@@ -417,7 +486,7 @@ function pintarPedido(){
       <div><small>Paleta</small><b>${esc(e.pal)}</b></div>
       <div><small>Paleta vacía</small><b>${n0(e.pp)} kg · ${e.dp[2]} mm</b></div>
       <div><small>Patrón manual de la S2</small><b>${e.capa} por capa × ${e.capas} capa${e.capas > 1 ? "s" : ""} = ${e.capa*e.capas}</b></div>
-    </div>`;
+    </div>${cfgProducto(e)}`;
 }
 const productoActual = () => { const e = equipoActual(); if (e) return e.productoNombre; const m = val("prodManual"); return m ? PRODUCTOS[m] : ""; };
 const integrantes = () => { const e = equipoActual(); return e ? [`${e.jefe} (Jefe de carga)`, `${e.calculista} (Calculista)`, ...e.operarios.map(o => `${o} (Operario)`)] : []; };
