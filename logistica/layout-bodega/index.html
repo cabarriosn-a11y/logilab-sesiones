@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Diseña el layout de una bodega: plano 2D y 3D, requisitos, costos y 4 casos de práctica.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2339A900'/%3E%3Cpath d='M7 12l9-5 9 5v10l-9 5-9-5z' fill='none' stroke='white' stroke-width='2.5'/%3E%3C/svg%3E">
+<title>LogiLab Layout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: drafting-table workspace — inputs column left, the floor plan as the hero in the center, verdict + costs column right; stacks to one column on phones */
+:root{
+  --bg:#eef1ea; --surface:#ffffff; --surface2:#f4f6f1; --line:#d6ddd0; --text:#17201a; --muted:#5a685d;
+  --sena:#39A900; --sena-ink:#2a7d00; --sena-soft:rgba(57,169,0,.12);
+  --ok:#2a7d00; --bad:#c4372f; --warn:#a86f00; --info:#3567a8;
+  --p-lot:#dfe8d6; --p-patio:#a3a8ac; --p-floor:#f6f6f2; --p-wall:#2f3833; --p-rack:#3567a8; --p-beam:#f08a24; --p-aisle:#ffffff; --p-mark:#d9a300;
+  --p-rec:#f5d36b; --p-desp:#9fd67e; --p-off:#c9c1e3; --p-ban:#b9d3e8; --p-ave:#f1a7a1; --p-emp:#e7d3b5; --p-batt:#f3b98a; --p-walk:#39A900;
+  --p-truck:#59656e; --p-cab:#c9cfd3; --p-text:#1b241e; --p-dim:#56635a; --p-flow:#2a7d00; --p-bad:#d1352b; --p-sky:#dfe7ec;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"Barlow",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1410; --surface:#151d18; --surface2:#1b241f; --line:#2b3830; --text:#e8eee6; --muted:#9aa89d;
+  --sena:#4cc20d; --sena-ink:#7fdc4a; --sena-soft:rgba(76,194,13,.14);
+  --ok:#6fd63a; --bad:#ff6b5e; --warn:#f2b705; --info:#7fb0f0;
+  --p-lot:#18211b; --p-patio:#3e4347; --p-floor:#222a25; --p-wall:#cfd8d1; --p-rack:#5a8fd6; --p-beam:#f39a45; --p-aisle:#2d3530; --p-mark:#c99a10;
+  --p-rec:#7a6420; --p-desp:#2f6a26; --p-off:#4a4268; --p-ban:#2d4a63; --p-ave:#6e3330; --p-emp:#5d4b30; --p-batt:#6e4528; --p-walk:#4cc20d;
+  --p-truck:#7d8a93; --p-cab:#4d5960; --p-text:#e8eee6; --p-dim:#a5b2a8; --p-flow:#7fdc4a; --p-bad:#ff6b5e; --p-sky:#121a16;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1410; --surface:#151d18; --surface2:#1b241f; --line:#2b3830; --text:#e8eee6; --muted:#9aa89d;
+  --sena:#4cc20d; --sena-ink:#7fdc4a; --sena-soft:rgba(76,194,13,.14);
+  --ok:#6fd63a; --bad:#ff6b5e; --warn:#f2b705; --info:#7fb0f0;
+  --p-lot:#18211b; --p-patio:#3e4347; --p-floor:#222a25; --p-wall:#cfd8d1; --p-rack:#5a8fd6; --p-beam:#f39a45; --p-aisle:#2d3530; --p-mark:#c99a10;
+  --p-rec:#7a6420; --p-desp:#2f6a26; --p-off:#4a4268; --p-ban:#2d4a63; --p-ave:#6e3330; --p-emp:#5d4b30; --p-batt:#6e4528; --p-walk:#4cc20d;
+  --p-truck:#7d8a93; --p-cab:#4d5960; --p-text:#e8eee6; --p-dim:#a5b2a8; --p-flow:#7fdc4a; --p-bad:#ff6b5e; --p-sky:#121a16;
+  color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:14px;line-height:1.45}
+.app{max-width:1680px;margin:0 auto;padding-inline:16px;padding-block:14px 22px;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:3px;min-width:0;margin-right:auto}
+.eyebrow{display:flex;align-items:center;gap:8px;font:600 11px/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--sena-ink)}
+.eyebrow i{width:9px;height:9px;border-radius:2px;background:var(--sena)}
+h1{margin:0;font:700 34px/1 var(--f-display);letter-spacing:.01em}
+.pill{display:inline-flex;align-items:center;gap:6px;font:600 13px var(--f-body);padding:7px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+.pill b{font-family:var(--f-mono);font-weight:600}
+.pill.ok{background:var(--sena-soft);border-color:var(--sena);color:var(--sena-ink)}
+.pill.bad{border-color:var(--bad);color:var(--bad)}
+.back{font-size:13px;color:var(--muted);text-decoration:none}
+.back:hover{color:var(--text)}
+.grid{display:grid;grid-template-columns:340px minmax(0,1fr) 340px;gap:12px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0}
+.side{position:sticky;top:12px;max-height:calc(100vh - 24px);display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--line);flex:none}
+.tabs button{flex:1;background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:12px 4px 10px;font:700 14px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--sena)}
+.tabs button:focus-visible{outline:2px solid var(--sena);outline-offset:-2px}
+.pane{overflow:auto;padding:14px 16px 18px;display:flex;flex-direction:column;gap:16px;min-height:0}
+.sec{display:flex;flex-direction:column;gap:9px}
+h2{margin:0;font:700 13px/1.1 var(--f-display);letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+h3{margin:0;font:700 19px/1.15 var(--f-display);letter-spacing:.01em;text-wrap:balance}
+.note{margin:0;font-size:12.5px;color:var(--muted);line-height:1.45}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld>label,.fld>span.lb{font-size:12px;color:var(--muted);line-height:1.2}
+.fld small{font-size:11px;color:var(--muted)}
+input,select,textarea{width:100%;font:500 14px var(--f-body);color:var(--text);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+input[type=number]{font-family:var(--f-mono);font-size:13.5px}
+textarea{min-height:76px;resize:vertical;line-height:1.4}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--sena);outline-offset:1px}
+.seg{display:grid;gap:6px}
+.seg.c3{grid-template-columns:repeat(3,1fr)}.seg.c2{grid-template-columns:1fr 1fr}
+.seg button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;cursor:pointer;font:600 12.5px var(--f-body);color:var(--text)}
+.seg button svg{width:44px;height:30px}
+.seg button[aria-pressed="true"]{border-color:var(--sena);background:var(--sena-soft);box-shadow:inset 0 0 0 1px var(--sena)}
+.seg button:focus-visible{outline:2px solid var(--sena);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:600 13px var(--f-body);color:var(--text);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn:focus-visible{outline:2px solid var(--sena);outline-offset:2px}
+.btn.primary{background:var(--sena);border-color:var(--sena);color:#0b1508}
+.btn.wa{background:#1f7a43;border-color:#1f7a43;color:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.cases{display:flex;flex-direction:column;gap:6px}
+.case{display:grid;grid-template-columns:30px 1fr;gap:2px 10px;text-align:left;padding:9px 10px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;cursor:pointer;color:var(--text);font:inherit}
+.case .lt{grid-row:1/3;align-self:center;width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font:700 17px var(--f-display);background:var(--surface);border:1px solid var(--line)}
+.case b{font-weight:600;font-size:13.5px}
+.case span{font-size:12px;color:var(--muted)}
+.case[aria-pressed="true"]{border-color:var(--sena);background:var(--sena-soft)}
+.case[aria-pressed="true"] .lt{background:var(--sena);border-color:var(--sena);color:#0b1508}
+.case:focus-visible{outline:2px solid var(--sena);outline-offset:2px}
+.brief{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:9px}
+dl.data{display:grid;grid-template-columns:1fr auto;gap:5px 12px;margin:0;font-size:13px}
+dl.data dt{color:var(--muted)}
+dl.data dd{margin:0;font-family:var(--f-mono);font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+ul.goals{margin:0;padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:3px}
+.center{display:flex;flex-direction:column}
+.vbar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.vtabs{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:3px}
+.vtabs button{background:none;border:0;border-radius:6px;padding:6px 12px;font:600 13px var(--f-body);color:var(--muted);cursor:pointer}
+.vtabs button[aria-selected="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.vbar .sp{margin-left:auto}
+.zoom{display:flex;gap:4px}
+.zoom .btn{padding:6px 10px;min-width:34px}
+.stage{position:relative;height:clamp(380px,64vh,780px);background:var(--p-lot);overflow:hidden}
+#plan{display:block;width:100%;height:100%;touch-action:none;cursor:grab;user-select:none}
+#plan:active{cursor:grabbing}
+#three{position:absolute;inset:0}
+#three canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.stage-msg{position:absolute;inset:0;display:grid;place-items:center;padding:16px;text-align:center;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:13px;height:13px;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,.12)}
+.versions{padding:12px 14px 14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.vhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vhead h2{margin-right:auto}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:6px 7px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.score{border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);background:var(--surface2)}
+.score.ok{border-color:var(--sena);background:var(--sena-soft)}
+.score .big{display:flex;align-items:baseline;gap:8px}
+.score .big b{font:700 36px/1 var(--f-display)}
+.score .big span{color:var(--muted);font-size:13px}
+.score p{margin:0;font-size:13px}
+.meter{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--sena);transition:width .3s}
+.score.bad .meter i{background:var(--warn)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:9px 10px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile span{font-size:11.5px;color:var(--muted);line-height:1.2}
+.tile b{font:600 17px/1.1 var(--f-mono);font-variant-numeric:tabular-nums}
+.tile small{font:400 11px var(--f-body);color:var(--muted)}
+.tile.bad b{color:var(--bad)}
+ul.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+ul.checks li{display:grid;grid-template-columns:22px 1fr;gap:6px;font-size:12.8px;line-height:1.4;align-items:start}
+.ic{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font:700 11px var(--f-body);color:#fff;margin-top:1px}
+.ic.ok{background:var(--ok)}.ic.bad{background:var(--bad)}.ic.warn{background:var(--warn);color:#1a1300}.ic.info{background:var(--info)}
+.cost td:last-child{text-align:right;font-family:var(--f-mono)}
+.cost tr.tot td{font-weight:700;border-top:2px solid var(--text)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--text);color:var(--bg);font-weight:600;font-size:13px;padding:9px 16px;border-radius:999px;z-index:9;pointer-events:none}
+footer{font-size:12.5px;color:var(--muted);text-align:center}
+footer b{color:var(--text)}
+@media (max-width:1240px){.grid{grid-template-columns:330px minmax(0,1fr)}.right{grid-column:1/-1;position:static;max-height:none}}
+@media (max-width:860px){.grid{grid-template-columns:1fr}.center{order:-1}.side{position:static;max-height:none}.stage{height:min(62vh,420px)}h1{font-size:28px}.right .tiles{grid-template-columns:1fr 1fr}}
+@media (prefers-reduced-motion:reduce){.meter i{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow"><i></i>LogiLab SENA · Taller de diseño de bodegas</div>
+      <h1>LogiLab Layout</h1>
+    </div>
+    <span class="pill" id="pillScore">Cumple <b>0/0</b></span>
+    <span class="pill" id="pillCost">Costo <b>$ 0</b>/mes</span>
+    <a class="back" id="backLink" href="../../">← Portal LogiLab</a>
+  </header>
+
+  <div class="grid">
+    <aside class="card side left" aria-label="Datos y diseño">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" aria-selected="true" data-t="caso">Caso</button>
+        <button type="button" role="tab" aria-selected="false" data-t="dis">Diseño</button>
+        <button type="button" role="tab" aria-selected="false" data-t="cos">Costos</button>
+        <button type="button" role="tab" aria-selected="false" data-t="ent">Entrega</button>
+      </div>
+
+      <div class="pane" id="p-caso" role="tabpanel">
+        <div class="sec"><h2>Escoge el caso</h2><div class="cases" id="caseList"></div></div>
+        <div class="sec" id="caseBrief"></div>
+        <div class="sec">
+          <h2>Tu reto</h2>
+          <ul class="goals">
+            <li>Diseña una bodega que cumpla todos los requisitos de la columna de resultados.</li>
+            <li>Después baja el costo mensual sin perder ningún requisito.</li>
+            <li>Guarda cada intento como versión: el instructor verá tu proceso.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pane" id="p-dis" role="tabpanel" hidden>
+        <div class="sec">
+          <h2>Edificio</h2>
+          <div class="f3">
+            <div class="fld"><label for="dL">Frente (m)</label><input type="number" id="dL" data-d="L" min="20" max="250" step="1"></div>
+            <div class="fld"><label for="dW">Fondo (m)</label><input type="number" id="dW" data-d="W" min="20" max="200" step="1"></div>
+            <div class="fld"><label for="dH">Altura libre (m)</label><input type="number" id="dH" data-d="H" min="4" max="18" step="0.5"></div>
+          </div>
+        </div>
+        <div class="sec">
+          <h2>Flujo de la mercancía</h2>
+          <div class="seg c3" id="segFlow">
+            <button type="button" data-flow="U" aria-pressed="false"><svg viewBox="0 0 44 30" aria-hidden="true"><rect x="6" y="3" width="32" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M14 27V17 M14 17l-3 3 M14 17l3 3" stroke="#c98a00" stroke-width="2" fill="none"/><path d="M30 17v10 M30 27l-3-3 M30 27l3-3" stroke="#39A900" stroke-width="2" fill="none"/></svg>En U</button>
+            <button type="button" data-flow="I" aria-pressed="false"><svg viewBox="0 0 44 30" aria-hidden="true"><rect x="6" y="5" width="32" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M22 29V19 M22 19l-3 3 M22 19l3 3" stroke="#c98a00" stroke-width="2" fill="none"/><path d="M22 11V1 M22 1l-3 3 M22 1l3 3" stroke="#39A900" stroke-width="2" fill="none"/></svg>En I</button>
+            <button type="button" data-flow="L" aria-pressed="false"><svg viewBox="0 0 44 30" aria-hidden="true"><rect x="3" y="3" width="30" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M14 27V17 M14 17l-3 3 M14 17l3 3" stroke="#c98a00" stroke-width="2" fill="none"/><path d="M29 13h12 M41 13l-3-3 M41 13l-3 3" stroke="#39A900" stroke-width="2" fill="none"/></svg>En L</button>
+          </div>
+          <p class="note">Ámbar: recepción · Verde: despacho.</p>
+        </div>
+        <div class="sec">
+          <h2>Estantería y equipo</h2>
+          <div class="seg c2" id="segOrient">
+            <button type="button" data-orient="perp" aria-pressed="false">Racks perpendiculares a los muelles</button>
+            <button type="button" data-orient="par" aria-pressed="false">Racks paralelos a los muelles</button>
+          </div>
+          <div class="fld"><label for="dEq">Equipo de almacenamiento</label><select id="dEq" data-d="eq"></select></div>
+          <div class="f2">
+            <div class="fld"><label for="dA">Ancho de pasillo (m)</label><input type="number" id="dA" data-d="aisle" min="1.5" max="6" step="0.1"><small id="aisleHint"></small></div>
+            <div class="fld"><label for="dMC">Montacargas</label><input type="number" id="dMC" data-d="nMC" min="0" max="30" step="1"></div>
+          </div>
+        </div>
+        <div class="sec">
+          <h2>Muelles y zonas de transferencia</h2>
+          <div class="f2">
+            <div class="fld"><label for="dMR">Muelles de recepción</label><input type="number" id="dMR" data-d="muR" min="0" max="20" step="1"></div>
+            <div class="fld"><label for="dMD">Muelles de despacho</label><input type="number" id="dMD" data-d="muD" min="0" max="20" step="1"></div>
+            <div class="fld"><label for="dPR">Profundidad recepción (m)</label><input type="number" id="dPR" data-d="pr" min="3" max="40" step="0.5"></div>
+            <div class="fld"><label for="dPD">Profundidad despacho (m)</label><input type="number" id="dPD" data-d="pd" min="3" max="40" step="0.5"></div>
+          </div>
+          <p class="note" id="flowNote"></p>
+        </div>
+        <div class="sec">
+          <h2>Personal y turnos</h2>
+          <div class="f3">
+            <div class="fld"><label for="dOps">Operarios</label><input type="number" id="dOps" data-d="ops" min="0" max="300" step="1"></div>
+            <div class="fld"><label for="dTur">Turnos</label><select id="dTur" data-d="turnos"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+            <div class="fld"><label for="dHT">Horas/turno</label><input type="number" id="dHT" data-d="hT" min="4" max="12" step="0.5"></div>
+          </div>
+        </div>
+        <div class="row"><button type="button" class="btn primary" id="bSaveV">Guardar versión</button><button type="button" class="btn" id="bReset">Volver al diseño inicial</button></div>
+      </div>
+
+      <div class="pane" id="p-cos" role="tabpanel" hidden>
+        <div class="sec">
+          <h2>Valores de referencia</h2>
+          <p class="note">Son valores de ejercicio en pesos colombianos, no cotizaciones. El instructor puede ajustarlos a precios actuales de la región.</p>
+          <div id="costFields" class="sec"></div>
+          <div class="row"><button type="button" class="btn" id="bCostReset">Restablecer valores</button></div>
+        </div>
+        <div class="sec">
+          <h2>Supuestos del modelo</h2>
+          <ul class="goals note">
+            <li>Módulo de rack de 2,7 m: 2 pallets ISO o 3 europallets por nivel. Fondo de 1,1 m por fila; filas dobles de 2,4 m.</li>
+            <li>Paso entre niveles: altura de la unidad + 0,25 m. Se dejan 0,5 m bajo los rociadores.</li>
+            <li>Ocupación máxima del 85 % del total de posiciones.</li>
+            <li>Ciclo del montacargas: 1 min fijo + recorrido de ida y vuelta + subir y bajar la carga a 0,3 m/s. Eficiencia del 80 %.</li>
+            <li>Muelle: 15 min de maniobra y documentos + 1,0 min por pallet al recibir y 1,2 min al despachar, con 85 % de uso de la ventana horaria.</li>
+            <li>Un auxiliar con transpaleta eléctrica por muelle para cargar y descargar el camión.</li>
+            <li>Patio de maniobras de 30 m frente a cada muro con muelles y retiros de 3 m en los demás lados.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pane" id="p-ent" role="tabpanel" hidden>
+        <div class="sec">
+          <h2>Datos del aprendiz</h2>
+          <div class="fld"><label for="sName">Nombre completo</label><input type="text" id="sName" autocomplete="name"></div>
+          <div class="f2">
+            <div class="fld"><label for="sDoc">Documento</label><input type="text" id="sDoc"></div>
+            <div class="fld"><label for="sFicha">Ficha / grupo</label><input type="text" id="sFicha" placeholder="Ej: 3229854"></div>
+          </div>
+        </div>
+        <div class="sec">
+          <h2>Preguntas de análisis</h2>
+          <div class="fld"><label for="q1">1. ¿Qué tipo de flujo y qué equipo escogiste? ¿Por qué?</label><textarea id="q1" data-q="0"></textarea></div>
+          <div class="fld"><label for="q2">2. ¿Qué requisito fue el más difícil de cumplir y cómo lo resolviste? Compara tus versiones.</label><textarea id="q2" data-q="1"></textarea></div>
+          <div class="fld"><label for="q3" id="q3l">3.</label><textarea id="q3" data-q="2"></textarea></div>
+        </div>
+        <div class="sec">
+          <h2>Entregar</h2>
+          <p class="note">La entrega incluye tu diseño, los resultados, tus versiones y tus respuestas. Envía también el plano en PNG.</p>
+          <div class="row">
+            <button type="button" class="btn primary" id="bCopy">Copiar entrega</button>
+            <a class="btn wa" id="waLink" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp</a>
+            <a class="btn" id="mailLink" href="mailto:">Correo</a>
+          </div>
+          <div class="row dl-only">
+            <button type="button" class="btn" id="bTxt">Descargar entrega .txt</button>
+            <button type="button" class="btn" id="bPng">Descargar plano PNG</button>
+          </div>
+          <p class="note">Si el correo no abre, copia la entrega y pégala en un mensaje nuevo.</p>
+          <textarea id="fallback" hidden aria-label="Entrega para copiar"></textarea>
+        </div>
+        <div class="sec dl-only">
+          <h2>Continuar en otro equipo</h2>
+          <div class="row">
+            <button type="button" class="btn" id="bJson">Guardar archivo de diseño</button>
+            <label class="btn" for="fJson">Abrir archivo de diseño</label>
+            <input type="file" id="fJson" accept=".json,application/json" hidden>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="card center" aria-label="Plano">
+      <div class="vbar">
+        <div class="vtabs" role="tablist">
+          <button type="button" role="tab" aria-selected="true" data-v="2d">Plano 2D</button>
+          <button type="button" role="tab" aria-selected="false" data-v="3d">Vista 3D</button>
+        </div>
+        <span class="note" id="viewHint">Arrastra para mover · rueda o pellizco para acercar</span>
+        <div class="zoom sp"><button type="button" class="btn" id="zOut" aria-label="Alejar">−</button><button type="button" class="btn" id="zIn" aria-label="Acercar">+</button><button type="button" class="btn" id="zFit">Ajustar</button></div>
+      </div>
+      <div class="stage" id="stage">
+        <svg id="plan" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Plano del layout de la bodega"></svg>
+        <div id="three" hidden></div>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="versions">
+        <div class="vhead"><h2>Versiones de tu diseño</h2><button type="button" class="btn primary" id="bSaveV2">Guardar versión</button><button type="button" class="btn" id="bClearV">Borrar versiones</button></div>
+        <div class="tbl"><table><thead><tr><th>Versión</th><th>Flujo</th><th>Edificio</th><th>Equipo</th><th class="n">Posiciones</th><th class="n">Cumple</th><th class="n">Costo/mes</th><th></th></tr></thead><tbody id="vBody"></tbody></table></div>
+        <p class="note" id="vEmpty">Aún no guardas versiones. Guarda la primera aunque no cumpla: así se ve tu avance.</p>
+      </div>
+    </section>
+
+    <aside class="card side right" aria-label="Resultados">
+      <div class="pane" id="results"></div>
+    </aside>
+  </div>
+  <footer><b>LogiLab SENA</b> · By Carlos Barrios · Instructor</footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+/*CORE*/
+const BAY=2.7, RD=1.1, DD=2.4, SVC=6, WALK=1.2, CLR=0.5, DOCKP=4.5, PATIO=30, RET=3;
+const EQ={
+  cb:{n:'Montacargas contrabalanceado',s:'Contrabalanceado',aisleMin:3.5,aisleRec:3.8,lift:6.0,v:1.6},
+  rt:{n:'Montacargas retráctil (reach)',s:'Retráctil',aisleMin:2.7,aisleRec:2.9,lift:10.0,v:1.4},
+  tri:{n:'Trilateral · pasillo muy angosto',s:'Trilateral',aisleMin:1.7,aisleRec:1.8,lift:12.0,v:1.2},
+  ap:{n:'Apilador eléctrico',s:'Apilador',aisleMin:2.4,aisleRec:2.6,lift:4.5,v:1.0}
+};
+const DEFAULT_COSTS={m2:22000,op:2600000,tp:1200000,rack:380000,cb:6500000,rt:8500000,tri:13000000,ap:3800000};
+const CASES=[
+  {id:'A',emp:'Víveres del Caribe S.A.S.',ciudad:'Riohacha',prod:'Abarrotes y consumo masivo: arroz, aceite, granos y enlatados',pal:'iso',hU:1.40,kg:850,inv:1400,tIn:10,pIn:22,tOut:18,pOut:10,vIn:6,vOut:8,lotL:110,lotW:95,
+   note:'Alta rotación y muchos despachos pequeños a tiendas de barrio. Los proveedores entregan solo entre 6:00 y 12:00.',
+   q:'Tu bodega tiene alta rotación y muchos despachos pequeños. ¿Cómo aplicarías la clasificación ABC dentro de tu layout? Señala dónde ubicarías los productos A.'},
+  {id:'B',emp:'Ferrecasa Guajira S.A.S.',ciudad:'Maicao',prod:'Materiales de construcción paletizados: cemento, cerámica y pegantes',pal:'iso',hU:1.10,kg:1400,inv:1300,tIn:5,pIn:24,tOut:20,pOut:6,vIn:8,vOut:8,lotL:90,lotW:80,
+   note:'Carga muy pesada. Las tractomulas del proveedor llegan sin cita durante todo el turno y los clientes son ferreterías y obras.',
+   q:'Cada pallet pesa 1.400 kg. ¿Qué implicaciones tiene ese peso para la estantería, el piso, el equipo de manutención y la seguridad del personal?'},
+  {id:'C',emp:'Bebidas La Península S.A.S.',ciudad:'Riohacha',prod:'Agua, gaseosas y jugos con fecha de vencimiento',pal:'iso',hU:1.50,kg:950,inv:2000,tIn:16,pIn:24,tOut:30,pOut:12,vIn:10,vOut:10,lotL:140,lotW:110,
+   note:'Producto perecedero (FEFO). Mucho volumen de entrada y salida: la operación puede necesitar dos turnos.',
+   q:'Es un producto con vencimiento y alto volumen. ¿Cómo garantiza tu layout el FEFO y cómo evitas que se crucen los flujos de recepción y despacho?'},
+  {id:'D',emp:'Repuestos Mineros del Norte S.A.S.',ciudad:'Albania',prod:'Repuestos y componentes importados para la minería de carbón',pal:'eur',hU:1.20,kg:600,inv:2600,tIn:3,pIn:18,tOut:6,pOut:5,vIn:8,vOut:8,lotL:80,lotW:70,
+   note:'Muchas referencias de baja rotación y alto valor, en europallet. El terreno es pequeño: hay que crecer en altura.',
+   q:'Tienes mucho inventario, poca rotación y un terreno pequeño. ¿Qué ganaste y qué perdiste al cambiar el equipo, el ancho de pasillo y la altura?'},
+  {id:'P',emp:'Caso propio',ciudad:'',prod:'Escribe aquí el producto de tu empresa',pal:'iso',hU:1.40,kg:800,inv:1000,tIn:6,pIn:20,tOut:10,pOut:10,vIn:8,vOut:8,lotL:100,lotW:90,
+   note:'Ingresa los datos de una empresa real o inventada y diseña su bodega.',
+   q:'Describe la empresa de tu caso y explica por qué tu layout es el adecuado para ella.'}
+];
+const DEFAULT_DESIGN={L:60,W:40,H:8,flow:'U',orient:'perp',eq:'cb',aisle:3.8,nMC:2,muR:2,muD:2,pr:10,pd:10,ops:8,turnos:1,hT:8};
+
+function pack(span,a){
+  const items=[],ais=[];
+  if(span<RD+a)return{items,ais};
+  if(span<2*RD+a){items.push({o:0,dep:RD,lines:1});ais.push({o:RD,w:a});return{items,ais};}
+  const n=Math.max(0,Math.floor((span-2*RD-a)/(a+DD)+1e-9));let o=0;
+  items.push({o,dep:RD,lines:1});o+=RD;
+  for(let i=0;i<n;i++){ais.push({o,w:a});o+=a;items.push({o,dep:DD,lines:2});o+=DD;}
+  ais.push({o,w:a});o+=a;items.push({o,dep:RD,lines:1});
+  return{items,ais};
+}
+
+function compute(c,d,k){
+  const eq=EQ[d.eq]||EQ.cb, L=+d.L, W=+d.W, H=+d.H, a=+d.aisle, MA=Math.max(a,3.5), pr=+d.pr, pd=+d.pd;
+  const muR=+d.muR, muD=+d.muD, nMC=+d.nMC, turnos=+d.turnos, hT=+d.hT, ops=+d.ops;
+  const g={zones:[],aisles:[],rows:[],docks:[],L,W,flow:d.flow};
+  const push=(kk,x,y,w,h,label)=>{if(w>0.05&&h>0.05)g.zones.push({k:kk,x,y,w,h,label});};
+  const offH=Math.min(8,W*.22), banH=Math.min(4,W*.1);
+  push('off',0,0,SVC,offH,'Oficina');
+  push('ban',0,offH,SVC,banH,'Baños y vestier');
+  let yy=offH+banH;
+  const bArea=Math.max(15,nMC*5), bH=Math.min(bArea/SVC,W*.3);
+  push('batt',0,W-bH,SVC,bH,'Carga de baterías');
+  const aveH=Math.min(6,Math.max(0,W-bH-yy));push('ave',0,yy,SVC,aveH,'Averías');yy+=aveH;
+  if(W-bH-yy>2)push('emp',0,yy,SVC,W-bH-yy,'Empaque');
+  push('walk',SVC,0,WALK,W,'Pasillo peatonal');
+  const x0=SVC+WALK;let rec,desp,S,dR,dD;
+  if(d.flow==='I'){
+    rec={x:x0,y:0,w:L-x0,h:pr};desp={x:x0,y:W-pd,w:L-x0,h:pd};
+    g.aisles.push({x:x0,y:pr,w:L-x0,h:MA,main:true},{x:x0,y:W-pd-MA,w:L-x0,h:MA,main:true});
+    S={x0,x1:L-CLR,y0:pr+MA,y1:W-pd-MA};dR={side:'F',a:x0,b:L};dD={side:'B',a:x0,b:L};
+  }else if(d.flow==='L'){
+    rec={x:x0,y:0,w:L-pd-x0,h:pr};desp={x:L-pd,y:0,w:pd,h:W};
+    g.aisles.push({x:x0,y:pr,w:L-pd-x0,h:MA,main:true},{x:L-pd-MA,y:pr+MA,w:MA,h:W-pr-MA,main:true});
+    S={x0,x1:L-pd-MA,y0:pr+MA,y1:W-CLR};dR={side:'F',a:x0,b:L-pd};dD={side:'R',a:0,b:W};
+  }else{
+    const Fd=Math.max(pr,pd),tot=(muR+muD)||1,xs=x0+(L-x0)*(muR+muD?muR/tot:.5);
+    rec={x:x0,y:0,w:xs-x0,h:Fd};desp={x:xs,y:0,w:L-xs,h:Fd};
+    g.aisles.push({x:x0,y:Fd,w:L-x0,h:MA,main:true});
+    S={x0,x1:L-CLR,y0:Fd+MA,y1:W-CLR};dR={side:'F',a:x0,b:xs};dD={side:'F',a:xs,b:L};
+  }
+  rec.k='rec';rec.label='Recepción';desp.k='desp';desp.label='Despacho';
+  if(rec.w>0&&rec.h>0)g.zones.push(rec);if(desp.w>0&&desp.h>0)g.zones.push(desp);
+  let cross=false;
+  const segs=(a0,a1)=>{const len=a1-a0;if(len>48){const m=(a0+a1)/2;cross=true;return{s:[[a0,m-MA/2],[m+MA/2,a1]],c:m-MA/2};}return{s:[[a0,a1]],c:null};};
+  if(S.x1-S.x0>2&&S.y1-S.y0>2){
+    if(d.orient==='par'){
+      let xr0=S.x0,xr1=S.x1;
+      if(d.flow!=='L'){g.aisles.push({x:S.x0,y:S.y0,w:MA,h:S.y1-S.y0,main:true});xr0=S.x0+MA;}
+      if(xr1-xr0>2){
+        const P=pack(S.y1-S.y0,a),sg=segs(xr0,xr1);
+        if(sg.c!==null)g.aisles.push({x:sg.c,y:S.y0,w:MA,h:S.y1-S.y0,cross:true});
+        P.ais.forEach(q=>g.aisles.push({x:xr0,y:S.y0+q.o,w:xr1-xr0,h:q.w}));
+        P.items.forEach(it=>sg.s.forEach(([s0,s1])=>{const bays=Math.floor((s1-s0)/BAY+1e-9);if(bays>0){const xs=d.flow==='L'?s1-bays*BAY:s0;g.rows.push({dir:'x',x:xs,y:S.y0+it.o,w:bays*BAY,h:it.dep,lines:it.lines,bays});}}));
+      }
+    }else{
+      const P=pack(S.x1-S.x0,a),sg=segs(S.y0,S.y1);
+      if(sg.c!==null)g.aisles.push({x:S.x0,y:sg.c,w:S.x1-S.x0,h:MA,cross:true});
+      P.ais.forEach(q=>g.aisles.push({x:S.x0+q.o,y:S.y0,w:q.w,h:S.y1-S.y0}));
+      P.items.forEach(it=>sg.s.forEach(([s0,s1])=>{const bays=Math.floor((s1-s0)/BAY+1e-9);if(bays>0)g.rows.push({dir:'y',x:S.x0+it.o,y:s0,w:it.dep,h:bays*BAY,lines:it.lines,bays});}));
+    }
+  }
+  const ppb=c.pal==='eur'?3:2, palW=c.pal==='eur'?0.8:1.0;
+  const pitch=Math.round((c.hU+0.25)*100)/100, roomTop=H-0.5-c.hU, topMax=Math.min(roomTop,eq.lift);
+  const levels=topMax<0?0:1+Math.floor(topMax/pitch+1e-9);
+  const liftLimited=eq.lift<roomTop;
+  let floorPos=0,lines=0;g.rows.forEach(r=>{floorPos+=r.lines*r.bays*ppb;lines+=r.lines;});
+  const pos=floorPos*levels, need=Math.ceil(c.inv/0.85);
+  const rc={x:rec.x+rec.w/2,y:rec.y+rec.h/2},dc={x:desp.x+desp.w/2,y:desp.y+desp.h/2};
+  let sR=0,sD=0,n=0;
+  g.rows.forEach(r=>{for(let i=0;i<r.bays;i++){const cx=r.dir==='y'?r.x+r.w/2:r.x+(i+.5)*BAY,cy=r.dir==='y'?r.y+(i+.5)*BAY:r.y+r.h/2;sR+=r.lines*(Math.abs(cx-rc.x)+Math.abs(cy-rc.y));sD+=r.lines*(Math.abs(cx-dc.x)+Math.abs(cy-dc.y));n+=r.lines;}});
+  const dRec=n?sR/n:0,dDesp=n?sD/n:0;
+  const hAvg=levels>0?(levels-1)*pitch/2:0, liftMin=(2*hAvg/0.3)/60;
+  const cIn=1+(2*dRec/eq.v)/60+liftMin, cOut=1+(2*dDesp/eq.v)/60+liftMin;
+  const movIn=c.tIn*c.pIn, movOut=c.tOut*c.pOut, mov=movIn+movOut;
+  const shiftMin=hT*60*0.8, dayMin=shiftMin*turnos;
+  const mcMin=movIn*cIn+movOut*cOut, mcReq=Math.max(1,Math.ceil(mcMin/dayMin-1e-9)), mcUtil=nMC>0?mcMin/(nMC*dayMin):Infinity;
+  const tR=15+c.pIn*1.0, tD=15+c.pOut*1.2;
+  const winR=Math.min(c.vIn,turnos*hT), winD=Math.min(c.vOut,turnos*hT);
+  const muRReq=c.tIn>0?Math.max(1,Math.ceil(c.tIn*tR/(winR*60*0.85)-1e-9)):0;
+  const muDReq=c.tOut>0?Math.max(1,Math.ceil(c.tOut*tD/(winD*60*0.85)-1e-9)):0;
+  const dockMin=c.tIn*tR+c.tOut*tD;
+  const opMC=Math.max(turnos,Math.ceil(mcMin/shiftMin-1e-9)), opDock=Math.max(turnos,Math.ceil(dockMin/shiftMin-1e-9)), opSup=turnos, opReq=opMC+opDock+opSup;
+  const fitOf=s=>Math.max(0,Math.floor((s.b-s.a-1)/DOCKP+1e-9));
+  const fitR=fitOf(dR),fitD=fitOf(dD);
+  const place=(seg,num,type,fit)=>{const tot=num*DOCKP,c0=(seg.a+seg.b)/2-tot/2+DOCKP/2;for(let i=0;i<num;i++)g.docks.push({side:seg.side,type,p:c0+i*DOCKP,i:i+1,over:num>fit});};
+  place(dR,muR,'R',fitR);place(dD,muD,'D',fitD);
+  const recA=Math.max(0,rec.w*rec.h), despA=Math.max(0,desp.w*desp.h);
+  const recNeed=muR*c.pIn*2.2, despNeed=muD*c.pOut*2.2*1.5;
+  const needX=L+RET+(d.flow==='L'?PATIO:RET), needY=W+PATIO+(d.flow==='I'?PATIO:RET);
+  const area=L*W;let rackFoot=0;g.rows.forEach(r=>rackFoot+=r.w*r.h);
+  const useA=area?rackFoot/area:0, posM2=area?pos/area:0, volU=area*H?pos*1.2*palW*c.hU/(area*H):0;
+  const kk=Object.assign({},DEFAULT_COSTS,k||{});
+  const cost={rent:area*kk.m2,mc:nMC*kk[d.eq],tp:(muR+muD)*kk.tp,op:ops*kk.op};
+  cost.total=cost.rent+cost.mc+cost.tp+cost.op;cost.perPal=mov?cost.total/(mov*26):0;cost.racks=pos*kk.rack*(d.eq==='tri'?1.15:1);
+  const f=(v,dd)=>Number(v).toLocaleString('es-CO',{minimumFractionDigits:dd||0,maximumFractionDigits:dd||0});
+  const checks=[];const C=(id,req,st,t)=>checks.push({id,req,st,t});
+  if(pos>=need)C('cap',true,pos>need*1.6?'warn':'ok',`Capacidad: ${f(pos)} posiciones para ${f(need)} necesarias (inventario máximo de ${f(c.inv)} pallets con 85 % de ocupación).${pos>need*1.6?' Está sobredimensionada: pagas espacio que no usas.':''}`);
+  else C('cap',true,'bad',`Capacidad insuficiente: ${f(pos)} posiciones de ${f(need)} necesarias. Faltan ${f(need-pos)}.`);
+  if(levels>0)C('lev',true,'ok',`${levels} niveles de almacenamiento, incluido el piso. Viga superior a ${f((levels-1)*pitch,2)} m. ${liftLimited?`Limita la elevación máxima del ${eq.s.toLowerCase()} (${f(eq.lift,1)} m).`:'Limita la altura libre con 0,5 m de distancia a los rociadores.'}`);
+  else C('lev',true,'bad',`La altura libre no alcanza: la unidad de carga mide ${f(c.hU,2)} m y debes dejar 0,5 m bajo los rociadores.`);
+  if(a<eq.aisleMin)C('ais',true,'bad',`Pasillo de ${f(a,1)} m: el ${eq.s.toLowerCase()} necesita mínimo ${f(eq.aisleMin,1)} m para girar con la carga.`);
+  else C('ais',true,a>eq.aisleRec+0.8?'warn':'ok',`Pasillo de ${f(a,1)} m para ${eq.s.toLowerCase()} (mínimo ${f(eq.aisleMin,1)} m).${a>eq.aisleRec+0.8?' Es más ancho de lo necesario: pierdes posiciones.':''}`);
+  C('muR',true,muR>=muRReq?'ok':'bad',`Muelles de recepción: ${muR} de ${muRReq} necesarios (${c.tIn} camiones de ${f(tR)} min en una ventana de ${f(winR,1)} h).`);
+  C('muD',true,muD>=muDReq?'ok':'bad',`Muelles de despacho: ${muD} de ${muDReq} necesarios (${c.tOut} camiones de ${f(tD)} min en una ventana de ${f(winD,1)} h).`);
+  C('fit',true,muR<=fitR&&muD<=fitD?'ok':'bad',muR<=fitR&&muD<=fitD?'Los muelles caben en el muro (4,5 m entre ejes de puerta).':`Los muelles no caben: en ese muro solo hay espacio para ${fitR} de recepción y ${fitD} de despacho (4,5 m entre ejes).`);
+  C('stR',true,recA>=recNeed?(recA>recNeed*3?'warn':'ok'):'bad',`Zona de recepción: ${f(recA)} m² para ${f(recNeed)} m² necesarios (pallets de los camiones en descargue e inspección).${recA>recNeed*3?' Sobredimensionada.':''}`);
+  C('stD',true,despA>=despNeed?(despA>despNeed*3?'warn':'ok'):'bad',`Zona de despacho: ${f(despA)} m² para ${f(despNeed)} m² necesarios (alistamiento y consolidación).${despA>despNeed*3?' Sobredimensionada.':''}`);
+  C('mc',true,nMC>=mcReq?(mcUtil<0.45?'warn':'ok'):'bad',nMC>=mcReq?`Montacargas: ${nMC} para ${mcReq} necesarios. Utilización ${f(mcUtil*100)} %.${mcUtil<0.45?' Están ociosos más de la mitad del tiempo.':''}`:`Montacargas insuficientes: ${nMC} de ${mcReq} necesarios. La carga de trabajo es ${f(mcMin/60,1)} horas-máquina al día.`);
+  C('op',true,ops>=opReq?(ops>opReq*1.4?'warn':'ok'):'bad',`Personal: ${ops} de ${opReq} personas necesarias (${opMC} montacarguistas, ${opDock} auxiliares de muelle y ${opSup} de inventario y supervisión).${ops>opReq*1.4?' Sobra personal.':''}`);
+  C('lot',true,needX<=c.lotL&&needY<=c.lotW?'ok':'bad',`Terreno: el diseño ocupa ${f(needX)} × ${f(needY)} m (edificio, patio de maniobras de 30 m y retiros de 3 m) y el lote mide ${f(c.lotL)} × ${f(c.lotW)} m.`);
+  const beamKg=ppb*c.kg;
+  C('kg',false,beamKg>2000?'warn':'ok',beamKg>2000?`Cada nivel de un módulo carga ${f(beamKg)} kg: supera los 2.000 kg de un par de vigas estándar. Necesitas vigas reforzadas y revisar la resistencia del piso.`:`Cada nivel de un módulo carga ${f(beamKg)} kg, dentro de los 2.000 kg de un par de vigas estándar.`);
+  if(d.flow==='U')C('flow',false,'info','Flujo en U: recepción y despacho comparten el frente. Separa las zonas con demarcación y programa horarios distintos para que no se crucen.');
+  else if(d.flow==='I')C('flow',false,'info','Flujo en I: la mercancía avanza en línea recta y no hay cruces, pero necesitas patio de maniobras en los dos frentes.');
+  else C('flow',false,'info','Flujo en L: separa recepción y despacho en muros distintos con un solo cambio de dirección.');
+  if(d.eq==='rt'||d.eq==='tri')C('eqn',false,'info',`El ${eq.s.toLowerCase()} no entra al camión: el cargue y descargue lo hacen los auxiliares con transpaleta eléctrica (incluido en costos).${d.eq==='tri'?' El trilateral necesita pasillo guiado y piso muy nivelado.':''}`);
+  if(cross)C('cross',false,'info','Las filas superan 48 m: se agregó un pasillo transversal que acorta recorridos y sirve de ruta de evacuación.');
+  const req=checks.filter(x=>x.req),pass=req.filter(x=>x.st!=='bad').length;
+  return{g,S,rec,desp,eq,levels,pitch,ppb,palW,pos,need,floorPos,lines,dRec,dDesp,cIn,cOut,movIn,movOut,mov,mcMin,mcReq,mcUtil,tR,tD,muRReq,muDReq,fitR,fitD,opReq,opMC,opDock,opSup,recA,despA,recNeed,despNeed,needX,needY,area,rackFoot,useA,posM2,volU,cost,checks,pass,total:req.length,cross,liftLimited,MA,winR,winD};
+}
+
+
+const $=id=>document.getElementById(id);
+const f=(v,d)=>Number(v).toLocaleString('es-CO',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});
+const cop=v=>'$ '+f(Math.round(v));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+const FLOWN={U:'En U',I:'En I',L:'En L'};
+const PALN={iso:'ISO 1200 × 1000 mm',eur:'Europallet 1200 × 800 mm'};
+
+/* ---------- state ---------- */
+const KEY='logilab-layout-v1';
+let st={caseId:'A',designs:{},custom:clone(CASES.find(c=>c.id==='P')),costs:clone(DEFAULT_COSTS),stu:{name:'',doc:'',ficha:''},ans:{},versions:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.designs)st=Object.assign(st,s);}catch(e){}
+let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}},250);}
+const getCase=()=>st.caseId==='P'?Object.assign({},CASES.find(c=>c.id==='P'),st.custom,{id:'P',q:CASES.find(c=>c.id==='P').q}):CASES.find(c=>c.id===st.caseId);
+function getDesign(){if(!st.designs[st.caseId])st.designs[st.caseId]=clone(DEFAULT_DESIGN);return st.designs[st.caseId];}
+let R=null;
+
+/* ---------- toast & clipboard & downloads ---------- */
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2400);}
+function copyText(t){const fb=$('fallback');const fall=()=>{fb.value=t;fb.hidden=false;fb.focus();fb.select();toast('Selecciona el texto y cópialo');};
+  try{navigator.clipboard.writeText(t).then(()=>{fb.hidden=true;toast('Entrega copiada');},fall);}catch(e){fall();}}
+const inClaude=!!(window.claude&&window.claude.use);let dl=null;
+if(inClaude){document.querySelectorAll('.dl-only').forEach(e=>e.hidden=true);
+  (async()=>{try{dl=await window.claude.use('downloads');}catch(e){dl=null;}document.querySelectorAll('.dl-only').forEach(e=>e.hidden=!dl);if(dl)$('fJson').closest('.sec').hidden=false;})();}
+async function saveFile(name,data,type){
+  if(inClaude){if(!dl)return;try{await dl.save({filename:name,data});toast('Archivo listo');}catch(e){if(!e||e.code!=='declined')toast('No se pudo guardar aquí. Usa Copiar.');}return;}
+  try{const blob=data instanceof Blob?data:new Blob([data],{type:type||'text/plain;charset=utf-8'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);toast('Archivo descargado');}catch(e){toast('No se pudo descargar. Usa Copiar.');}
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
+  ['caso','dis','cos','ent'].forEach(t=>$('p-'+t).hidden=t!==b.dataset.t);
+}));
+
+/* ---------- case panel ---------- */
+const CF=[['emp','Empresa','t'],['ciudad','Ciudad','t'],['prod','Producto','t'],['pal','Tipo de pallet','pal'],['hU','Altura de la unidad de carga (m)','n',0.3,2.5,0.05],['kg','Peso por pallet (kg)','n',50,2500,10],['inv','Inventario máximo (pallets)','n',10,60000,10],['tIn','Camiones de entrada por día','n',0,200,1],['pIn','Pallets por camión de entrada','n',1,40,1],['vIn','Ventana de recibo (horas)','n',1,24,0.5],['tOut','Camiones de salida por día','n',0,300,1],['pOut','Pallets por camión de salida','n',1,40,1],['vOut','Ventana de despacho (horas)','n',1,24,0.5],['lotL','Terreno: frente (m)','n',20,600,1],['lotW','Terreno: fondo (m)','n',20,600,1]];
+function renderCaseList(){
+  $('caseList').innerHTML=CASES.map(c=>`<button type="button" class="case" data-id="${c.id}" aria-pressed="${c.id===st.caseId}"><span class="lt">${c.id}</span><b>${esc(c.id==='P'?(st.custom.emp||'Caso propio'):c.emp)}</b><span>${esc(c.id==='P'?'Datos que tú escribes':c.ciudad+' · '+c.prod.split(':')[0])}</span></button>`).join('');
+  $('caseList').querySelectorAll('.case').forEach(b=>b.addEventListener('click',()=>{st.caseId=b.dataset.id;save();renderCaseList();renderBrief();loadDesignToForm();vbFit=true;update();}));
+}
+function renderBrief(){
+  const c=getCase();
+  if(c.id==='P'){
+    $('caseBrief').innerHTML=`<h2>Datos de tu caso</h2><div class="brief">${CF.map(([k,l,t,mn,mx,sp])=>t==='pal'?`<div class="fld"><label for="c_${k}">${l}</label><select id="c_${k}" data-c="${k}"><option value="iso">${PALN.iso}</option><option value="eur">${PALN.eur}</option></select></div>`:t==='t'?`<div class="fld"><label for="c_${k}">${l}</label><input type="text" id="c_${k}" data-c="${k}"></div>`:`<div class="fld"><label for="c_${k}">${l}</label><input type="number" id="c_${k}" data-c="${k}" min="${mn}" max="${mx}" step="${sp}"></div>`).join('')}</div>`;
+    $('caseBrief').querySelectorAll('[data-c]').forEach(el=>{const k=el.dataset.c;el.value=st.custom[k];el.addEventListener('input',()=>{const t=CF.find(x=>x[0]===k)[2];st.custom[k]=t==='n'?(parseFloat(el.value)||0):el.value;save();if(k==='emp')renderCaseList();update();});});
+  }else{
+    $('caseBrief').innerHTML=`<div class="brief"><h3>${esc(c.emp)}</h3><p class="note">${esc(c.ciudad)} · ${esc(c.prod)}</p><p class="note" style="color:var(--text)">${esc(c.note)}</p>
+    <dl class="data"><dt>Pallet</dt><dd>${PALN[c.pal]}</dd><dt>Altura de la unidad</dt><dd>${f(c.hU,2)} m</dd><dt>Peso por pallet</dt><dd>${f(c.kg)} kg</dd><dt>Inventario máximo</dt><dd>${f(c.inv)} pallets</dd>
+    <dt>Entradas</dt><dd>${c.tIn} camiones × ${c.pIn} pallets</dd><dt>Ventana de recibo</dt><dd>${f(c.vIn,1)} h</dd><dt>Salidas</dt><dd>${c.tOut} camiones × ${c.pOut} pallets</dd><dt>Ventana de despacho</dt><dd>${f(c.vOut,1)} h</dd><dt>Terreno disponible</dt><dd>${c.lotL} × ${c.lotW} m</dd></dl></div>`;
+  }
+  $('q3l').textContent='3. '+c.q;
+  const a=st.ans[st.caseId]||['','',''];['q1','q2','q3'].forEach((id,i)=>$(id).value=a[i]||'');
+}
+
+/* ---------- design form ---------- */
+$('dEq').innerHTML=Object.entries(EQ).map(([k,e])=>`<option value="${k}">${e.n}</option>`).join('');
+function loadDesignToForm(){
+  const d=getDesign();
+  document.querySelectorAll('[data-d]').forEach(el=>{el.value=d[el.dataset.d];});
+  document.querySelectorAll('#segFlow button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.flow===d.flow)));
+  document.querySelectorAll('#segOrient button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.orient===d.orient)));
+}
+const LIM={L:[20,250],W:[20,200],H:[4,18],aisle:[1.5,6],nMC:[0,30],muR:[0,20],muD:[0,20],pr:[3,40],pd:[3,40],ops:[0,300],turnos:[1,3],hT:[4,12]};
+document.querySelectorAll('[data-d]').forEach(el=>{
+  const k=el.dataset.d;
+  el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{
+    const d=getDesign();
+    if(k==='eq'){d.eq=el.value;d.aisle=EQ[d.eq].aisleRec;$('dA').value=d.aisle;}
+    else{let v=parseFloat(el.value);if(!isFinite(v))return;d[k]=clamp(v,LIM[k][0],LIM[k][1]);}
+    save();update();
+  });
+  el.addEventListener('blur',()=>{const d=getDesign();if(k!=='eq')el.value=d[k];});
+});
+document.querySelectorAll('#segFlow button').forEach(b=>b.addEventListener('click',()=>{getDesign().flow=b.dataset.flow;loadDesignToForm();save();vbFit=true;update();}));
+document.querySelectorAll('#segOrient button').forEach(b=>b.addEventListener('click',()=>{getDesign().orient=b.dataset.orient;loadDesignToForm();save();update();}));
+$('bReset').addEventListener('click',()=>{st.designs[st.caseId]=clone(DEFAULT_DESIGN);loadDesignToForm();save();vbFit=true;update();toast('Diseño inicial restablecido');});
+
+/* ---------- costs ---------- */
+const COSTF=[['m2','Arriendo de bodega por m² al mes'],['op','Costo mensual por operario (salario + prestaciones)'],['cb','Alquiler mensual · contrabalanceado'],['rt','Alquiler mensual · retráctil'],['tri','Alquiler mensual · trilateral'],['ap','Alquiler mensual · apilador eléctrico'],['tp','Alquiler mensual · transpaleta eléctrica (1 por muelle)'],['rack','Inversión por posición de rack selectivo']];
+function renderCosts(){$('costFields').innerHTML=COSTF.map(([k,l])=>`<div class="fld"><label for="k_${k}">${l}</label><input type="number" id="k_${k}" data-k="${k}" min="0" step="1000"></div>`).join('');
+  $('costFields').querySelectorAll('[data-k]').forEach(el=>{el.value=st.costs[el.dataset.k];el.addEventListener('input',()=>{const v=parseFloat(el.value);if(isFinite(v)&&v>=0){st.costs[el.dataset.k]=v;save();update();}});});}
+$('bCostReset').addEventListener('click',()=>{st.costs=clone(DEFAULT_COSTS);renderCosts();save();update();});
+
+/* ---------- student ---------- */
+[['sName','name'],['sDoc','doc'],['sFicha','ficha']].forEach(([id,k])=>{$(id).value=st.stu[k]||'';$(id).addEventListener('input',()=>{st.stu[k]=$(id).value;save();});});
+['q1','q2','q3'].forEach((id,i)=>$(id).addEventListener('input',()=>{const a=st.ans[st.caseId]||(st.ans[st.caseId]=['','','']);a[i]=$(id).value;save();}));
+
+/* ---------- colors ---------- */
+function P(){const cs=getComputedStyle(document.documentElement),g=n=>cs.getPropertyValue('--p-'+n).trim();
+  const o={};['lot','patio','floor','wall','rack','beam','aisle','mark','rec','desp','off','ban','ave','emp','batt','walk','truck','cab','text','dim','flow','bad','sky'].forEach(k=>o[k]=g(k));return o;}
+const ZN={rec:'Recepción',desp:'Despacho',off:'Oficina',ban:'Baños y vestier',ave:'Averías y devoluciones',emp:'Empaque y etiquetado',batt:'Carga de baterías',walk:'Pasillo peatonal'};
+function renderLegend(){const p=P();
+  const items=[['rack','Estantería (racks)'],['aisle','Pasillos'],['rec','Recepción'],['desp','Despacho'],['off','Oficina'],['ban','Baños y vestier'],['ave','Averías'],['emp','Empaque'],['batt','Carga de baterías'],['walk','Pasillo peatonal'],['patio','Patio de maniobras']];
+  $('legend').innerHTML=items.map(([k,l])=>`<span><i style="background:${p[k]}"></i>${l}</span>`).join('');}
+
+/* ---------- 2D plan ---------- */
+const svg=$('plan');let vb={x:0,y:0,w:100,h:100},base={x:0,y:0,w:100,h:100},vbFit=true;
+function applyVB(){svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);}
+function planSVG(R,c,d,p,forExport){
+  const g=R.g,L=g.L,W=g.W,bx=RET,byT=d.flow==='I'?PATIO:RET;
+  const vw=Math.max(c.lotL,R.needX),vh=Math.max(c.lotW,R.needY);
+  const fs=clamp(Math.max(vw,vh)/60,0.9,3.2);
+  const sx=x=>bx+x,sy=y=>byT+(W-y);
+  const r2=z=>({x:sx(z.x),y:sy(z.y+z.h),w:z.w,h:z.h});
+  const n=v=>Math.round(v*100)/100;
+  let s=`<defs><marker id="arw" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="${p.flow}"/></marker></defs>`;
+  s+=`<rect x="${-6}" y="${-6}" width="${vw+12}" height="${vh+16}" fill="${p.lot}"/>`;
+  const lotOk=R.needX<=c.lotL&&R.needY<=c.lotW;
+  // patios
+  const pts=[{x:bx,y:byT+W,w:L+(d.flow==='L'?PATIO:0),h:PATIO}];
+  if(d.flow==='I')pts.push({x:bx,y:byT-PATIO,w:L,h:PATIO});
+  if(d.flow==='L')pts.push({x:bx+L,y:byT,w:PATIO,h:W});
+  pts.forEach(q=>s+=`<rect x="${n(q.x)}" y="${n(q.y)}" width="${n(q.w)}" height="${n(q.h)}" fill="${p.patio}"/>`);
+  pts.forEach(q=>s+=`<text x="${n(q.x+q.w/2)}" y="${n(q.y+q.h-fs*1.2)}" font-size="${n(fs*.85)}" fill="${p.text}" opacity=".7" text-anchor="middle" font-family="Barlow,sans-serif" font-weight="600">Patio de maniobras · 30 m</text>`);
+  // trucks
+  const truck=(x,y,horiz,flip)=>{const tl=13.6,cl=2.6,w=2.5;
+    if(!horiz){const ty=flip?y-tl-cl:y;s+=`<rect x="${n(x-w/2)}" y="${n(flip?ty+cl:ty)}" width="${w}" height="${tl}" rx=".2" fill="${p.truck}"/><rect x="${n(x-w/2)}" y="${n(flip?ty:ty+tl+.2)}" width="${w}" height="${cl}" rx=".4" fill="${p.cab}"/>`;}
+    else{s+=`<rect x="${n(x)}" y="${n(y-w/2)}" width="${tl}" height="${w}" rx=".2" fill="${p.truck}"/><rect x="${n(x+tl+.2)}" y="${n(y-w/2)}" width="${cl}" height="${w}" rx=".4" fill="${p.cab}"/>`;}};
+  g.docks.forEach(k=>{if(k.over)return;
+    if(k.side==='F')truck(sx(k.p),sy(0)+.9,false,false);
+    else if(k.side==='B')truck(sx(k.p),sy(W)-.9,false,true);
+    else truck(sx(L)+.9,sy(k.p),true);});
+  // building
+  s+=`<rect x="${bx}" y="${byT}" width="${n(L)}" height="${n(W)}" fill="${p.floor}"/>`;
+  g.zones.forEach(z=>{const q=r2(z);s+=`<rect x="${n(q.x)}" y="${n(q.y)}" width="${n(q.w)}" height="${n(q.h)}" fill="${p[z.k]}"${z.k==='walk'?' opacity=".85"':''}/>`;});
+  g.aisles.forEach(a=>{const q=r2(a);s+=`<rect x="${n(q.x)}" y="${n(q.y)}" width="${n(q.w)}" height="${n(q.h)}" fill="${p.aisle}"/>`;
+    if(a.main||a.cross){const hz=q.w>=q.h;s+=hz?`<line x1="${n(q.x+.5)}" y1="${n(q.y+q.h/2)}" x2="${n(q.x+q.w-.5)}" y2="${n(q.y+q.h/2)}" stroke="${p.mark}" stroke-width=".14" stroke-dasharray="1.2 .9"/>`:`<line x1="${n(q.x+q.w/2)}" y1="${n(q.y+.5)}" x2="${n(q.x+q.w/2)}" y2="${n(q.y+q.h-.5)}" stroke="${p.mark}" stroke-width=".14" stroke-dasharray="1.2 .9"/>`;}});
+  let bayPath='',fluePath='';
+  g.rows.forEach(r=>{const q=r2(r);s+=`<rect x="${n(q.x)}" y="${n(q.y)}" width="${n(q.w)}" height="${n(q.h)}" fill="${p.rack}"/>`;
+    for(let i=0;i<=r.bays;i++){if(r.dir==='y'){const yy=n(q.y+i*BAY);bayPath+=`M${n(q.x)} ${yy}H${n(q.x+q.w)}`;}else{const xx=n(q.x+i*BAY);bayPath+=`M${xx} ${n(q.y)}V${n(q.y+q.h)}`;}}
+    if(r.lines===2){if(r.dir==='y'){const xm=n(q.x+q.w/2);fluePath+=`M${xm} ${n(q.y)}V${n(q.y+q.h)}`;}else{const ym=n(q.y+q.h/2);fluePath+=`M${n(q.x)} ${ym}H${n(q.x+q.w)}`;}}});
+  if(bayPath)s+=`<path d="${bayPath}" stroke="${p.beam}" stroke-width=".11" fill="none"/>`;
+  if(fluePath)s+=`<path d="${fluePath}" stroke="${p.floor}" stroke-width=".2" fill="none"/>`;
+  s+=`<rect x="${bx}" y="${byT}" width="${n(L)}" height="${n(W)}" fill="none" stroke="${p.wall}" stroke-width=".4"/>`;
+  // docks
+  g.docks.forEach(k=>{const col=k.over?p.bad:(k.type==='R'?p.rec:p.desp),lab=(k.type==='R'?'R':'D')+k.i;
+    if(k.side==='F'||k.side==='B'){const yy=k.side==='F'?sy(0):sy(W);s+=`<rect x="${n(sx(k.p)-1.5)}" y="${n(yy-.35)}" width="3" height=".7" fill="${col}" stroke="${p.wall}" stroke-width=".12"/>`;}
+    else{s+=`<rect x="${n(sx(L)-.35)}" y="${n(sy(k.p)-1.5)}" width=".7" height="3" fill="${col}" stroke="${p.wall}" stroke-width=".12"/>`;}});
+  // labels
+  const T=(x,y,str,size,opt)=>`<text x="${n(x)}" y="${n(y)}" font-size="${n(size)}" fill="${(opt&&opt.fill)||p.text}" text-anchor="middle" dominant-baseline="middle" font-family="Barlow,sans-serif" font-weight="${(opt&&opt.w)||600}"${opt&&opt.rot?` transform="rotate(${opt.rot} ${n(x)} ${n(y)})"`:''}${opt&&opt.halo?` stroke="${opt.halo}" stroke-width="${n(size*.28)}" paint-order="stroke" stroke-linejoin="round"`:''}>${esc(str)}</text>`;
+  g.zones.forEach(z=>{const q=r2(z),cx=q.x+q.w/2,cy=q.y+q.h/2,tall=q.h>q.w*1.6,len=tall?q.h:q.w,thick=tall?q.w:q.h;
+    const name=z.k==='rec'?'RECEPCIÓN':z.k==='desp'?'DESPACHO':(ZN[z.k]||z.label);
+    let sz=Math.min(fs*(z.k==='rec'||z.k==='desp'?1.15:.8),thick*.32,len/(name.length*.55));if(sz<.45)return;
+    const rot=tall?-90:0;
+    if(z.k==='walk'){s+=T(cx,cy,name,Math.min(sz,.75),{rot});return;}
+    const two=thick>sz*3.2;
+    s+=T(cx,cy-(two?sz*.62:0),name,sz,{rot,w:700});
+    if(two)s+=T(tall?cx+sz*1.24:cx,tall?cy:cy+sz*.7,`${f(z.w*z.h)} m²`,sz*.78,{rot,w:500});});
+  g.docks.forEach(k=>{const lab=(k.type==='R'?'R':'D')+k.i,sz=Math.min(fs*.75,1.1);
+    if(k.side==='F')s+=T(sx(k.p)+2.6,sy(0)+1.6,lab,sz,{w:700});else if(k.side==='B')s+=T(sx(k.p)+2.6,sy(W)-1.6,lab,sz,{w:700});else s+=T(sx(L)+1.6,sy(k.p)-2.4,lab,sz,{w:700});});
+  // storage callout + flow
+  if(R.S&&R.S.x1>R.S.x0&&R.S.y1>R.S.y0){const cx=sx((R.S.x0+R.S.x1)/2),cy=sy((R.S.y0+R.S.y1)/2);
+    const rc={x:sx(R.rec.x+R.rec.w/2),y:sy(R.rec.y+R.rec.h/2)},dc={x:sx(R.desp.x+R.desp.w/2),y:sy(R.desp.y+R.desp.h/2)};
+    if(g.rows.length){
+      const m1={x:(rc.x+cx)/2,y:(rc.y+cy)/2},m2={x:(cx+dc.x)/2,y:(cy+dc.y)/2};
+      s+=`<path d="M${n(rc.x)} ${n(rc.y)}L${n(m1.x)} ${n(m1.y)}" stroke="${p.flow}" stroke-width="${n(fs*.2)}" fill="none" stroke-dasharray="${n(fs*.6)} ${n(fs*.4)}" marker-end="url(#arw)"/>`;
+      s+=`<path d="M${n(m2.x)} ${n(m2.y)}L${n(dc.x)} ${n(dc.y)}" stroke="${p.flow}" stroke-width="${n(fs*.2)}" fill="none" stroke-dasharray="${n(fs*.6)} ${n(fs*.4)}" marker-end="url(#arw)"/>`;
+      s+=T(cx,cy-fs*.75,`${f(R.pos)} posiciones`,fs*1.25,{w:700,halo:p.floor});
+      s+=T(cx,cy+fs*.75,`${R.levels} niveles · ${R.lines} filas · ${R.eq.s.toLowerCase()}`,fs*.85,{w:600,halo:p.floor});
+    }else s+=T(cx,cy,'No caben racks: revisa medidas y pasillos',fs,{w:700,fill:p.bad,halo:p.floor});
+  }
+  // dims
+  s+=T(bx+L/2,byT-fs*(d.flow==='I'?.9:.9),`Frente ${f(L)} m`,fs*.85,{w:600,fill:p.dim,halo:p.lot});
+  s+=T(bx-fs*.9,byT+W/2,`Fondo ${f(W)} m · altura ${f(d.H,1)} m`,fs*.85,{w:600,fill:p.dim,rot:-90,halo:p.lot});
+  // lot outline
+  s+=`<rect x="0" y="0" width="${c.lotL}" height="${c.lotW}" fill="none" stroke="${lotOk?p.dim:p.bad}" stroke-width="${n(fs*.12)}" stroke-dasharray="${n(fs*.7)} ${n(fs*.45)}"/>`;
+  s+=`<text x="0" y="${n(-fs*.7)}" font-size="${n(fs*.8)}" fill="${lotOk?p.dim:p.bad}" font-family="Barlow,sans-serif" font-weight="600">Lote ${f(c.lotL)} × ${f(c.lotW)} m${lotOk?'':' · el diseño no cabe'}</text>`;
+  // scale bar
+  const sbY=vh+fs*1.6;s+=`<path d="M0 ${n(sbY)}h10 M0 ${n(sbY-.6)}v1.2 M5 ${n(sbY-.4)}v.8 M10 ${n(sbY-.6)}v1.2" stroke="${p.text}" stroke-width=".18" fill="none"/>`;
+  s+=`<text x="11" y="${n(sbY)}" font-size="${n(fs*.75)}" fill="${p.text}" dominant-baseline="middle" font-family="Barlow,sans-serif">10 m</text>`;
+  return{s,vw,vh,fs};
+}
+function renderPlan(){
+  const c=getCase(),d=getDesign(),p=P();const out=planSVG(R,c,d,p);
+  svg.innerHTML=out.s;base={x:-5,y:-5,w:out.vw+10,h:out.vh+5+out.fs*3};
+  if(vbFit){vb=Object.assign({},base);vbFit=false;}applyVB();
+}
+function zoomAt(fac,cx,cy){const nw=clamp(vb.w*fac,10,base.w*3),k=nw/vb.w;vb.x=cx-(cx-vb.x)*k;vb.y=cy-(cy-vb.y)*k;vb.w=nw;vb.h=vb.h*k;applyVB();}
+function toSvg(ex,ey){const pt=svg.createSVGPoint();pt.x=ex;pt.y=ey;const m=svg.getScreenCTM();return m?pt.matrixTransform(m.inverse()):{x:vb.x+vb.w/2,y:vb.y+vb.h/2};}
+svg.addEventListener('wheel',e=>{e.preventDefault();const q=toSvg(e.clientX,e.clientY);zoomAt(Math.exp(e.deltaY*.0015),q.x,q.y);},{passive:false});
+const sp=new Map();let pinch=null;
+svg.addEventListener('pointerdown',e=>{svg.setPointerCapture(e.pointerId);sp.set(e.pointerId,{x:e.clientX,y:e.clientY});pinch=null;});
+svg.addEventListener('pointermove',e=>{const q=sp.get(e.pointerId);if(!q)return;const r=svg.getBoundingClientRect(),sc=Math.max(vb.w/r.width,vb.h/r.height);
+  if(sp.size===1){vb.x-=(e.clientX-q.x)*sc;vb.y-=(e.clientY-q.y)*sc;q.x=e.clientX;q.y=e.clientY;applyVB();}
+  else{q.x=e.clientX;q.y=e.clientY;const [a,b]=[...sp.values()],dist=Math.hypot(a.x-b.x,a.y-b.y),mid=toSvg((a.x+b.x)/2,(a.y+b.y)/2);if(pinch)zoomAt(pinch/Math.max(1,dist),mid.x,mid.y);pinch=dist;}});
+const endP=e=>{sp.delete(e.pointerId);pinch=null;};svg.addEventListener('pointerup',endP);svg.addEventListener('pointercancel',endP);
+$('zIn').addEventListener('click',()=>{if(view3d){if(T3)T3.goal.r=clamp(T3.goal.r*.8,15,600);return;}zoomAt(.75,vb.x+vb.w/2,vb.y+vb.h/2);});
+$('zOut').addEventListener('click',()=>{if(view3d){if(T3)T3.goal.r=clamp(T3.goal.r*1.25,15,600);return;}zoomAt(1.33,vb.x+vb.w/2,vb.y+vb.h/2);});
+$('zFit').addEventListener('click',()=>{if(view3d){if(T3)fit3D();return;}vb=Object.assign({},base);applyVB();});
+
+/* ---------- results ---------- */
+function renderResults(){
+  const c=getCase(),d=getDesign(),ok=R.pass===R.total;
+  const tile=(l,v,sub,bad)=>`<div class="tile${bad?' bad':''}"><span>${l}</span><b>${v}${sub?` <small>${sub}</small>`:''}</b></div>`;
+  const ic={ok:'✓',bad:'✕',warn:'!',info:'i'};
+  const req=R.checks.filter(x=>x.req),ext=R.checks.filter(x=>!x.req);
+  $('results').innerHTML=`
+  <div class="score ${ok?'ok':'bad'}"><div class="big"><b>${R.pass}/${R.total}</b><span>requisitos cumplidos</span></div><div class="meter"><i style="width:${(R.pass/R.total*100).toFixed(0)}%"></i></div>
+  <p>${ok?'Diseño viable. Ahora baja el costo mensual sin perder ningún requisito y guarda la versión.':'Revisa los requisitos marcados en rojo y ajusta el diseño.'}</p></div>
+  <div class="sec"><h2>Indicadores del diseño</h2><div class="tiles">
+    ${tile('Posiciones de almacenamiento',f(R.pos),'de '+f(R.need),R.pos<R.need)}
+    ${tile('Niveles de rack',R.levels,'paso '+f(R.pitch,2)+' m',R.levels<1)}
+    ${tile('Área construida',f(R.area),'m²')}
+    ${tile('Área ocupada por racks',f(R.useA*100),'%')}
+    ${tile('Muelles necesarios',`${R.muRReq} + ${R.muDReq}`,'rec. + desp.',d.muR<R.muRReq||d.muD<R.muDReq)}
+    ${tile('Montacargas necesarios',R.mcReq,'tienes '+d.nMC,d.nMC<R.mcReq)}
+    ${tile('Personal necesario',R.opReq,'tienes '+d.ops,d.ops<R.opReq)}
+    ${tile('Movimientos por día',f(R.mov),'pallets')}
+    ${tile('Distancia muelle–rack',f((R.dRec+R.dDesp)/2,1),'m prom.')}
+    ${tile('Ciclo por pallet',f(R.mov?R.mcMin/R.mov:0,2),'min')}
+  </div></div>
+  <div class="sec"><h2>Requisitos</h2><ul class="checks">${req.map(x=>`<li><span class="ic ${x.st}">${ic[x.st]}</span><span>${esc(x.t)}</span></li>`).join('')}</ul></div>
+  <div class="sec"><h2>Observaciones</h2><ul class="checks">${ext.map(x=>`<li><span class="ic ${x.st}">${ic[x.st]}</span><span>${esc(x.t)}</span></li>`).join('')}</ul></div>
+  <div class="sec"><h2>Costo mensual de operación</h2><div class="tbl"><table class="cost"><tbody>
+    <tr><td>Arriendo (${f(R.area)} m²)</td><td>${cop(R.cost.rent)}</td></tr>
+    <tr><td>Montacargas (${d.nMC} × ${R.eq.s.toLowerCase()})</td><td>${cop(R.cost.mc)}</td></tr>
+    <tr><td>Transpaletas (${d.muR+d.muD} muelles)</td><td>${cop(R.cost.tp)}</td></tr>
+    <tr><td>Personal (${d.ops} operarios)</td><td>${cop(R.cost.op)}</td></tr>
+    <tr class="tot"><td>Total mensual</td><td>${cop(R.cost.total)}</td></tr>
+    <tr><td>Costo por pallet movido</td><td>${cop(R.cost.perPal)}</td></tr>
+    <tr><td>Inversión en estantería</td><td>${cop(R.cost.racks)}</td></tr>
+  </tbody></table></div><p class="note">Costo por pallet = total mensual ÷ (movimientos diarios × 26 días).</p></div>`;
+  const ps=$('pillScore');ps.className='pill '+(ok?'ok':'bad');ps.innerHTML=`Cumple <b>${R.pass}/${R.total}</b>`;
+  $('pillCost').innerHTML=`Costo <b>${cop(R.cost.total)}</b>/mes`;
+  const eq=EQ[d.eq];$('aisleHint').textContent=`Mínimo ${f(eq.aisleMin,1)} m · usual ${f(eq.aisleRec,1)} m · eleva hasta ${f(eq.lift,1)} m`;
+  $('flowNote').textContent=d.flow==='U'?'En U, recepción y despacho comparten el frente: la zona usa la mayor de las dos profundidades y se reparte según el número de muelles.':d.flow==='I'?'En I, la recepción va en el frente y el despacho en el muro del fondo.':'En L, la recepción va en el frente y el despacho en el muro derecho (la profundidad de despacho es su ancho).';
+}
+
+/* ---------- versions ---------- */
+function renderVersions(){
+  const vs=st.versions[st.caseId]||[];
+  $('vEmpty').hidden=vs.length>0;
+  $('vBody').innerHTML=vs.map((v,i)=>`<tr><td><b>${esc(v.name)}</b></td><td>${FLOWN[v.d.flow]}</td><td class="n">${f(v.d.L)}×${f(v.d.W)}×${f(v.d.H,1)}</td><td>${EQ[v.d.eq].s}</td><td class="n">${f(v.pos)}</td><td class="n">${v.pass}/${v.total}</td><td class="n">${cop(v.cost)}</td><td><button type="button" class="btn" data-lv="${i}">Cargar</button></td></tr>`).join('');
+  $('vBody').querySelectorAll('[data-lv]').forEach(b=>b.addEventListener('click',()=>{const v=vs[+b.dataset.lv];st.designs[st.caseId]=clone(v.d);loadDesignToForm();save();vbFit=true;update();toast(`${v.name} cargada`);}));
+}
+function saveVersion(){const vs=st.versions[st.caseId]||(st.versions[st.caseId]=[]);if(vs.length>=12)vs.shift();
+  const num=(vs.length?parseInt(vs[vs.length-1].name.slice(1))||vs.length:0)+1;
+  vs.push({name:'V'+num,d:clone(getDesign()),pos:R.pos,pass:R.pass,total:R.total,cost:Math.round(R.cost.total),at:new Date().toISOString()});save();renderVersions();toast(`Versión V${num} guardada`);}
+$('bSaveV').addEventListener('click',saveVersion);$('bSaveV2').addEventListener('click',saveVersion);
+let clearArm=0;$('bClearV').addEventListener('click',()=>{const b=$('bClearV');if(Date.now()-clearArm<4000){st.versions[st.caseId]=[];save();renderVersions();b.textContent='Borrar versiones';clearArm=0;toast('Versiones borradas');}else{clearArm=Date.now();b.textContent='Toca otra vez para borrar';setTimeout(()=>{b.textContent='Borrar versiones';},4000);}});
+
+/* ---------- submission ---------- */
+function submission(){
+  const c=getCase(),d=getDesign(),now=new Date(),a=st.ans[st.caseId]||['','',''],vs=st.versions[st.caseId]||[];
+  const mark={ok:'[OK]',bad:'[NO]',warn:'[OK, con observación]',info:'[i]'};
+  let t=`LOGILAB LAYOUT · DISEÑO DE BODEGA\nAprendiz: ${st.stu.name||'(sin nombre)'} | Documento: ${st.stu.doc||'-'} | Ficha: ${st.stu.ficha||'-'}\nFecha: ${now.toLocaleDateString('es-CO')} ${now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}\n`;
+  t+=`\nCASO ${c.id}: ${c.emp}${c.ciudad?' ('+c.ciudad+')':''}\n${c.prod}\nPallet ${PALN[c.pal]}, unidad de ${f(c.hU,2)} m y ${f(c.kg)} kg. Inventario máximo ${f(c.inv)} pallets.\nEntradas ${c.tIn} camiones × ${c.pIn} pallets (ventana ${f(c.vIn,1)} h). Salidas ${c.tOut} camiones × ${c.pOut} pallets (ventana ${f(c.vOut,1)} h). Terreno ${c.lotL} × ${c.lotW} m.\n`;
+  t+=`\nDISEÑO\nEdificio ${f(d.L)} × ${f(d.W)} m, altura libre ${f(d.H,1)} m. Flujo ${FLOWN[d.flow]}. Racks ${d.orient==='perp'?'perpendiculares':'paralelos'} a los muelles.\nEquipo: ${d.nMC} × ${EQ[d.eq].n}, pasillo de ${f(d.aisle,1)} m.\nMuelles: ${d.muR} de recepción y ${d.muD} de despacho. Zonas: recepción ${f(d.pr,1)} m, despacho ${f(d.pd,1)} m.\nPersonal: ${d.ops} operarios, ${d.turnos} turno(s) de ${f(d.hT,1)} h.\n`;
+  t+=`\nRESULTADOS (${R.pass}/${R.total} requisitos)\nPosiciones ${f(R.pos)} de ${f(R.need)} · ${R.levels} niveles · ${R.lines} filas · uso del área ${f(R.useA*100)} %\nNecesarios: ${R.muRReq} muelles de recepción, ${R.muDReq} de despacho, ${R.mcReq} montacargas, ${R.opReq} personas.\nMovimientos ${f(R.mov)} pallets/día · ciclo ${f(R.mov?R.mcMin/R.mov:0,2)} min · distancia promedio ${f((R.dRec+R.dDesp)/2,1)} m\n`;
+  R.checks.forEach(x=>t+=`${mark[x.st]} ${x.t}\n`);
+  t+=`\nCOSTOS\nArriendo ${cop(R.cost.rent)} · Montacargas ${cop(R.cost.mc)} · Transpaletas ${cop(R.cost.tp)} · Personal ${cop(R.cost.op)}\nTotal mensual ${cop(R.cost.total)} · Costo por pallet ${cop(R.cost.perPal)} · Inversión en racks ${cop(R.cost.racks)}\n`;
+  if(vs.length){t+=`\nVERSIONES\n`;vs.forEach(v=>t+=`${v.name}: ${FLOWN[v.d.flow]}, ${f(v.d.L)}×${f(v.d.W)}×${f(v.d.H,1)} m, ${EQ[v.d.eq].s}, ${f(v.pos)} posiciones, cumple ${v.pass}/${v.total}, ${cop(v.cost)}/mes\n`);}
+  t+=`\nPREGUNTAS\n1. ¿Qué tipo de flujo y qué equipo escogiste? ¿Por qué?\n${a[0]||'(sin respuesta)'}\n2. ¿Qué requisito fue el más difícil de cumplir y cómo lo resolviste?\n${a[1]||'(sin respuesta)'}\n3. ${c.q}\n${a[2]||'(sin respuesta)'}\n\nGenerado con LogiLab Layout · LogiLab SENA`;
+  return t;
+}
+const slug=s=>(s||'aprendiz').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').toLowerCase();
+$('bCopy').addEventListener('click',()=>copyText(submission()));
+$('waLink').addEventListener('click',()=>{$('waLink').href='https://wa.me/?text='+encodeURIComponent(submission());});
+$('mailLink').addEventListener('click',()=>{const c=getCase();let body=submission();if(body.length>1800)body=body.slice(0,1800)+'\n…(texto recortado: pega la entrega completa con el botón Copiar)';$('mailLink').href='mailto:?subject='+encodeURIComponent(`Layout de bodega · Caso ${c.id} · ${st.stu.name||'aprendiz'}`)+'&body='+encodeURIComponent(body);});
+$('bTxt').addEventListener('click',()=>saveFile(`layout-caso-${getCase().id}-${slug(st.stu.name)}.txt`,submission()));
+$('bJson').addEventListener('click',()=>saveFile(`diseno-layout-${slug(st.stu.name)}.json`,JSON.stringify({app:'logilab-layout',v:1,st},null,1),'application/json'));
+$('fJson').addEventListener('change',()=>{const file=$('fJson').files[0];if(!file)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o||o.app!=='logilab-layout'||!o.st)throw 0;st=Object.assign(st,o.st);save();boot();toast('Diseño cargado');}catch(e){toast('Ese archivo no es un diseño de LogiLab Layout');}};rd.readAsText(file);$('fJson').value='';});
+$('bPng').addEventListener('click',()=>{
+  const c=getCase(),d=getDesign(),p=P();const out=planSVG(R,c,d,p,true);
+  const bw=out.vw+10,bh=out.vh+5+out.fs*3,W=1800,H=Math.round(W*bh/bw),head=96;
+  const src=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5 -5 ${bw} ${bh}" width="${W}" height="${H}">${out.s}</svg>`;
+  const img=new Image();img.onload=()=>{const cv=document.createElement('canvas');cv.width=W;cv.height=H+head;const x=cv.getContext('2d');
+    x.fillStyle=p.lot;x.fillRect(0,0,W,H+head);x.fillStyle=p.text;x.font='700 34px "Barlow Condensed", Arial, sans-serif';x.fillText(`LogiLab Layout · Caso ${c.id}: ${c.emp}`,28,44);
+    x.font='500 20px Barlow, Arial, sans-serif';x.fillStyle=p.dim;x.fillText(`${st.stu.name||'Aprendiz'} · Ficha ${st.stu.ficha||'-'} · ${R.pass}/${R.total} requisitos · ${f(R.pos)} posiciones · ${cop(R.cost.total)}/mes · ${new Date().toLocaleDateString('es-CO')}`,28,78);
+    x.drawImage(img,0,head,W,H);cv.toBlob(b=>{if(b)saveFile(`plano-caso-${c.id}-${slug(st.stu.name)}.png`,b,'image/png');else toast('No se pudo crear la imagen');},'image/png');};
+  img.onerror=()=>toast('No se pudo crear la imagen');img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(src);
+});
+
+/* ---------- 3D ---------- */
+let view3d=false,T3=null,dirty3d=true;
+document.querySelectorAll('.vtabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.vtabs button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
+  view3d=b.dataset.v==='3d';svg.style.display=view3d?'none':'block';$('three').hidden=!view3d;
+  $('viewHint').textContent=view3d?'Arrastra para girar · rueda o pellizco para acercar · clic derecho para mover':'Arrastra para mover · rueda o pellizco para acercar';
+  if(view3d){if(init3D()){if(dirty3d)build3D();resize3D();if(!T3.raf)loop3D();}}
+}));
+function init3D(){
+  if(T3)return true;
+  if(typeof THREE==='undefined'){$('three').innerHTML='<div class="stage-msg">No se pudo cargar la librería 3D. Revisa tu conexión a internet.</div>';return false;}
+  let r;try{r=new THREE.WebGLRenderer({antialias:true});}catch(e){$('three').innerHTML='<div class="stage-msg">Este navegador no puede mostrar 3D (WebGL). Usa el plano 2D.</div>';return false;}
+  r.setPixelRatio(Math.min(window.devicePixelRatio||1,2));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.outputEncoding=THREE.sRGBEncoding;
+  $('three').appendChild(r.domElement);
+  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(40,1,.5,2000);
+  scene.add(new THREE.HemisphereLight(0xf2f6ff,0x56604f,.8));
+  const sun=new THREE.DirectionalLight(0xfff3e0,.9);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0005;scene.add(sun,sun.target);
+  T3={r,scene,camera,sun,group:null,raf:0,cam:{t:new THREE.Vector3(),r:120,th:.5,ph:.95},goal:{t:new THREE.Vector3(),r:120,th:.5,ph:.95}};
+  const el=r.domElement,ptr=new Map();let pz=null;
+  el.addEventListener('pointerdown',e=>{el.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,pan:e.button===2||e.shiftKey});pz=null;});
+  el.addEventListener('pointermove',e=>{const q=ptr.get(e.pointerId);if(!q)return;const dx=e.clientX-q.x,dy=e.clientY-q.y;q.x=e.clientX;q.y=e.clientY;const G=T3.goal;
+    if(ptr.size===1){if(q.pan){const s=G.r*.0016,rx=Math.cos(G.th),rz=-Math.sin(G.th),fx=-Math.sin(G.th),fz=-Math.cos(G.th);G.t.x+=-rx*dx*s+fx*dy*s;G.t.z+=-rz*dx*s+fz*dy*s;T3.cam.t.copy(G.t);}
+      else{G.th-=dx*.006;G.ph=clamp(G.ph-dy*.005,.15,1.45);T3.cam.th=G.th;T3.cam.ph=G.ph;}}
+    else if(ptr.size===2){const [a,b]=[...ptr.values()],dd=Math.hypot(a.x-b.x,a.y-b.y);if(pz)G.r=clamp(G.r*pz/Math.max(1,dd),15,600);pz=dd;}});
+  const end=e=>{ptr.delete(e.pointerId);pz=null;};el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+  el.addEventListener('wheel',e=>{e.preventDefault();T3.goal.r=clamp(T3.goal.r*Math.exp(e.deltaY*.0012),15,600);},{passive:false});
+  el.addEventListener('contextmenu',e=>e.preventDefault());
+  window.addEventListener('resize',resize3D);
+  return true;
+}
+function resize3D(){if(!T3)return;const h=$('three'),w=h.clientWidth,hh=h.clientHeight;if(!w||!hh)return;T3.r.setSize(w,hh,false);T3.camera.aspect=w/hh;T3.camera.updateProjectionMatrix();}
+function loop3D(){if(!view3d||!T3){if(T3)T3.raf=0;return;}const C=T3.cam,G=T3.goal,k=.12;C.t.lerp(G.t,k);C.r+=(G.r-C.r)*k;C.th+=(G.th-C.th)*k;C.ph+=(G.ph-C.ph)*k;
+  const s=Math.sin(C.ph);T3.camera.position.set(C.t.x+C.r*s*Math.sin(C.th),C.t.y+C.r*Math.cos(C.ph),C.t.z+C.r*s*Math.cos(C.th));T3.camera.lookAt(C.t);T3.r.render(T3.scene,T3.camera);T3.raf=requestAnimationFrame(loop3D);}
+function fit3D(){const L=R.g.L,W=R.g.W;T3.goal.t.set(0,0,0);T3.goal.r=Math.max(L,W)*1.45+20;T3.goal.th=.55;T3.goal.ph=.92;}
+function disposeGroup(g){g.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(m.map)m.map.dispose();m.dispose();});}});}
+function build3D(){
+  if(!T3||!R)return;dirty3d=false;
+  const c=getCase(),d=getDesign(),p=P(),g=R.g,L=g.L,W=g.W,H=+d.H,bx=RET,byT=d.flow==='I'?PATIO:RET;
+  if(T3.group){T3.scene.remove(T3.group);disposeGroup(T3.group);}
+  const G=new THREE.Group();T3.group=G;T3.scene.add(G);
+  T3.scene.background=new THREE.Color(p.sky);
+  const col=s=>new THREE.Color(s),M=(c2,o)=>new THREE.MeshStandardMaterial(Object.assign({color:col(c2),roughness:.85,metalness:.05},o||{}));
+  const PX=px=>px-bx-L/2,PZ=py=>py-byT-W/2,BX=x=>x-L/2,BZ=y=>W/2-y;
+  const plane=(px,py,w,h,color,y,o)=>{if(w<=0||h<=0)return;const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),M(color,o));m.rotation.x=-Math.PI/2;m.position.set(PX(px+w/2),y,PZ(py+h/2));m.receiveShadow=true;G.add(m);};
+  const vw=Math.max(c.lotL,R.needX),vh=Math.max(c.lotW,R.needY);
+  plane(-60,-60,vw+120,vh+120,p.lot,-.02);
+  plane(bx,byT+W,L+(d.flow==='L'?PATIO:0),PATIO,p.patio,-.01);
+  if(d.flow==='I')plane(bx,byT-PATIO,L,PATIO,p.patio,-.01);
+  if(d.flow==='L')plane(bx+L,byT,PATIO,W,p.patio,-.01);
+  plane(bx,byT,L,W,p.floor,0);
+  const zr=z=>({px:bx+z.x,py:byT+(W-z.y-z.h),w:z.w,h:z.h});
+  g.zones.forEach(z=>{const q=zr(z);plane(q.px,q.py,q.w,q.h,p[z.k],.01);});
+  g.aisles.forEach(a=>{const q=zr(a);plane(q.px,q.py,q.w,q.h,p.aisle,.015);});
+  // walls
+  const wm=new THREE.MeshStandardMaterial({color:col(p.wall),transparent:true,opacity:.13,depthWrite:false,roughness:.9});
+  const wall=(x,z,w,dpt)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,H+1,dpt),wm);m.position.set(x,(H+1)/2,z);G.add(m);};
+  wall(0,BZ(W),L,.25);wall(0,BZ(0),L,.25);wall(BX(0),0,.25,W);wall(BX(L),0,.25,W);
+  const edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(L,H+1,W)),new THREE.LineBasicMaterial({color:col(p.wall),transparent:true,opacity:.45}));edge.position.y=(H+1)/2;G.add(edge);
+  // docks + trucks
+  const doorM=M('#222826'),trM=M(p.truck,{roughness:.6}),cabM=M(p.cab,{roughness:.5});
+  g.docks.forEach(k=>{
+    const door=new THREE.Mesh(new THREE.BoxGeometry(3,3.6,.3),k.over?M(p.bad):doorM);
+    let tx,tz,rot;
+    if(k.side==='F'){door.position.set(BX(k.p),1.8,BZ(0)+.05);tx=BX(k.p);tz=BZ(0)+1+6.8;rot=0;}
+    else if(k.side==='B'){door.position.set(BX(k.p),1.8,BZ(W)-.05);tx=BX(k.p);tz=BZ(W)-1-6.8;rot=Math.PI;}
+    else{door.rotation.y=Math.PI/2;door.position.set(BX(L)+.05,1.8,BZ(k.p));tx=BX(L)+1+6.8;tz=BZ(k.p);rot=Math.PI/2;}
+    G.add(door);if(k.over)return;
+    const t=new THREE.Group();const tr=new THREE.Mesh(new THREE.BoxGeometry(2.5,2.8,13.6),trM);tr.position.set(0,2.6,0);tr.castShadow=true;t.add(tr);
+    const cb=new THREE.Mesh(new THREE.BoxGeometry(2.5,2.7,2.6),cabM);cb.position.set(0,1.9,6.8+1.5);cb.castShadow=true;t.add(cb);
+    const lab=new THREE.Mesh(new THREE.BoxGeometry(2.52,.35,13),M(k.type==='R'?p.rec:p.desp));lab.position.set(0,3.4,0);t.add(lab);
+    t.rotation.y=rot;t.position.set(tx,0,tz);G.add(t);});
+  // racks (instanced)
+  const lv=R.levels,pitch=R.pitch,hU=c.hU,ppb=R.ppb,palW=R.palW,topH=lv>0?(lv-1)*pitch+hU+.15:0;
+  const up=[],bm=[],pl=[];let rs=7;const rnd=()=>{rs=(rs*16807)%2147483647;return rs/2147483647;};
+  const MAXP=30000;
+  g.rows.forEach(r=>{const offs=r.lines===1?[0]:[0,RD+.2],a0=r.dir==='y'?r.y:r.x,c0=r.dir==='y'?r.x:r.y;
+    const pt=(across,along)=>r.dir==='y'?[BX(across),BZ(along)]:[BX(along),BZ(across)];
+    offs.forEach(lo=>{
+      for(let i=0;i<=r.bays;i++)[.05,RD-.05].forEach(sd=>up.push(pt(c0+lo+sd,a0+i*BAY)));
+      for(let i=0;i<r.bays;i++){for(let l=1;l<lv;l++)[.05,RD-.05].forEach(sd=>bm.push([...pt(c0+lo+sd,a0+(i+.5)*BAY),l*pitch,r.dir]));
+        for(let l=0;l<lv;l++)for(let s2=0;s2<ppb;s2++)if(rnd()<.72&&pl.length<MAXP)pl.push([...pt(c0+lo+RD/2,a0+i*BAY+(s2+.5)*BAY/ppb),l*pitch+(l>0?.12:0),r.dir,rnd()]);}
+    });});
+  const dmy=new THREE.Object3D();
+  if(up.length&&topH>0){const im=new THREE.InstancedMesh(new THREE.BoxGeometry(.09,topH,.09),M(p.rack,{metalness:.35,roughness:.45}),up.length);
+    up.forEach((q,i)=>{dmy.position.set(q[0],topH/2,q[1]);dmy.rotation.set(0,0,0);dmy.updateMatrix();im.setMatrixAt(i,dmy.matrix);});im.castShadow=true;G.add(im);}
+  if(bm.length){const im=new THREE.InstancedMesh(new THREE.BoxGeometry(.07,.13,BAY),M(p.beam,{metalness:.25,roughness:.5}),bm.length);
+    bm.forEach((q,i)=>{dmy.position.set(q[0],q[2],q[1]);dmy.rotation.set(0,q[3]==='y'?0:Math.PI/2,0);dmy.updateMatrix();im.setMatrixAt(i,dmy.matrix);});im.castShadow=true;G.add(im);}
+  if(pl.length){const im=new THREE.InstancedMesh(new THREE.BoxGeometry(1.2,hU,palW*.94),new THREE.MeshStandardMaterial({roughness:.85}),pl.length);
+    const shades=[new THREE.Color('#c79c6a'),new THREE.Color('#b98a58'),new THREE.Color('#d8b383'),new THREE.Color('#e4e8ea'),new THREE.Color('#9fb7d8')];
+    pl.forEach((q,i)=>{dmy.position.set(q[0],q[2]+hU/2,q[1]);dmy.rotation.set(0,q[3]==='y'?0:Math.PI/2,0);dmy.updateMatrix();im.setMatrixAt(i,dmy.matrix);im.setColorAt(i,shades[Math.floor(q[4]*shades.length)]);});
+    im.castShadow=true;im.receiveShadow=true;G.add(im);}
+  // forklifts in the main aisle
+  const main=g.aisles.find(a=>a.main);
+  if(main&&d.nMC>0){const fm=M('#39A900',{roughness:.5}),dk=M('#2a2e2b');for(let i=0;i<Math.min(d.nMC,20);i++){
+    const hz=main.w>=main.h,t=(i+.5)/Math.min(d.nMC,20),fx=hz?main.x+t*main.w:main.x+main.w/2,fy=hz?main.y+main.h/2:main.y+t*main.h;
+    const fk=new THREE.Group();const b=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.0,2.0),fm);b.position.y=.7;b.castShadow=true;fk.add(b);
+    const cage=new THREE.Mesh(new THREE.BoxGeometry(1.0,.08,1.2),dk);cage.position.set(0,2.15,-.2);fk.add(cage);
+    [[-.45,.35],[.45,.35],[-.45,-.75],[.45,-.75]].forEach(([x,z])=>{const pst=new THREE.Mesh(new THREE.BoxGeometry(.06,1.0,.06),dk);pst.position.set(x,1.65,z);fk.add(pst);});
+    const mast=new THREE.Mesh(new THREE.BoxGeometry(.9,2.4,.12),dk);mast.position.set(0,1.3,1.1);fk.add(mast);
+    const fork=new THREE.Mesh(new THREE.BoxGeometry(.8,.06,1.1),dk);fork.position.set(0,.15,1.7);fk.add(fork);
+    fk.rotation.y=hz?(i%2?Math.PI/2:-Math.PI/2):(i%2?0:Math.PI);fk.position.set(BX(fx),0,BZ(fy));G.add(fk);}}
+  const span=Math.max(L,W)+80;Object.assign(T3.sun.shadow.camera,{left:-span/1.4,right:span/1.4,top:span/1.4,bottom:-span/1.4,near:1,far:span*4});T3.sun.shadow.camera.updateProjectionMatrix();
+  T3.sun.position.set(-span*.5,span*1.1,-span*.35);T3.sun.target.position.set(0,0,0);
+  if(T3.firstFit!==false){fit3D();T3.cam.r=T3.goal.r;T3.cam.th=T3.goal.th;T3.cam.ph=T3.goal.ph;T3.firstFit=false;}
+}
+
+/* ---------- update ---------- */
+let upT;
+function update(){clearTimeout(upT);upT=setTimeout(()=>{
+  R=compute(getCase(),getDesign(),st.costs);
+  renderPlan();renderResults();renderVersions();
+  dirty3d=true;if(view3d&&T3)build3D();
+},40);}
+function rerenderTheme(){renderLegend();if(R){renderPlan();dirty3d=true;if(view3d&&T3)build3D();}}
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',rerenderTheme);}catch(e){}
+new MutationObserver(rerenderTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+function boot(){renderCaseList();renderBrief();loadDesignToForm();renderCosts();renderLegend();
+  [['sName','name'],['sDoc','doc'],['sFicha','ficha']].forEach(([id,k])=>$(id).value=st.stu[k]||'');vbFit=true;update();}
+boot();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(R)renderPlan();}).catch(()=>{});
+})();
+</script>
+
+</body>
+</html>
