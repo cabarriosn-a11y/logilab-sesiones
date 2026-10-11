@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Laboratorio 3D de un centro de distribución: escenarios, indicadores, unitarización y guías de práctica.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2339A900'/%3E%3Cpath d='M7 12l9-5 9 5v10l-9 5-9-5z' fill='none' stroke='white' stroke-width='2.5'/%3E%3C/svg%3E">
+<title>CEDI LogiLab 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: full-screen 3D CEDI; dark industrial HUD (single deliberate look): brand + live KPIs top-left, tabbed lab drawer on the right, control bar bottom-left */
+:root{
+  --ink:#0d1310;
+  --panel:rgba(13,19,16,.9);
+  --field:rgba(255,255,255,.06);
+  --line:rgba(226,236,222,.14);
+  --text:#eef3ea;
+  --muted:#a2ae9f;
+  --sena:#39A900;
+  --sena-soft:rgba(57,169,0,.2);
+  --amber:#f2b705;
+  --red:#ff6b5e;
+  --blue:#5b9bff;
+  --sky:#cfdde6;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"Barlow",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+html{height:100%;box-sizing:border-box}
+*,*::before,*::after{box-sizing:inherit}
+body{height:100%;margin:0;background:var(--sky);color:var(--text);font-family:var(--f-body);overflow:hidden}
+#app{position:relative;height:100%;width:100%}
+#c{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#c:active{cursor:grabbing}
+.hud{position:absolute;inset:0;pointer-events:none}
+.panel{pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.brand{position:absolute;top:12px;left:16px;width:330px;max-width:calc(100% - 32px);padding:12px 14px}
+.eyebrow{display:flex;align-items:center;gap:8px;font:600 11px/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--sena)}
+.eyebrow i{width:8px;height:8px;border-radius:2px;background:var(--sena);box-shadow:0 0 10px var(--sena)}
+h1{margin:7px 0 10px;font:700 28px/1 var(--f-display);letter-spacing:.01em}
+.mini{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.mini div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.mini span{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini b{font:500 15px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.mini b.warn{color:var(--amber)}
+.hint{margin:10px 0 0;padding-top:9px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+.drawer{position:absolute;top:12px;right:16px;bottom:12px;width:410px;max-width:calc(100% - 32px);display:flex;flex-direction:column;overflow:hidden;transition:transform .25s ease}
+.drawer.closed{transform:translateX(calc(100% + 24px))}
+.tabs{display:flex;border-bottom:1px solid var(--line);flex:none}
+.tabs button{flex:1;border-radius:0;background:transparent;padding:12px 4px;font:700 14px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--sena);background:rgba(255,255,255,.03)}
+.tabpanel{flex:1;overflow:auto;padding:14px 16px 18px;display:flex;flex-direction:column;gap:18px;min-height:0}
+.dfoot{flex:none;border-top:1px solid var(--line);padding:9px 16px;font-size:12px;color:var(--muted)}
+.dfoot b{color:var(--text);font-weight:600}
+.sec{display:flex;flex-direction:column;gap:10px}
+h2{margin:0;font:700 13px/1.1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h3{margin:0;font:700 17px/1.15 var(--f-display);letter-spacing:.02em}
+.note{margin:0;color:var(--muted);font-size:12.5px;line-height:1.45}
+.f{display:grid;grid-template-columns:1fr auto;gap:5px 10px;align-items:center}
+.f label{font-size:13px}
+.f output{font:500 13px var(--f-mono);color:var(--amber)}
+.f input[type=range],.f select,.f input[type=text],.f input[type=number]{grid-column:1/-1}
+.f.chk{grid-template-columns:auto 1fr}
+.f.chk input{grid-column:auto;margin:0;width:16px;height:16px;accent-color:var(--sena)}
+input[type=range]{width:100%;accent-color:var(--sena)}
+select,input[type=text],input[type=number],textarea{width:100%;font:500 13px var(--f-body);color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+select option{background:#141c18;color:var(--text)}
+textarea{min-height:84px;resize:vertical;line-height:1.4}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--sena);outline-offset:1px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.grid4 .f label,.grid2 .f label{font-size:11.5px;color:var(--muted)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button,.btn{font:600 13px var(--f-body);color:var(--text);background:rgba(255,255,255,.08);border:1px solid transparent;border-radius:7px;padding:8px 11px;cursor:pointer;transition:background .15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+button:hover,.btn:hover{background:rgba(255,255,255,.15)}
+button:focus-visible,.btn:focus-visible{outline:2px solid var(--sena);outline-offset:2px}
+button.primary{background:var(--sena);color:#0b1508}
+button.primary:hover{background:#45c200}
+button[aria-pressed="true"]{background:var(--sena);color:#0b1508}
+.btn.wa{background:#1f7a43}
+.kgroup{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:9px 10px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.tile span{font-size:11px;color:var(--muted);line-height:1.2}
+.tile b{font:500 18px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.tile small{font:400 11px var(--f-body);color:var(--muted);margin-left:3px}
+.banner{background:var(--sena-soft);border:1px solid var(--sena);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.4}
+.bars{display:flex;flex-direction:column;gap:6px}
+.bar-r{display:grid;grid-template-columns:46px 1fr 40px;gap:8px;align-items:center;font-size:12px}
+.bar-r b{font:500 12px var(--f-mono);text-align:right}
+.meter{height:7px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--sena);transition:width .4s}
+.dock{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:5px 10px;padding:7px 0;border-top:1px solid var(--line)}
+.dock:first-child{border-top:0}
+.dock .n{font:700 17px/1 var(--f-display);width:30px}
+.dock .s{font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dock .meter{grid-column:2/4}
+.dock .meter i{background:var(--amber)}
+.dock.out .meter i{background:var(--sena)}
+.tag{font:600 10px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;padding:4px 6px;border-radius:4px;background:rgba(255,255,255,.08);color:var(--muted)}
+.tag.in{background:rgba(242,183,5,.18);color:var(--amber)}
+.tag.out{background:var(--sena-soft);color:#7fd84f}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.log li{font-size:12.5px;line-height:1.35}
+.log li time{font:500 11px var(--f-mono);color:var(--muted);margin-right:6px}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:2px;display:inline-block}
+.res{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.res .tile b{font-size:16px}
+canvas.draw{width:100%;display:block;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.checks li{font-size:12.5px;line-height:1.4;display:grid;grid-template-columns:18px 1fr;gap:6px}
+.checks .ok{color:#7fd84f}.checks .bad{color:var(--red)}.checks .wn{color:var(--amber)}
+.vtable{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.sel td{background:rgba(57,169,0,.12)}
+.item{border:1px solid var(--line);border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:9px;background:rgba(255,255,255,.02)}
+.item ol{margin:0;padding-left:18px;font-size:13px;line-height:1.45;color:var(--text)}
+.item .q{font-size:13px;line-height:1.45;color:var(--amber);margin:0}
+.recs{display:flex;flex-direction:column;gap:5px}
+.rec{font-size:11.5px;line-height:1.4;color:var(--muted);background:rgba(255,255,255,.04);border-radius:6px;padding:6px 8px}
+.rec b{color:var(--text)}
+.bar{position:absolute;left:16px;bottom:14px;display:flex;align-items:center;gap:10px;padding:8px 10px;flex-wrap:wrap;max-width:calc(100% - 462px)}
+.bar.full{max-width:calc(100% - 32px)}
+.grp{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.grp>span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 4px}
+.sep{width:1px;height:24px;background:var(--line)}
+.toast{position:absolute;left:50%;top:16px;transform:translateX(-50%);pointer-events:none;background:var(--sena);color:#0b1508;font-weight:600;font-size:13px;padding:8px 14px;border-radius:999px}
+.err{position:absolute;inset:0;display:grid;place-items:center;padding:16px;text-align:center;color:#13201a}
+@media (max-width:860px){
+  .brand{padding:10px 12px}
+  .brand .hint{display:none}
+  h1{font-size:21px;margin:5px 0 8px}
+  .drawer{top:auto;left:16px;right:16px;width:auto;bottom:74px;height:60%}
+  .drawer.closed{transform:translateY(calc(100% + 90px))}
+  .bar,.bar.full{right:16px;max-width:none;gap:6px;bottom:12px}
+  .sep{display:none}
+  .grp>span{display:none}
+  button{padding:7px 9px;font-size:12px}
+  .tabs button{font-size:12.5px}
+}
+@media (prefers-reduced-motion:reduce){.meter i,.drawer{transition:none}}
+.back{display:inline-block;margin-top:9px;font-size:12px;color:var(--muted);text-decoration:none}
+.back:hover{color:var(--text)}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <canvas id="c" aria-label="Vista 3D del centro de distribución"></canvas>
+  <div class="hud">
+    <section class="panel brand">
+      <div class="eyebrow"><i></i>LogiLab SENA · Laboratorio de CEDI</div>
+      <h1>CEDI LogiLab 3D</h1>
+      <div class="mini">
+        <div><span>Hora</span><b id="mClock">06:00</b></div>
+        <div><span>En cola</span><b id="mQueue">0</b></div>
+        <div><span>Recibidos</span><b id="mIn">0</b></div>
+        <div><span>Despachos</span><b id="mOut">0</b></div>
+        <div><span>Ocupación</span><b id="mOcc">0%</b></div>
+      </div>
+      <p class="hint" id="hint">Arrastra para girar · rueda para acercar · clic derecho o Shift + arrastre para desplazar</p>
+      <a class="back" href="../../">← Volver al portal LogiLab</a>
+      </section>
+
+    <aside class="panel drawer" id="drawer" aria-label="Laboratorio">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" aria-selected="true" data-tab="esc">Escenario</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="kpi">Indicadores</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="uni">Unitarización</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="gui">Guías</button>
+      </div>
+
+      <div class="tabpanel" id="tp-esc" role="tabpanel">
+        <div class="sec">
+          <h2>Escenario de operación</h2>
+          <p class="note">Cambia las variables y pulsa «Aplicar y reiniciar». Escala de tiempo: 1 segundo de simulación equivale a 5 segundos reales.</p>
+          <div class="f"><label for="cfForklifts">Montacargas</label><output id="oForklifts"></output><input type="range" id="cfForklifts" min="1" max="8" step="1"></div>
+          <div class="f"><label for="cfDocks">Muelles habilitados</label><output id="oDocks"></output><input type="range" id="cfDocks" min="1" max="4" step="1"></div>
+          <div class="f"><label for="cfInterval">Llegada de camiones (promedio)</label><output id="oInterval"></output><input type="range" id="cfInterval" min="4" max="40" step="1"></div>
+          <div class="f"><label for="cfLoad">Pallets por camión (promedio)</label><output id="oLoad"></output><input type="range" id="cfLoad" min="4" max="20" step="1"></div>
+          <div class="f"><label for="cfMix">Camiones de entrada (recibo)</label><output id="oMix"></output><input type="range" id="cfMix" min="0" max="100" step="5"></div>
+          <div class="f"><label for="cfOcc">Ocupación inicial de racks</label><output id="oOcc"></output><input type="range" id="cfOcc" min="0" max="90" step="5"></div>
+          <div class="f"><label for="cfSlotting">Política de ubicación</label><select id="cfSlotting"><option value="random">Aleatoria (donde haya espacio)</option><option value="abc">ABC por rotación</option></select></div>
+          <div class="f"><label for="cfDispatch">Política de despacho</label><select id="cfDispatch"><option value="fifo">FIFO / FEFO (lo más antiguo primero)</option><option value="lifo">LIFO (lo más reciente primero)</option><option value="random">Sin control (cualquier pallet)</option></select></div>
+          <div class="f"><label for="cfWalkers">Peatones en la senda</label><output id="oWalkers"></output><input type="range" id="cfWalkers" min="0" max="8" step="1"></div>
+          <div class="f chk"><input type="checkbox" id="cfBrake"><label for="cfBrake">Frenado automático de montacargas ante peatones</label></div>
+          <div class="f"><label for="cfDuration">Duración del experimento</label><select id="cfDuration"><option value="0">Continuo</option><option value="1">1 hora (se detiene sola)</option><option value="2">2 horas (se detiene sola)</option><option value="4">4 horas (se detiene sola)</option><option value="8">8 horas · turno completo</option></select></div>
+          <div class="row"><button type="button" class="primary" id="bApply">Aplicar y reiniciar</button><button type="button" id="bDefaults">Valores por defecto</button></div>
+        </div>
+        <div class="sec">
+          <h2>Visualización</h2>
+          <div class="f chk"><input type="checkbox" id="cfABC"><label for="cfABC">Colorear pallets por clase ABC</label></div>
+          <div class="legend"><span><i style="background:#e5484d"></i>A · alta rotación</span><span><i style="background:#f2b705"></i>B · media</span><span><i style="background:#3d7bd9"></i>C · baja</span></div>
+        </div>
+        <div class="sec">
+          <h2>Unidad de carga que llega al CEDI</h2>
+          <p class="note" id="unitStatus">Carga variada (alturas entre 0,9 y 1,2 m).</p>
+          <div class="row"><button type="button" id="bUnitReset" hidden>Volver a carga variada</button></div>
+        </div>
+      </div>
+
+      <div class="tabpanel" id="tp-kpi" role="tabpanel" hidden>
+        <div class="banner" id="expBanner" hidden></div>
+        <div id="kpiGroups" class="sec"></div>
+        <div class="sec"><h2>Utilización por montacargas</h2><div class="bars" id="fuBars"></div></div>
+        <div class="sec"><h2>Muelles</h2><div id="dockList"></div></div>
+        <div class="sec"><h2>Bitácora de operación</h2><ol class="log" id="log"></ol></div>
+        <div class="sec">
+          <h2>Exportar resultados</h2>
+          <div class="row">
+            <button type="button" id="bCopyKpi">Copiar resultados</button>
+            <button type="button" id="bCsv" class="needs-dl" hidden>Descargar CSV</button>
+          </div>
+          <textarea id="kpiFallback" hidden aria-label="Resultados para copiar"></textarea>
+        </div>
+      </div>
+
+      <div class="tabpanel" id="tp-uni" role="tabpanel" hidden>
+        <div class="sec">
+          <h2>Caja · unidad de empaque</h2>
+          <div class="grid4">
+            <div class="f"><label for="uL">Largo cm</label><input type="number" id="uL" min="5" max="200" step="0.5" value="40"></div>
+            <div class="f"><label for="uW">Ancho cm</label><input type="number" id="uW" min="5" max="200" step="0.5" value="30"></div>
+            <div class="f"><label for="uH">Alto cm</label><input type="number" id="uH" min="5" max="200" step="0.5" value="25"></div>
+            <div class="f"><label for="uKg">Peso kg</label><input type="number" id="uKg" min="0.1" max="500" step="0.1" value="12"></div>
+          </div>
+        </div>
+        <div class="sec">
+          <h2>Pallet y restricciones</h2>
+          <div class="f"><label for="uPal">Tipo de pallet</label><select id="uPal"><option value="iso">ISO 1200 × 1000 mm (estándar América)</option><option value="ame">Americano 48 × 40 in (1219 × 1016 mm)</option><option value="eur">Europallet EPAL 1200 × 800 mm</option></select></div>
+          <div class="grid2">
+            <div class="f"><label for="uHmax">Altura máx. con pallet (cm)</label><input type="number" id="uHmax" min="30" max="260" step="1" value="150"></div>
+            <div class="f"><label for="uWmax">Peso máx. bruto (kg)</label><input type="number" id="uWmax" min="50" max="2500" step="10" value="1000"></div>
+            <div class="f"><label for="uOvh">Voladizo por lado (cm)</label><input type="number" id="uOvh" min="0" max="10" step="0.5" value="0"></div>
+            <div class="f"><label for="uPat">Patrón de estiba</label><select id="uPat"><option value="trab">Trabado (capas alternas)</option><option value="col">Columnado</option></select></div>
+          </div>
+        </div>
+        <div class="sec">
+          <h2>Resultado</h2>
+          <div class="res" id="uRes"></div>
+          <div class="row" id="layerBtns"><button type="button" aria-pressed="true" data-l="1">Capa impar</button><button type="button" aria-pressed="false" data-l="2">Capa par</button></div>
+          <canvas class="draw" id="cvTop" height="230" aria-label="Vista superior de la capa"></canvas>
+          <canvas class="draw" id="cvSide" height="190" aria-label="Vista lateral de la unidad de carga"></canvas>
+          <ul class="checks" id="uChecks"></ul>
+        </div>
+        <div class="sec">
+          <h2>Transporte</h2>
+          <div class="f chk"><input type="checkbox" id="uStack"><label for="uStack">Pallets apilables (2 niveles si la altura lo permite)</label></div>
+          <div class="vtable"><table><thead><tr><th>Vehículo</th><th class="num">Pallets</th><th class="num">Cajas</th><th>Limita</th></tr></thead><tbody id="vBody"></tbody></table></div>
+          <p class="note">Toca un vehículo para ver la distribución. Medidas internas típicas; confirma siempre con la naviera o la transportadora.</p>
+          <canvas class="draw" id="cvVeh" height="150" aria-label="Distribución de pallets en el vehículo"></canvas>
+        </div>
+        <div class="sec">
+          <h2>Llevar al CEDI 3D</h2>
+          <p class="note">Los camiones de entrada traerán pallets con esta altura. Si la unidad supera 1,51 m no cabe en los racks (altura libre de 1,61 m con 10 cm de holgura) y va a la zona de no conformes.</p>
+          <div class="row"><button type="button" class="primary" id="bUseUnit">Usar esta unidad en el CEDI</button><button type="button" id="bCopyCalc">Copiar cálculo</button></div>
+          <textarea id="calcFallback" hidden aria-label="Cálculo para copiar"></textarea>
+        </div>
+      </div>
+
+      <div class="tabpanel" id="tp-gui" role="tabpanel" hidden>
+        <div class="sec">
+          <div class="f"><label for="gSel">Guía de laboratorio</label><select id="gSel"><option value="S">Gestión Logística · SENA</option><option value="U">Unitarización de la carga · Universidad</option></select></div>
+          <p class="note" id="gIntro"></p>
+        </div>
+        <div class="sec">
+          <h2>Datos del estudiante</h2>
+          <div class="f"><label for="sName">Nombre completo</label><input type="text" id="sName" autocomplete="name"></div>
+          <div class="grid2">
+            <div class="f"><label for="sDoc">Documento / código</label><input type="text" id="sDoc"></div>
+            <div class="f"><label for="sGroup">Ficha / grupo</label><input type="text" id="sGroup" placeholder="Ej: 3229854"></div>
+          </div>
+        </div>
+        <div class="sec" id="guideBody"></div>
+        <div class="sec">
+          <h2>Entregar al instructor</h2>
+          <p class="note">Elige el medio que te funcione. Si uno falla, usa otro: el texto incluye tus datos, tus registros y tus respuestas.</p>
+          <div class="row">
+            <button type="button" id="bCopyG">Copiar entrega</button>
+            <a class="btn wa" id="waLink" href="https://wa.me/" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+            <a class="btn" id="mailLink" href="mailto:">Enviar por correo</a>
+            <button type="button" id="bTxt" class="needs-dl" hidden>Descargar .txt</button>
+          </div>
+          <p class="note">Si el correo no se abre, copia la entrega y pégala en un mensaje nuevo.</p>
+          <textarea id="gFallback" hidden aria-label="Entrega para copiar"></textarea>
+        </div>
+      </div>
+      <div class="dfoot"><b>LogiLab SENA</b> · By Carlos Barrios · Instructor</div>
+    </aside>
+
+    <nav class="panel bar" id="bar" aria-label="Controles de la simulación">
+      <div class="grp"><button id="bPause" type="button" aria-pressed="false">Pausa</button></div>
+      <div class="sep"></div>
+      <div class="grp" id="gSpeed"><span>Velocidad</span>
+        <button type="button" data-s="1" aria-pressed="true">1×</button>
+        <button type="button" data-s="2" aria-pressed="false">2×</button>
+        <button type="button" data-s="4" aria-pressed="false">4×</button>
+        <button type="button" data-s="8" aria-pressed="false">8×</button>
+      </div>
+      <div class="sep"></div>
+      <div class="grp" id="gCam"><span>Cámara</span>
+        <button type="button" data-c="general" aria-pressed="true">General</button>
+        <button type="button" data-c="docks" aria-pressed="false">Muelles</button>
+        <button type="button" data-c="racks" aria-pressed="false">Racks</button>
+        <button type="button" data-c="follow" aria-pressed="false" id="bFollow">Montacargas</button>
+      </div>
+      <div class="sep"></div>
+      <div class="grp"><button type="button" id="bPanel" aria-pressed="true">Panel</button></div>
+    </nav>
+    <div class="toast" id="toast" hidden></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const canvas=$('c');
+let renderer;
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}
+catch(e){$('app').insertAdjacentHTML('beforeend','<div class="err"><p>Este navegador no pudo iniciar WebGL. Prueba con Chrome, Edge o Firefox actualizados.</p></div>');return;}
+const isTouch=matchMedia('(pointer:coarse)').matches, isNarrow=matchMedia('(max-width:860px)').matches;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,isTouch?1.5:2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+const maxAniso=renderer.capabilities.getMaxAnisotropy();
+if(isTouch)$('hint').textContent='Un dedo gira · dos dedos acercan y desplazan';
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xcfdde6);scene.fog=new THREE.Fog(0xcfdde6,130,280);
+const camera=new THREE.PerspectiveCamera(42,1,0.5,700);
+scene.add(new THREE.HemisphereLight(0xeaf3ff,0x4a4f44,0.75));
+const sun=new THREE.DirectionalLight(0xfff1dc,1.15);
+sun.position.set(-45,72,-42);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-72,right:72,top:72,bottom:-72,near:10,far:230});
+sun.shadow.bias=-0.0006;sun.target.position.set(0,0,-16);scene.add(sun,sun.target);
+
+/* ---------- helpers ---------- */
+const wrap=a=>{while(a>Math.PI)a-=2*Math.PI;while(a<-Math.PI)a+=2*Math.PI;return a;};
+const rand=Math.random, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const geoCache=new Map(),matCache=new Map();
+function bgeo(w,h,d){const k=w+'|'+h+'|'+d;let g=geoCache.get(k);if(!g){g=new THREE.BoxGeometry(w,h,d);geoCache.set(k,g);}return g;}
+function mat(c,o){const k=c+JSON.stringify(o||{});let m=matCache.get(k);if(!m){m=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.75,metalness:.05},o||{}));matCache.set(k,m);}return m;}
+function box(w,h,d,m,x,y,z,parent,noShadow){const me=new THREE.Mesh(bgeo(w,h,d),m);me.position.set(x,y,z);me.castShadow=!noShadow;me.receiveShadow=true;parent.add(me);return me;}
+const FD='"Barlow Condensed","Arial Narrow",sans-serif';
+const redrawers=[];
+function canvasTex(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');draw(ctx,w,h);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=maxAniso;redrawers.push(()=>{ctx.clearRect(0,0,w,h);draw(ctx,w,h);t.needsUpdate=true;});return t;}
+function txt(ctx,s,x,y,size,color,rot,weight){ctx.save();ctx.translate(x,y);ctx.rotate(rot||0);ctx.font=(weight||700)+' '+size+'px '+FD;ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s,0,0);ctx.restore();}
+function seeded(s){return()=>{s=(s*16807)%2147483647;return s/2147483647;};}
+const nf=(v,d)=>Number(v).toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+/* ---------- constants ---------- */
+const TS=5; // 1 sim second = 5 real seconds
+const DOOR_X=[-18,-6,6,18];
+const RACK_X=[-22.5,-15,-7.5,0,7.5,15,22.5];
+const AISLES=[-26.25,-18.75,-11.25,-3.75,3.75,11.25,18.75,26.25];
+const SLOT_Z=[];for(let i=0;i<12;i++)SLOT_Z.push(-3+i*1.45);
+const LEVELS=[0,1.75,3.5];
+const CORR_Z=-9,DOCK_Z=-20.6,APP_Z=-18.4,YARD_Y=-1.3,TL=12.2;
+const RACK_MAX_H=1.51; // max pallet total height (1.61 clearance - 0.10)
+const PARK=[-27.4,27.4,-25.95,25.95,-24.5,24.5,-23.05,23.05].map(x=>({x,z:-17}));
+const DEFAULT_CFG={forklifts:4,docks:4,interval:10,load:14,mix:50,occ0:45,slotting:'random',dispatch:'fifo',walkers:4,brake:true,duration:0};
+const cfg=Object.assign({},DEFAULT_CFG);
+let showABC=false, unit=null;
+
+/* ---------- ground ---------- */
+const grass=new THREE.Mesh(new THREE.PlaneGeometry(700,700),mat(0x8c9c6b,{roughness:1}));grass.rotation.x=-Math.PI/2;grass.position.y=-1.36;grass.receiveShadow=true;scene.add(grass);
+const roadTex=canvasTex(250,260,(x,w,h)=>{x.fillStyle='#4b4f53';x.fillRect(0,0,w,h);x.fillStyle='#e9ece6';x.fillRect(0,4,w,4);x.fillRect(0,h-8,w,4);x.fillRect(0,128,120,4);});
+roadTex.wrapS=THREE.RepeatWrapping;roadTex.repeat.set(440/25,1);
+const road=new THREE.Mesh(new THREE.PlaneGeometry(440,26),new THREE.MeshStandardMaterial({map:roadTex,roughness:.95}));road.rotation.x=-Math.PI/2;road.position.set(0,-1.315,-51);road.receiveShadow=true;scene.add(road);
+const yardTex=canvasTex(1800,620,(x,w,h)=>{
+  const S=10,X=v=>(v+90)*S,Z=v=>(v+82)*S;
+  x.fillStyle='#4a4e52';x.fillRect(0,0,w,h);
+  const r=seeded(11);for(let i=0;i<900;i++){x.fillStyle=r()<.5?'rgba(0,0,0,.06)':'rgba(255,255,255,.035)';x.fillRect(r()*w,r()*h,4+r()*30,3+r()*18);}
+  x.fillStyle='#8f928b';x.fillRect(X(-34),Z(-37),68*S,17*S);
+  DOOR_X.forEach((d,i)=>{x.fillStyle='#f2b705';x.fillRect(X(d-1.75),Z(-36.5),5,16*S);x.fillRect(X(d+1.75)-5,Z(-36.5),5,16*S);txt(x,String(i+1),X(d),Z(-34.5),70,'rgba(255,255,255,.9)',Math.PI);});
+  x.fillStyle='#e9ece6';x.fillRect(0,Z(-38),w,4);x.fillRect(0,Z(-64)-4,w,4);
+  for(let v=-90;v<90;v+=5)x.fillRect(X(v),Z(-51)-2,24,4);
+  const arrow=(cx,cz)=>{x.beginPath();x.moveTo(X(cx+3),Z(cz));x.lineTo(X(cx),Z(cz-1.6));x.lineTo(X(cx),Z(cz-.6));x.lineTo(X(cx-4),Z(cz-.6));x.lineTo(X(cx-4),Z(cz+.6));x.lineTo(X(cx),Z(cz+.6));x.lineTo(X(cx),Z(cz+1.6));x.closePath();x.fill();};
+  x.fillStyle='rgba(255,255,255,.85)';[-70,-40,40,70].forEach(v=>{arrow(v,-44);arrow(v,-58);});
+  txt(x,'ENTRADA',X(-58),Z(-41),34,'rgba(255,255,255,.85)',Math.PI);txt(x,'SALIDA',X(58),Z(-61),34,'rgba(255,255,255,.85)',Math.PI);
+});
+const yard=new THREE.Mesh(new THREE.PlaneGeometry(180,62),new THREE.MeshStandardMaterial({map:yardTex,roughness:.95}));yard.rotation.x=-Math.PI/2;yard.position.set(0,YARD_Y,-51);yard.receiveShadow=true;scene.add(yard);
+
+/* ---------- slab & floor markings ---------- */
+box(60.6,1.3,40.6,mat(0xa9aca4,{roughness:.9}),0,-.65,0,scene,true);
+const floorTex=canvasTex(1800,1200,(x,w,h)=>{
+  const S=30,X=v=>(v+30)*S,Z=v=>(v+20)*S,R=Math.PI;
+  x.fillStyle='#b9bcb4';x.fillRect(0,0,w,h);
+  const r=seeded(5);for(let i=0;i<1600;i++){x.fillStyle=r()<.5?'rgba(0,0,0,.035)':'rgba(255,255,255,.05)';x.fillRect(r()*w,r()*h,8+r()*50,6+r()*30);}
+  x.strokeStyle='rgba(60,60,55,.16)';x.lineWidth=2;
+  for(let v=-24;v<=24;v+=6){x.beginPath();x.moveTo(X(v),0);x.lineTo(X(v),h);x.stroke();}
+  for(let v=-14;v<=14;v+=6){x.beginPath();x.moveTo(0,Z(v));x.lineTo(w,Z(v));x.stroke();}
+  RACK_X.forEach((rx,i)=>{x.fillStyle='rgba(70,72,66,.16)';x.fillRect(X(rx-1.4),Z(-3.95),2.8*S,17.85*S);x.strokeStyle='#e0ad00';x.lineWidth=5;x.strokeRect(X(rx-1.4),Z(-3.95),2.8*S,17.85*S);txt(x,'R'+(i+1),X(rx),Z(-5.1),40,'#2c3029',R);});
+  x.fillStyle='#e0ad00';x.fillRect(0,Z(-11.8),w,5);x.fillRect(0,Z(-6.2),w,5);
+  x.fillStyle='rgba(255,255,255,.7)';for(let v=-29;v<29;v+=2.2)x.fillRect(X(v),Z(-9)-2,1.1*S,4);
+  txt(x,'PASILLO PRINCIPAL',X(0),Z(-10.6),30,'rgba(40,44,38,.75)',R,600);
+  x.fillStyle='rgba(57,169,0,.9)';
+  x.fillRect(X(-29.2),Z(-13.2),1.2*S,32.4*S);x.fillRect(X(28),Z(-13.2),1.2*S,32.4*S);x.fillRect(X(-29.2),Z(18),58.4*S,1.2*S);x.fillRect(X(-29.2),Z(-13.2),58.4*S,1.2*S);
+  x.fillStyle='rgba(255,255,255,.85)';for(let v=-28.8;v<28.8;v+=.8)x.fillRect(X(v),Z(-13.1),.35*S,1.0*S);
+  [-14,14].forEach(v=>txt(x,'PASO PEATONAL',X(v),Z(18.6),26,'#ffffff',R,600));
+  AISLES.forEach(ax=>{x.strokeStyle='#d6453d';x.lineWidth=4;x.setLineDash([12,8]);x.strokeRect(X(ax-1.7),Z(15.5),3.4*S,1.5*S);x.setLineDash([]);txt(x,'NO CONFORME',X(ax),Z(17.4),20,'#b8322e',R,600);});
+  DOOR_X.forEach((d,i)=>{
+    for(let k=0;k<10;k++){x.fillStyle=k%2?'#1d1d1b':'#f2b705';x.beginPath();const x0=X(d-1.9)+k*11.4;x.moveTo(x0,Z(-20));x.lineTo(x0+11.4,Z(-20));x.lineTo(x0+19.4,Z(-19.6));x.lineTo(x0+8,Z(-19.6));x.closePath();x.fill();}
+    x.setLineDash([16,10]);x.strokeStyle='rgba(255,255,255,.85)';x.lineWidth=4;x.strokeRect(X(d-1.9),Z(-19.5),3.8*S,5.6*S);x.setLineDash([]);
+    txt(x,'M'+(i+1),X(d),Z(-15),56,'rgba(255,255,255,.95)',R);
+  });
+  PARK.forEach((p,i)=>{x.strokeStyle='#ffffff';x.lineWidth=4;x.strokeRect(X(p.x-.65),Z(-18.6),1.3*S,3.4*S);txt(x,'P'+(i+1),X(p.x),Z(-15.6),22,'#ffffff',R,600);});
+});
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(60,40),new THREE.MeshStandardMaterial({map:floorTex,roughness:.85}));floor.rotation.x=-Math.PI/2;floor.position.y=.003;floor.receiveShadow=true;scene.add(floor);
+
+/* ---------- building ---------- */
+const wallM=mat(0xd9ddd5,{roughness:.9}),trimM=mat(0x39a900,{roughness:.6}),darkM=mat(0x2a2e2b),rubberM=mat(0x1c1c1c,{roughness:1});
+box(60.6,8,.3,wallM,0,4,20.15,scene);box(60.6,.5,.34,trimM,0,7.1,20.15,scene);
+[-30.15,30.15].forEach(x=>{box(.3,8,40.3,wallM,x,4,0,scene);box(.34,.5,40.3,trimM,x,7.1,0,scene);});
+[[-30.3,-19.75],[-16.25,-7.75],[-4.25,4.25],[7.75,16.25],[19.75,30.3]].forEach(([a,b])=>box(b-a,6,.3,wallM,(a+b)/2,3,-20.15,scene));
+const signTex=canvasTex(2048,200,(x,w,h)=>{x.fillStyle='#f3f5f0';x.fillRect(0,0,w,h);x.fillStyle='#39A900';x.fillRect(0,0,420,h);txt(x,'LOGILAB',210,78,92,'#ffffff');txt(x,'SENA',210,150,58,'#ffffff',0,600);txt(x,'CENTRO DE DISTRIBUCIÓN · RIOHACHA',1230,104,104,'#1d2a22');});
+const sign=new THREE.Mesh(new THREE.PlaneGeometry(26,2.55),new THREE.MeshStandardMaterial({map:signTex,roughness:.6}));sign.rotation.y=Math.PI;sign.position.set(0,7.45,-20.32);scene.add(sign);
+box(26.4,2.8,.2,darkM,0,7.45,-20.2,scene);
+const docks=DOOR_X.map((d,i)=>{
+  box(3.5,1.8,.3,wallM,d,5.1,-20.15,scene);
+  box(.35,4.5,.5,rubberM,d-1.92,2.25,-20.45,scene);box(.35,4.5,.5,rubberM,d+1.92,2.25,-20.45,scene);box(4.2,.5,.5,rubberM,d,4.45,-20.45,scene);
+  box(.35,.6,.25,rubberM,d-1.45,-.5,-20.42,scene);box(.35,.6,.25,rubberM,d+1.45,-.5,-20.42,scene);
+  box(2.4,.05,.6,mat(0x6d747a,{metalness:.6,roughness:.4}),d,-.02,-20.55,scene,true);
+  const door=box(3.5,4.2,.08,mat(0xa7b0b6,{metalness:.35,roughness:.5}),d,2.1,-20.12,scene);
+  const lm=new THREE.MeshStandardMaterial({color:0x111111,emissive:0x2bd14a,emissiveIntensity:1.4});
+  const light=new THREE.Mesh(new THREE.SphereGeometry(.16,12,8),lm);light.position.set(d+2.35,3.4,-20.4);scene.add(light);
+  const plate=canvasTex(512,120,(x,w,h)=>{x.fillStyle='#1d2a22';x.fillRect(0,0,w,h);x.fillStyle='#f2b705';x.fillRect(0,h-12,w,12);txt(x,'MUELLE '+(i+1),w/2,h/2-4,74,'#ffffff');});
+  const pm=new THREE.Mesh(new THREE.PlaneGeometry(2.6,.62),new THREE.MeshStandardMaterial({map:plate}));pm.rotation.y=Math.PI;pm.position.set(d,5.35,-20.32);scene.add(pm);
+  return {i,x:d,truck:null,doorF:0,door,lm,enabled:true};
+});
+PARK.forEach(p=>{box(.6,1.3,.4,mat(0x34403a),p.x,.65,-19.6,scene);const g=new THREE.Mesh(new THREE.BoxGeometry(.3,.12,.02),new THREE.MeshStandardMaterial({color:0x111111,emissive:0x39a900,emissiveIntensity:1.2}));g.position.set(p.x,1.05,-19.39);scene.add(g);});
+box(2.6,2.6,2.6,mat(0xeef0ec),-62,YARD_Y+1.3,-68.6,scene);box(3.2,.25,3.2,trimM,-62,YARD_Y+2.72,-68.6,scene);box(2.62,.8,1.4,mat(0x2b4a66,{metalness:.3,roughness:.2}),-62,YARD_Y+1.8,-68.6,scene);
+(function trees(){
+  const r=seeded(23),pts=[];
+  while(pts.length<70){const x=(r()-.5)*260,z=-130+r()*190;if(Math.abs(x)<36&&z>-24&&z<26)continue;if(Math.abs(x)<96&&z>-86&&z<-18)continue;if(z>-68&&z<-34)continue;pts.push([x,z,.8+r()*.7]);}
+  const tm=new THREE.InstancedMesh(new THREE.CylinderGeometry(.25,.35,2.2,6),mat(0x6b4f35),pts.length);
+  const cm=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(2.4,0),mat(0x5e7d3d,{flatShading:true}),pts.length);
+  const o=new THREE.Object3D();
+  pts.forEach((p,i)=>{o.position.set(p[0],-1.36+1.1*p[2],p[1]);o.scale.setScalar(p[2]);o.rotation.set(0,0,0);o.updateMatrix();tm.setMatrixAt(i,o.matrix);
+    o.position.y=-1.36+3.6*p[2];o.rotation.y=p[0];o.scale.set(p[2]*1.2,p[2],p[2]*1.2);o.updateMatrix();cm.setMatrixAt(i,o.matrix);});
+  tm.castShadow=cm.castShadow=true;scene.add(tm,cm);
+})();
+(function racks(){
+  const upr=[],beams=[],o=new THREE.Object3D();
+  RACK_X.forEach(rx=>{
+    for(let k=0;k<=6;k++){const z=-3.725+k*2.9;[-1.3,-.06,.06,1.3].forEach(dx=>upr.push([rx+dx,2.7,z]));}
+    for(let k=0;k<6;k++){const z=-3.725+1.45+k*2.9;[1.68,3.43,5.2].forEach(y=>[-1.3,-.06,.06,1.3].forEach(dx=>beams.push([rx+dx,y,z])));}
+    box(2.8,.45,.2,mat(0xf2b705),rx,.23,-3.95,scene);box(2.8,.45,.2,mat(0xf2b705),rx,.23,13.9,scene);
+  });
+  const um=new THREE.InstancedMesh(bgeo(.1,5.4,.1),mat(0x2f5f9f,{metalness:.35,roughness:.45}),upr.length);
+  upr.forEach((p,i)=>{o.position.set(p[0],p[1],p[2]);o.updateMatrix();um.setMatrixAt(i,o.matrix);});
+  const bm=new THREE.InstancedMesh(bgeo(.08,.14,2.9),mat(0xe8701a,{metalness:.25,roughness:.5}),beams.length);
+  beams.forEach((p,i)=>{o.position.set(p[0],p[1],p[2]);o.updateMatrix();bm.setMatrixAt(i,o.matrix);});
+  um.castShadow=bm.castShadow=um.receiveShadow=bm.receiveShadow=true;scene.add(um,bm);
+})();
+
+/* ---------- pallets & slots ---------- */
+const PAL_COLORS=[0xc79c6a,0xb98a58,0xd8b383,0xe9edef,0xe9edef,0x3d6fb3,0x4f8f3a,0xb84a3c];
+const CLS_MAT={A:mat(0xe5484d,{roughness:.6}),B:mat(0xf2b705,{roughness:.6}),C:mat(0x3d7bd9,{roughness:.6})};
+const woodM=mat(0x9c7148,{roughness:.95});
+function pickClass(){const r=rand();return r<.6?'A':r<.85?'B':'C';}
+function makePallet(opt){
+  opt=opt||{};const g=new THREE.Group();box(1.2,.15,1.0,woodM,0,.075,0,g);
+  let h,c;
+  if(opt.unit){h=Math.max(.2,Math.round(opt.unit.loadH*20)/20);c=0xc79c6a;}else{h=.75+Math.floor(rand()*4)*.1;c=PAL_COLORS[Math.floor(rand()*PAL_COLORS.length)];}
+  const base=mat(c,{roughness:c===0xe9edef?.3:.85}),cls=opt.cls||pickClass();
+  const load=box(1.12,h,.94,showABC?CLS_MAT[cls]:base,0,.15+h/2,0,g);
+  g.userData={cls,born:opt.born!==undefined?opt.born:simT,load,base,H:.15+h};
+  return g;
+}
+function paintABC(){allPallets().forEach(p=>{p.userData.load.material=showABC?CLS_MAT[p.userData.cls]:p.userData.base;});}
+function allPallets(){const r=[];scene.traverse(o=>{if(o.userData&&o.userData.load)r.push(o);});return r;}
+const slots=[];
+RACK_X.forEach((rx,ri)=>[-1,1].forEach(s=>SLOT_Z.forEach(z=>LEVELS.forEach((L,li)=>{
+  const ax=rx+s*3.75;slots.push({ri,li,s,z,L,pallet:null,reserved:false,akey:String(ax),app:{x:ax,z},face:s>0?Math.PI:0,rot:0,pos:new THREE.Vector3(rx+s*.65,L,z),nc:false});
+}))));
+const ncSlots=[];
+AISLES.forEach(ax=>[-1.1,0,1.1].forEach(dx=>ncSlots.push({li:0,L:0,z:13.1,pallet:null,reserved:false,akey:String(ax),app:{x:ax+dx,z:13.1},face:-Math.PI/2,rot:Math.PI/2,pos:new THREE.Vector3(ax+dx,0,16.2),nc:true})));
+const aisleLock=new Map();
+
+/* ---------- people ---------- */
+const skinTones=[0x8d5a3b,0x6b4329,0xb07a52,0x5a3825];
+function buildPerson(vest,seated){
+  const g=new THREE.Group(),pants=mat(0x2d3440),vm=mat(vest,{roughness:.6}),skin=mat(skinTones[Math.floor(rand()*4)]),hm=mat(0xf4f4ef,{roughness:.4});
+  const hipL=new THREE.Group(),hipR=new THREE.Group();hipL.position.set(0,.88,.11);hipR.position.set(0,.88,-.11);g.add(hipL,hipR);
+  box(.16,.86,.16,pants,0,-.43,0,hipL);box(.16,.86,.16,pants,0,-.43,0,hipR);
+  if(seated)hipL.rotation.z=hipR.rotation.z=Math.PI/2;
+  box(.26,.62,.44,vm,0,1.2,0,g);
+  const armL=new THREE.Group(),armR=new THREE.Group();armL.position.set(0,1.46,.28);armR.position.set(0,1.46,-.28);g.add(armL,armR);
+  box(.12,.6,.12,vm,0,-.3,0,armL);box(.12,.6,.12,vm,0,-.3,0,armR);
+  if(seated)armL.rotation.z=armR.rotation.z=1.0;
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.13,12,8),skin);head.position.y=1.66;head.castShadow=true;g.add(head);
+  const hel=new THREE.Mesh(new THREE.SphereGeometry(.15,12,6,0,Math.PI*2,0,Math.PI/2),hm);hel.position.y=1.7;hel.castShadow=true;g.add(hel);
+  box(.12,.03,.26,hm,.12,1.7,0,g);
+  return {g,hipL,hipR,armL,armR};
+}
+class Walker{
+  constructor(pts,speed,vest,mode,pause,startIdx){
+    Object.assign(this,buildPerson(vest));this.pts=pts;this.speed=speed;this.mode=mode;this.pause=pause||0;this.ti=(startIdx||0)%pts.length;this.dir=1;this.wait=0;this.ph=rand()*6;this.ang=0;this.moving=false;
+    const p=pts[(this.ti-1+pts.length)%pts.length];this.g.position.set(p.x,p.y!==undefined?p.y:.003,p.z);scene.add(this.g);
+  }
+  update(dt){
+    this.moving=false;
+    if(this.pts.length>1){
+      if(this.wait>0)this.wait-=dt;
+      else{const t=this.pts[this.ti],p=this.g.position,dx=t.x-p.x,dz=t.z-p.z,d=Math.hypot(dx,dz);
+        if(d<.03){if(this.mode==='loop')this.ti=(this.ti+1)%this.pts.length;else{if(this.ti===this.pts.length-1||(this.ti===0&&this.dir<0))this.dir*=-1;this.ti+=this.dir;this.wait=this.pause;}}
+        else{const want=Math.atan2(-dz,dx),diff=wrap(want-this.ang);this.ang+=clamp(diff,-5*dt,5*dt);const st=Math.min(this.speed*dt,d);p.x+=dx/d*st;p.z+=dz/d*st;this.ph+=st*3.4;this.moving=true;}}
+    }else{this.idleT=(this.idleT||0)+dt;if(this.idleT>4){this.idleT=0;this.tAng=rand()*6.28;}if(this.tAng!==undefined)this.ang+=wrap(this.tAng-this.ang)*Math.min(1,dt*2);}
+    this.g.rotation.y=this.ang;
+    const sw=this.moving?Math.sin(this.ph)*.55:0,k=Math.min(1,dt*10);
+    this.hipL.rotation.z+=(sw-this.hipL.rotation.z)*k;this.hipR.rotation.z+=(-sw-this.hipR.rotation.z)*k;
+    this.armL.rotation.z+=(-sw*.7-this.armL.rotation.z)*k;this.armR.rotation.z+=(sw*.7-this.armR.rotation.z)*k;
+  }
+}
+
+/* ---------- forklifts ---------- */
+const steelM=mat(0x59626a,{metalness:.55,roughness:.45}),blackM=mat(0x151515,{roughness:.9});
+const wheelGeo=new THREE.CylinderGeometry(.28,.28,.22,14);
+function wheel(parent,x,y,z,r,w){const piv=new THREE.Group();piv.position.set(x,y,z);parent.add(piv);
+  const m=new THREE.Mesh(r?new THREE.CylinderGeometry(r,r,w,16):wheelGeo,blackM);m.rotation.x=Math.PI/2;m.castShadow=true;piv.add(m);
+  box(.06,(r||.28)*1.1,.06,mat(0x9aa3a8,{metalness:.5}),0,0,0,piv,true);return piv;}
+function buildForklift(color,id){
+  const g=new THREE.Group(),bm=mat(color,{roughness:.5});
+  box(1.5,.75,1.1,bm,-.05,.55,0,g);box(.45,.95,1.12,darkM,-.82,.62,0,g);box(.7,.35,.9,bm,-.2,1.05,0,g);
+  box(.42,.12,.5,blackM,-.32,1.27,0,g);box(.1,.5,.5,blackM,-.54,1.5,0,g);
+  [[.42,.5],[.42,-.5],[-.66,.5],[-.66,-.5]].forEach(([x,z])=>box(.06,1.0,.06,darkM,x,1.7,z,g));
+  box(1.2,.06,1.1,darkM,-.12,2.22,0,g);
+  const roofTex=canvasTex(128,128,(x,w,h)=>{x.fillStyle='#2a2e2b';x.fillRect(0,0,w,h);txt(x,'0'+(id+1),w/2,h/2+4,84,'#'+color.toString(16).padStart(6,'0'),Math.PI/2);});
+  const roof=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshStandardMaterial({map:roofTex}));roof.rotation.x=-Math.PI/2;roof.position.set(-.12,2.26,0);g.add(roof);
+  const wheels=[wheel(g,.5,.28,.5),wheel(g,.5,.28,-.5),wheel(g,-.6,.24,.5,.24,.2),wheel(g,-.6,.24,-.5,.24,.2)];
+  const mast=new THREE.Group();mast.position.x=.82;g.add(mast);
+  box(.08,2.3,.08,steelM,0,1.15,.38,mast);box(.08,2.3,.08,steelM,0,1.15,-.38,mast);box(.08,.08,.84,steelM,0,2.28,0,mast);
+  const inner=new THREE.Group();mast.add(inner);
+  box(.06,2.2,.06,steelM,.07,1.15,.3,inner);box(.06,2.2,.06,steelM,.07,1.15,-.3,inner);box(.06,.06,.66,steelM,.07,2.24,0,inner);
+  const lift=new THREE.Group();lift.position.x=.9;g.add(lift);
+  box(.06,.7,1.0,darkM,0,.4,0,lift);box(1.15,.05,.12,steelM,.6,.025,.3,lift);box(1.15,.05,.12,steelM,.6,.025,-.3,lift);
+  const bmat=new THREE.MeshStandardMaterial({color:0x331a00,emissive:0xff8a00,emissiveIntensity:0});
+  const beacon=new THREE.Mesh(new THREE.SphereGeometry(.08,10,8),bmat);beacon.position.set(-.62,2.32,0);g.add(beacon);
+  const smat=new THREE.MeshBasicMaterial({color:0x2a7bff,transparent:true,opacity:.5,depthWrite:false});
+  const spot=new THREE.Mesh(new THREE.CircleGeometry(.36,20),smat);spot.rotation.x=-Math.PI/2;spot.position.set(3.4,.02,0);g.add(spot);
+  const drv=buildPerson(id%2?0xff7a1a:0xd7f03a,true);drv.g.position.set(-.32,.42,0);drv.g.scale.setScalar(.95);g.add(drv.g);
+  g.traverse(o=>{if(o.isMesh&&o!==spot)o.castShadow=true;});
+  return {g,lift,inner,bmat,smat,wheels};
+}
+class Forklift{
+  constructor(id,color,spot){
+    this.id=id;this.name='MC-0'+(id+1);Object.assign(this,buildForklift(color,id));
+    this.g.position.set(spot.x,0,spot.z);this.ang=-Math.PI/2;this.g.rotation.y=this.ang;this.park=spot;
+    this.h=.15;this.cmds=[];this.cur=null;this.task=null;this.carry=null;this.parked=true;this.goingPark=false;
+    this.blockT=0;this.blockedByWalker=false;this.moving=false;this.dist=0;this.lastDist=0;this.t=rand()*5;this.busyT=0;
+    this.lane=CORR_Z+((id%5)-2)*.85;scene.add(this.g);this.setLift();
+  }
+  fwd(){return{x:Math.cos(this.ang),z:-Math.sin(this.ang)};}
+  setLift(){this.lift.position.y=this.h;this.inner.position.y=Math.max(0,this.h-1.15);}
+  pick(p){this.lift.attach(p);this.carry=p;}
+  dropTo(parent,pos,rot){const p=this.carry;this.carry=null;parent.attach(p);p.position.copy(pos);p.rotation.set(0,rot||0,0);return p;}
+  blockedAhead(dt){
+    if(this.blockT<0){this.blockT=Math.min(0,this.blockT+dt);return false;}
+    const f=this.fwd(),p=this.g.position;
+    const hit=(o,reach,w)=>{const rx=o.x-p.x,rz=o.z-p.z,al=rx*f.x+rz*f.z;return al>.3&&al<reach&&Math.abs(rx*f.z-rz*f.x)<w;};
+    let b=false,byW=false;
+    if(cfg.brake)for(const w of walkers){if(hit(w.g.position,3.4,1.15)){b=true;byW=true;break;}}
+    if(!b)for(const o of forklifts){if(o===this)continue;if(hit(o.g.position,3.1,1.0)){
+      const of=o.fwd(),rx=p.x-o.g.position.x,rz=p.z-o.g.position.z,al=rx*of.x+rz*of.z;
+      const mutual=al>.3&&al<3.1&&Math.abs(rx*of.z-rz*of.x)<1.0&&o.moving;
+      if(mutual&&this.id<o.id)continue;b=true;break;}}
+    if(byW&&!this.blockedByWalker)stats.stops++;
+    this.blockedByWalker=byW;
+    if(b){this.blockT+=dt;if(this.blockT>4){this.blockT=-1.8;return false;}return true;}
+    this.blockT=Math.max(0,this.blockT-dt);return false;
+  }
+  addDist(st){this.dist+=st;if(this.task)stats.dist+=Math.abs(st);}
+  go(c,dt){
+    if(c.i===undefined)c.i=0;const p=this.g.position;
+    while(c.i<c.pts.length&&Math.hypot(c.pts[c.i].x-p.x,c.pts[c.i].z-p.z)<.02){p.x=c.pts[c.i].x;p.z=c.pts[c.i].z;c.i++;}
+    if(c.i>=c.pts.length)return true;
+    const t=c.pts[c.i],dx=t.x-p.x,dz=t.z-p.z,d=Math.hypot(dx,dz),want=Math.atan2(-dz,dx),diff=wrap(want-this.ang),tr=2.6*dt;
+    if(Math.abs(diff)<=tr)this.ang=want;else this.ang+=Math.sign(diff)*tr;
+    if(Math.abs(diff)>.3)return false;
+    if(this.blockedAhead(dt))return false;
+    const sp=(this.carry?2.5:3.3)*(Math.abs(diff)>.08?.5:1),st=Math.min(sp*dt,d);
+    p.x+=dx/d*st;p.z+=dz/d*st;this.addDist(st);this.moving=true;return false;
+  }
+  turn(a,dt){const diff=wrap(a-this.ang),tr=2.2*dt;if(Math.abs(diff)<=tr){this.ang=a;return true;}this.ang+=Math.sign(diff)*tr;return false;}
+  liftTo(h,dt){const r=(this.carry?.7:1.0)*dt,d=h-this.h;if(Math.abs(d)<=r){this.h=h;return true;}this.h+=Math.sign(d)*r;return false;}
+  mv(c,dt){if(c.left===undefined)c.left=Math.abs(c.d);const sp=c.left>1.3?2.0:.9,st=Math.min(sp*dt,c.left),f=this.fwd(),s=Math.sign(c.d);
+    this.g.position.x+=f.x*st*s;this.g.position.z+=f.z*st*s;this.addDist(st);c.left-=st;this.moving=true;return c.left<=1e-5;}
+  update(dt){
+    this.moving=false;this.t+=dt;if(this.task)this.busyT+=dt;
+    for(let guard=0;guard<6;guard++){
+      if(!this.cur)this.cur=this.cmds.shift()||null;
+      if(!this.cur)break;
+      const c=this.cur;let done=false;
+      if(c.t==='go')done=this.go(c,dt);else if(c.t==='face')done=this.turn(c.a,dt);else if(c.t==='lift')done=this.liftTo(c.h,dt);
+      else if(c.t==='move')done=this.mv(c,dt);else if(c.t==='call'){c.fn();done=true;}
+      if(done){this.cur=null;if(c.t==='call')continue;}
+      break;
+    }
+    this.g.rotation.y=this.ang;this.setLift();
+    const dd=this.dist-this.lastDist;this.lastDist=this.dist;this.wheels.forEach(w=>w.rotation.z-=dd/.27);
+    this.bmat.emissiveIntensity=(this.task||this.goingPark)?(Math.sin(this.t*9)>0?2.2:.2):0;
+    this.smat.opacity=this.moving?.42+.15*Math.sin(this.t*7):0;
+  }
+}
+
+/* ---------- trucks ---------- */
+const CARRIERS=[
+  {name:'TRANSGUAJIRA',tag:'CARGA SECA · NACIONAL',bg:'#f1f3f0',fg:'#1e3a5f',stripe:'#f2b705',cab:0xe9ecea},
+  {name:'CARIBE CARGO',tag:'LOGÍSTICA DE COSTA',bg:'#2f62a8',fg:'#ffffff',stripe:'#ffffff',cab:0x1f3f6e},
+  {name:'RUTA NORTE',tag:'TRANSPORTE TERRESTRE',bg:'#b8322e',fg:'#ffffff',stripe:'#1d1d1b',cab:0xcfd3d0},
+  {name:'LOGIEXPRESS',tag:'DISTRIBUCIÓN URBANA',bg:'#2f7d3b',fg:'#ffffff',stripe:'#f2b705',cab:0x2b2f2c},
+];
+const carrierTex=CARRIERS.map(c=>canvasTex(1024,232,(x,w,h)=>{x.fillStyle=c.bg;x.fillRect(0,0,w,h);x.fillStyle=c.stripe;x.fillRect(0,h-30,w,12);txt(x,c.name,w/2,h/2-16,110,c.fg);txt(x,c.tag,w/2,h/2+56,34,c.fg,0,600);}));
+let truckSeq=101;
+class Truck{
+  constructor(dock,type,n,preDocked){
+    this.dock=dock;this.type=type;this.n=n;this.id='TRK-'+(truckSeq++);
+    const ci=Math.floor(rand()*CARRIERS.length);this.carrier=CARRIERS[ci];this.build(ci);
+    this.pal=[[],[]];this.queue=[[],[]];this.worker=[null,null];this.loaded=0;this.unloaded=0;this.dockT0=simT;
+    for(let k=0;k<n;k++){const c=k%2,r=9-Math.floor(k/2);this.queue[c].push(r);
+      if(type==='in'){const p=makePallet({unit});p.position.copy(this.palLocal(r,c));this.g.add(p);this.pal[c][r]=p;}}
+    if(type==='in')this.queue.forEach(q=>q.sort((a,b)=>a-b));
+    dock.truck=this;trucks.push(this);
+    const x0=dock.x,R=10;
+    if(preDocked){this.g.position.set(x0,YARD_Y,DOCK_Z);this.ang=Math.PI/2;this.state='opening';this.t=0;this.phases=[];}
+    else{
+      const arc=[];for(let i=1;i<=24;i++){const a=Math.PI/2*(1-i/24);arc.push({x:x0-R+R*Math.cos(a),z:-44-R+R*Math.sin(a)});}
+      this.phases=[{pts:[{x:-125,z:-44},{x:x0-R,z:-44}].concat(arc),speed:7.5,ease:true},{pause:.8},{pts:[{x:x0,z:-54},{x:x0,z:DOCK_Z}],speed:3.2,rev:true,ease:true}];
+      this.g.position.set(-125,YARD_Y,-44);this.ang=0;this.state='arrive';this.ph=0;this.pi=0;
+    }
+    this.g.rotation.y=this.ang;
+  }
+  palLocal(r,c){return new THREE.Vector3(.65+1.2*r,1.3,c===0?-.6:.6);}
+  build(ci){
+    const g=new THREE.Group(),C=this.carrier,tm=mat(parseInt(C.bg.slice(1),16),{roughness:.55}),cm=mat(C.cab,{roughness:.4,metalness:.2}),glass=mat(0x1d2c3a,{roughness:.15,metalness:.6}),rail=mat(0x8b9196,{metalness:.5});
+    box(TL,.2,2.5,mat(0x3a3d3f),TL/2,1.2,0,g);
+    box(TL,2.7,.06,tm,TL/2,2.65,1.22,g);box(TL,2.7,.06,tm,TL/2,2.65,-1.22,g);box(.06,2.7,2.5,tm,TL,2.65,0,g);
+    box(TL,.1,.12,rail,TL/2,4.02,1.22,g);box(TL,.1,.12,rail,TL/2,4.02,-1.22,g);
+    for(let i=1;i<6;i++)box(.08,.06,2.5,rail,i*2.03,4.0,0,g);
+    const sm=new THREE.MeshStandardMaterial({map:carrierTex[ci],roughness:.55});
+    const s1=new THREE.Mesh(new THREE.PlaneGeometry(TL-.2,2.6),sm);s1.position.set(TL/2,2.65,1.256);g.add(s1);
+    const s2=s1.clone();s2.rotation.y=Math.PI;s2.position.z=-1.256;g.add(s2);
+    box(15.4,.3,1.0,darkM,7.9,.82,0,g);box(.15,.15,2.3,darkM,.1,.72,0,g);
+    const tl=new THREE.MeshStandardMaterial({color:0x400000,emissive:0xff2a1a,emissiveIntensity:.9});
+    [-1.05,1.05].forEach(z=>{const l=new THREE.Mesh(bgeo(.05,.14,.3),tl);l.position.set(-.01,1.0,z);g.add(l);});
+    const cx=TL+2.4;
+    box(2.8,2.5,2.4,cm,cx,2.05,0,g);box(1.7,.75,2.3,cm,cx-.4,3.67,0,g);
+    box(.06,1.0,2.1,glass,cx+1.42,2.65,0,g);box(.9,.75,.04,glass,cx+.6,2.65,1.21,g);box(.9,.75,.04,glass,cx+.6,2.65,-1.21,g);
+    box(.06,.8,1.7,darkM,cx+1.42,1.45,0,g);box(.3,.3,2.45,mat(0xb7bec2,{metalness:.7,roughness:.3}),cx+1.55,.85,0,g);
+    const hl=new THREE.MeshStandardMaterial({color:0xfff6d0,emissive:0xfff2c0,emissiveIntensity:.8});
+    [-.85,.85].forEach(z=>{const l=new THREE.Mesh(bgeo(.05,.2,.35),hl);l.position.set(cx+1.46,1.25,z);g.add(l);});
+    [-1.1,1.1].forEach(z=>{const ex=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,3.2,8),mat(0xb7bec2,{metalness:.7}));ex.position.set(cx-1.55,2.4,z);g.add(ex);});
+    [-1,1].forEach(z=>{const ft=new THREE.Mesh(new THREE.CylinderGeometry(.32,.32,1.2,12),mat(0xc8cdd0,{metalness:.6,roughness:.3}));ft.rotation.z=Math.PI/2;ft.position.set(cx-.8,.75,z*1.1);g.add(ft);});
+    this.wheels=[];[1.3,2.5,3.7,TL-.2,TL+.9,cx+.7].forEach(x=>[-1,1].forEach(z=>this.wheels.push(wheel(g,x,.5,z,.5,.38))));
+    g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+    this.g=g;scene.add(g);
+  }
+  runPath(dt){
+    while(this.ph<this.phases.length){
+      const P=this.phases[this.ph];
+      if(P.pause){P.t=(P.t||0)+dt;if(P.t<P.pause)return false;this.ph++;this.pi=0;this.trav=0;continue;}
+      const pos=this.g.position,last=P.pts[P.pts.length-1];let sp=P.speed;
+      if(P.ease)sp*=clamp(Math.hypot(last.x-pos.x,last.z-pos.z)/6,.2,1);
+      if(P.easeIn)sp*=Math.min(1,.25+(this.trav||0)/8);
+      let s=sp*dt,moved=0;
+      while(s>1e-6&&this.pi<P.pts.length-1){
+        const t=P.pts[this.pi+1],dx=t.x-pos.x,dz=t.z-pos.z,d=Math.hypot(dx,dz);
+        if(d<1e-6){this.pi++;continue;}
+        const st=Math.min(s,d);pos.x+=dx/d*st;pos.z+=dz/d*st;s-=st;moved+=st;
+        this.ang=P.rev?Math.atan2(dz,-dx):Math.atan2(-dz,dx);if(st>=d-1e-9)this.pi++;
+      }
+      this.trav=(this.trav||0)+moved;this.g.rotation.y=this.ang;
+      this.wheels.forEach(w=>w.rotation.z-=(P.rev?-moved:moved)/.5);
+      if(this.pi>=P.pts.length-1){this.ph++;this.pi=0;this.trav=0;}
+      return this.ph>=this.phases.length;
+    }
+    return true;
+  }
+  isDone(){return this.type==='in'?(!this.queue[0].length&&!this.queue[1].length&&!this.worker[0]&&!this.worker[1]):this.loaded>=this.n;}
+  update(dt){
+    switch(this.state){
+      case 'arrive':if(this.runPath(dt)){this.state='opening';this.t=0;this.dockT0=simT;log(`${this.id} atracó en Muelle ${this.dock.i+1}`);}break;
+      case 'opening':this.t+=dt;if(this.t>1.6)this.state='service';break;
+      case 'service':if(this.isDone()){this.state='closing';this.t=0;stats.trucks++;stats.dwellSum+=simT-this.dockT0;stats.dwellN++;
+        log(this.type==='in'?`Muelle ${this.dock.i+1}: descargue completo (${this.n} pallets)`:`Muelle ${this.dock.i+1}: ${this.id} cargado y sellado`);}break;
+      case 'closing':this.t+=dt;if(this.t>1.4){this.state='depart';const x0=this.dock.x,R=10,arc=[];
+        for(let i=1;i<=24;i++){const a=Math.PI+Math.PI/2*i/24;arc.push({x:x0+R+R*Math.cos(a),z:-48+R*Math.sin(a)});}
+        this.phases=[{pts:[{x:x0,z:DOCK_Z},{x:x0,z:-48}].concat(arc,[{x:140,z:-58}]),speed:7,easeIn:true}];this.ph=0;this.pi=0;this.trav=0;}break;
+      case 'depart':{const end=this.runPath(dt);if(this.dock.truck===this&&this.g.position.z<-38)this.dock.truck=null;
+        if(end){this.state='gone';scene.remove(this.g);}break;}
+    }
+  }
+}
+
+/* ---------- world state ---------- */
+let trucks=[],forklifts=[],walkers=[],waitQ=[],simT=0,nextArr=0,lastSpawn=-99,ended=false,conflictCD=new Map();
+let stats={};
+function newStats(){return{trucks:0,received:0,shipped:0,dwellSum:0,dwellN:0,waitSum:0,waitN:0,dist:0,ageSum:0,stops:0,conflicts:0,nonconf:0};}
+function cost(s,dx){return Math.abs(s.app.x-dx)+Math.abs(s.z-CORR_Z)+s.L*4;}
+function route(f,from,to){const cz=f.lane,pts=[];const add=(x,z)=>{const l=pts[pts.length-1]||from;if(Math.hypot(l.x-x,l.z-z)>.05)pts.push({x,z});};add(from.x,cz);add(to.x,cz);add(to.x,to.z);return pts;}
+function preferFree(c){const f=c.filter(s=>!aisleLock.has(s.akey));return f.length?f:c;}
+function pickInSlot(p,dx){
+  if(p.userData.H>RACK_MAX_H+1e-6){const c=ncSlots.filter(s=>!s.pallet&&!s.reserved);return c.length?preferFree(c)[Math.floor(rand()*preferFree(c).length)]:null;}
+  let c=slots.filter(s=>!s.reserved&&!s.pallet);if(!c.length)return null;c=preferFree(c);
+  if(cfg.slotting==='random')return c[Math.floor(rand()*c.length)];
+  const cls=p.userData.cls;let best=null,bs=1e9;
+  for(const s of c){const k=cost(s,dx);const sc=(cls==='A'?k:cls==='B'?Math.abs(k-30):-k)+rand()*2;if(sc<bs){bs=sc;best=s;}}
+  return best;
+}
+function pickOutSlot(){
+  let c=slots.filter(s=>s.pallet&&!s.reserved);if(!c.length)return null;
+  const want=pickClass(),cc=c.filter(s=>s.pallet.userData.cls===want);if(cc.length)c=cc;c=preferFree(c);
+  if(cfg.dispatch==='random')return c[Math.floor(rand()*c.length)];
+  let best=null;for(const s of c){if(!best||(cfg.dispatch==='fifo'?s.pallet.userData.born<best.pallet.userData.born:s.pallet.userData.born>best.pallet.userData.born))best=s;}
+  return best;
+}
+function lockAisle(s,f){s.reserved=true;if(!aisleLock.has(s.akey))aisleLock.set(s.akey,f.id);}
+function releaseAisle(s,f){if(aisleLock.get(s.akey)===f.id)aisleLock.delete(s.akey);}
+function jobIn(f,t,c,slot){
+  const r=t.queue[c].shift(),p=t.pal[c][r],cx=t.dock.x+(c===0?-.6:.6),pz=DOCK_Z-(.65+1.2*r),d=APP_Z-(pz+1.6);
+  const A={x:cx,z:APP_Z},B=slot.app,L=slot.L,cur={x:f.g.position.x,z:f.g.position.z};
+  t.worker[c]=f;lockAisle(slot,f);f.task={kind:'in',t};
+  f.cmds=[{t:'lift',h:.15},{t:'go',pts:route(f,cur,A)},{t:'face',a:Math.PI/2},{t:'lift',h:.02},{t:'move',d},
+    {t:'call',fn:()=>{f.pick(p);t.pal[c][r]=null;}},{t:'lift',h:.22},{t:'move',d:-d},
+    {t:'call',fn:()=>{t.worker[c]=null;t.unloaded++;}},{t:'lift',h:.32},{t:'go',pts:route(f,A,B)},{t:'face',a:slot.face},
+    {t:'lift',h:L+.27},{t:'move',d:1.5},{t:'lift',h:L+.02},
+    {t:'call',fn:()=>{f.dropTo(scene,slot.pos,slot.rot);slot.pallet=p;slot.reserved=false;stats.received++;
+      if(slot.nc){p.userData.ncT=simT;stats.nonconf++;log(`⚠ ${f.name}: pallet de ${nf(p.userData.H,2)} m no cabe en rack → zona no conforme`);}}},
+    {t:'lift',h:Math.max(0,L-.02)},{t:'move',d:-1.5},{t:'call',fn:()=>releaseAisle(slot,f)},{t:'lift',h:.15},{t:'call',fn:()=>{f.task=null;}}];
+}
+function jobOut(f,t,c,slot){
+  const r=t.queue[c].shift(),cx=t.dock.x+(c===0?-.6:.6),pz=DOCK_Z-(.65+1.2*r),d=APP_Z-(pz+1.6);
+  const A={x:cx,z:APP_Z},B=slot.app,L=slot.L,cur={x:f.g.position.x,z:f.g.position.z},p=slot.pallet;
+  t.worker[c]=f;lockAisle(slot,f);f.task={kind:'out',t};
+  f.cmds=[{t:'lift',h:.15},{t:'go',pts:route(f,cur,B)},{t:'face',a:slot.face},{t:'lift',h:L+.02},{t:'move',d:1.5},
+    {t:'call',fn:()=>{f.pick(p);slot.pallet=null;slot.reserved=false;}},{t:'lift',h:L+.22},{t:'move',d:-1.5},
+    {t:'call',fn:()=>releaseAisle(slot,f)},{t:'lift',h:.32},{t:'go',pts:route(f,B,A)},{t:'face',a:Math.PI/2},
+    {t:'lift',h:.27},{t:'move',d},{t:'lift',h:.02},
+    {t:'call',fn:()=>{f.dropTo(t.g,t.palLocal(r,c),0);t.loaded++;stats.shipped++;stats.ageSum+=simT-p.userData.born;}},
+    {t:'lift',h:0},{t:'move',d:-d},{t:'call',fn:()=>{t.worker[c]=null;}},{t:'lift',h:.15},{t:'call',fn:()=>{f.task=null;}}];
+}
+function findWork(f){
+  const list=trucks.filter(t=>t.state==='service').sort((a,b)=>Math.abs(a.dock.x-f.g.position.x)-Math.abs(b.dock.x-f.g.position.x));
+  for(const t of list)for(const c of (rand()<.5?[0,1]:[1,0])){
+    if(t.worker[c]||!t.queue[c].length)continue;
+    let slot;
+    if(t.type==='in'){const r=t.queue[c][0];slot=pickInSlot(t.pal[c][r],t.dock.x);}else slot=pickOutSlot();
+    if(!slot)continue;
+    f.cmds=[];f.cur=null;f.parked=false;f.goingPark=false;
+    if(t.type==='in')jobIn(f,t,c,slot);else jobOut(f,t,c,slot);return true;
+  }
+  return false;
+}
+let dispatchT=0;
+function dispatch(dt){
+  dispatchT-=dt;if(dispatchT>0)return;dispatchT=.25;
+  for(const f of forklifts){
+    if(f.task||findWork(f))continue;
+    if(!f.parked&&!f.goingPark){f.goingPark=true;const cur={x:f.g.position.x,z:f.g.position.z};
+      f.cmds=[{t:'lift',h:.15},{t:'go',pts:route(f,cur,f.park)},{t:'face',a:-Math.PI/2},{t:'call',fn:()=>{f.parked=true;f.goingPark=false;}}];f.cur=null;}
+  }
+}
+const occupancy=()=>slots.filter(s=>s.pallet).length/slots.length;
+function spawnTruck(d){
+  const occ=occupancy();let type=rand()*100<cfg.mix?'in':'out';if(occ>.88)type='out';if(occ<.08)type='in';
+  let n=clamp(cfg.load+Math.round((rand()-.5)*4),2,20);
+  if(type==='out'){const av=slots.filter(s=>s.pallet&&!s.reserved).length;if(av<2)type='in';else n=Math.min(n,av);}
+  const t=new Truck(d,type,n,false);
+  log(`${t.id} (${t.carrier.name}) va al Muelle ${d.i+1} · ${type==='in'?'descargue':'cargue'} de ${n} pallets`);
+}
+function arrivals(dt){
+  nextArr-=dt;
+  if(nextArr<=0){waitQ.push({t:simT});nextArr=cfg.interval*60/TS*(.6+rand()*.8);
+    if(!docks.some(d=>d.enabled&&!d.truck))log(`Camión en portería esperando muelle (cola: ${waitQ.length})`);}
+  if(waitQ.length&&simT-lastSpawn>=7){const free=docks.filter(d=>d.enabled&&!d.truck);
+    if(free.length){const e=waitQ.shift();stats.waitSum+=simT-e.t;stats.waitN++;spawnTruck(free[Math.floor(rand()*free.length)]);lastSpawn=simT;}}
+}
+function ncReturns(){ncSlots.forEach(s=>{if(s.pallet&&!s.reserved&&simT-s.pallet.userData.ncT>60*60/TS){scene.remove(s.pallet);s.pallet=null;log('Pallet no conforme devuelto al proveedor');}});}
+function safetyCheck(){
+  for(const f of forklifts){if(!f.moving)continue;
+    for(let i=0;i<walkers.length;i++){const w=walkers[i];const d=Math.hypot(w.g.position.x-f.g.position.x,w.g.position.z-f.g.position.z);
+      const k=f.id+'-'+i;if(d<1.05&&(conflictCD.get(k)||-99)<simT){conflictCD.set(k,simT+8);stats.conflicts++;log(`⚠ Conflicto peatón–montacargas (${f.name})`);}}}
+}
+
+function resetWorld(){
+  trucks.forEach(t=>scene.remove(t.g));forklifts.forEach(f=>scene.remove(f.g));walkers.forEach(w=>scene.remove(w.g));
+  slots.concat(ncSlots).forEach(s=>{if(s.pallet)scene.remove(s.pallet);s.pallet=null;s.reserved=false;});
+  trucks=[];forklifts=[];walkers=[];waitQ=[];aisleLock.clear();conflictCD.clear();
+  simT=0;stats=newStats();ended=false;lastSpawn=-99;logItems.length=0;renderLog();$('expBanner').hidden=true;
+  docks.forEach(d=>{d.enabled=d.i<cfg.docks;d.truck=null;d.doorF=0;});
+  slots.forEach(s=>{if(rand()*100<cfg.occ0){const p=makePallet({born:-rand()*72*3600/TS});p.position.copy(s.pos);scene.add(p);s.pallet=p;}});
+  for(let i=0;i<cfg.forklifts;i++)forklifts.push(new Forklift(i,i===0?0x39a900:0xf2b705,PARK[i]));
+  const loop=[{x:-28.6,z:-12.6},{x:-28.6,z:18.6},{x:28.6,z:18.6},{x:28.6,z:-12.6}],rev=loop.slice().reverse(),vests=[0xd7f03a,0xff7a1a,0x39a900];
+  for(let i=0;i<cfg.walkers;i++)walkers.push(new Walker(i%2?rev:loop,1.2+rand()*.3,vests[i%3],'loop',0,i%4));
+  docks.forEach((d,i)=>{if(d.enabled)walkers.push(new Walker([{x:d.x+2.6,z:-18.9},{x:d.x+2.6,z:-15.4}],.8,i%2?0xff7a1a:0xd7f03a,'pingpong',2.5+rand()*2,1));});
+  walkers.push(new Walker([{x:-63.8,z:-66.6,y:YARD_Y}],0,0x39a900,'idle'));
+  const en=docks.filter(d=>d.enabled);
+  new Truck(en[1%en.length],'in',cfg.load,true);
+  if(en.length>=3)new Truck(en[en.length-1],'out',Math.min(Math.max(2,cfg.load-4),slots.filter(s=>s.pallet).length||2),true);
+  nextArr=cfg.interval*60/TS*.4;
+  log(`Escenario iniciado · ${cfg.forklifts} montacargas · ${cfg.docks} muelles`);
+  followIdx=-1;
+}
+
+/* ---------- KPIs ---------- */
+const KPI=[
+  ['Flujo de camiones',[['hrs','Tiempo simulado','h',1],['trucks','Camiones atendidos','',0],['queue','Camiones en cola','',0],['waitAvg','Espera prom. en cola','min',1],['dwellAvg','Tiempo prom. en muelle','min',1]]],
+  ['Productividad',[['received','Pallets recibidos','',0],['shipped','Pallets despachados','',0],['prod','Productividad total','pallets/h',1],['prodMC','Por montacargas','pallets/h',1],['util','Utilización montacargas','%',0],['dist','Distancia prom. por pallet','m',1]]],
+  ['Inventario',[['occ','Ocupación de racks','%',0],['age','Antigüedad prom. despachada','h',1],['nonconf','Pallets no conformes','',0]]],
+  ['Seguridad',[['stops','Frenadas por peatón','',0],['conflicts','Conflictos peatón–montacargas','',0]]]
+];
+function kpis(){
+  const hrs=simT*TS/3600,moved=stats.received+stats.shipped;
+  const util=forklifts.length&&simT>0?forklifts.reduce((a,f)=>a+f.busyT,0)/forklifts.length/simT*100:0;
+  return{hrs,trucks:stats.trucks,queue:waitQ.length,waitAvg:stats.waitN?stats.waitSum/stats.waitN*TS/60:0,dwellAvg:stats.dwellN?stats.dwellSum/stats.dwellN*TS/60:0,
+    received:stats.received,shipped:stats.shipped,prod:hrs>0?moved/hrs:0,prodMC:hrs>0&&forklifts.length?moved/hrs/forklifts.length:0,util,dist:moved?stats.dist/moved:0,
+    occ:occupancy()*100,age:stats.shipped?stats.ageSum/stats.shipped*TS/3600:0,nonconf:stats.nonconf,stops:stats.stops,conflicts:stats.conflicts};
+}
+const SL={random:'aleatoria',abc:'ABC'},DL={fifo:'FIFO',lifo:'LIFO',random:'sin control'};
+function cfgSummary(){return `${cfg.forklifts} MC · ${cfg.docks} muelles · camión c/${cfg.interval} min · ${cfg.load} pallets · ${cfg.mix}% entrada · ubicación ${SL[cfg.slotting]} · despacho ${DL[cfg.dispatch]} · ${cfg.walkers} peatones · frenado ${cfg.brake?'sí':'no'}${unit?` · unidad ${nf(unit.total,2)} m`:''}`;}
+function kpiText(k){return KPI.map(([g,items])=>items.map(([key,l,u,d])=>`${l}: ${nf(k[key],d)}${u?' '+u:''}`).join('; ')).join('\n');}
+$('kpiGroups').innerHTML=KPI.map(([g,items])=>`<h2>${g}</h2><div class="kgroup">${items.map(([key,l,u])=>`<div class="tile"><span>${l}</span><b id="k_${key}">0</b></div>`).join('')}</div>`).join('');
+
+/* ---------- log & HUD ---------- */
+const logItems=[];
+const clock=()=>{const s=21600+Math.floor(simT*TS),m=Math.floor(s/60);return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');};
+function renderLog(){$('log').innerHTML=logItems.map(l=>`<li><time>${l.t}</time>${l.msg}</li>`).join('');}
+function log(msg){logItems.unshift({t:clock(),msg});if(logItems.length>8)logItems.length=8;renderLog();}
+function hud(){
+  const k=kpis();
+  $('mClock').textContent=clock();$('mQueue').textContent=k.queue;$('mQueue').className=k.queue>2?'warn':'';$('mIn').textContent=k.received;$('mOut').textContent=k.shipped;$('mOcc').textContent=Math.round(k.occ)+'%';
+  KPI.forEach(([g,items])=>items.forEach(([key,l,u,d])=>{const el=$('k_'+key);if(el)el.innerHTML=nf(k[key],d)+(u?`<small>${u}</small>`:'');}));
+  $('fuBars').innerHTML=forklifts.map(f=>{const u=simT>0?f.busyT/simT*100:0;return `<div class="bar-r"><span>${f.name}</span><div class="meter"><i style="width:${u.toFixed(1)}%"></i></div><b>${Math.round(u)}%</b></div>`;}).join('');
+  $('dockList').innerHTML=docks.map(d=>{const t=d.truck;let s,tag='<span class="tag">—</span>',w=0,cls='dock';
+    if(!d.enabled)s='Cerrado';else if(!t)s='Libre';else{cls+=t.type==='out'?' out':'';tag=`<span class="tag ${t.type}">${t.type==='in'?'Entrada':'Salida'}</span>`;const done=t.type==='in'?t.unloaded:t.loaded;w=done/t.n*100;
+      s=t.state==='arrive'?`${t.id} llegando`:t.state==='opening'?'Abriendo puerta':t.state==='service'?(t.type==='in'?`Descargando ${done}/${t.n}`:`Cargando ${done}/${t.n}`):'Saliendo';}
+    return `<div class="${cls}"><span class="n">M${d.i+1}</span><span class="s">${s}</span>${tag}<div class="meter"><i style="width:${w}%"></i></div></div>`;}).join('');
+  $('bFollow').textContent=followIdx>=0&&forklifts[followIdx]?forklifts[followIdx].name:'Montacargas';
+}
+
+/* ---------- camera ---------- */
+const cam={target:new THREE.Vector3(0,0,-14),r:92,th:Math.PI+.62,ph:.92};
+const goal={target:cam.target.clone(),r:cam.r,th:cam.th,ph:cam.ph};
+let followIdx=-1;
+const PRESETS={general:{t:[0,0,-14],r:92,th:Math.PI+.62,ph:.92},docks:{t:[0,0,-24],r:46,th:Math.PI+.42,ph:1.0},racks:{t:[0,1,5],r:48,th:Math.PI-.45,ph:.72}};
+function pressCam(name){document.querySelectorAll('#gCam button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===name)));}
+function setCam(name){pressCam(name);
+  if(name==='follow'){followIdx=(followIdx+1)%forklifts.length;goal.r=16;goal.ph=.95;return;}
+  followIdx=-1;const p=PRESETS[name];goal.target.set(p.t[0],p.t[1],p.t[2]);goal.r=p.r;goal.th=p.th;goal.ph=p.ph;}
+document.querySelectorAll('#gCam button').forEach(b=>b.addEventListener('click',()=>setCam(b.dataset.c)));
+function camUpdate(dt){
+  if(followIdx>=0&&forklifts[followIdx]){const fp=forklifts[followIdx].g.position;goal.target.set(fp.x,1,fp.z);}
+  const k=1-Math.exp(-dt*4);cam.target.lerp(goal.target,k);cam.r+=(goal.r-cam.r)*k;cam.th+=wrap(goal.th-cam.th)*k;cam.ph+=(goal.ph-cam.ph)*k;
+  const sp=Math.sin(cam.ph);camera.position.set(cam.target.x+cam.r*sp*Math.sin(cam.th),cam.target.y+cam.r*Math.cos(cam.ph),cam.target.z+cam.r*sp*Math.cos(cam.th));camera.lookAt(cam.target);
+}
+function rotateBy(dx,dy){goal.th-=dx*.006;goal.ph=clamp(goal.ph-dy*.005,.18,1.42);cam.th=goal.th;cam.ph=goal.ph;}
+function zoomBy(f){goal.r=clamp(goal.r*f,8,170);}
+function panBy(dx,dy){if(followIdx>=0){followIdx=-1;pressCam('');}
+  const s=goal.r*.0016,rx=Math.cos(goal.th),rz=-Math.sin(goal.th),fx=-Math.sin(goal.th),fz=-Math.cos(goal.th);
+  goal.target.x=clamp(goal.target.x-rx*dx*s+fx*dy*s,-90,90);goal.target.z=clamp(goal.target.z-rz*dx*s+fz*dy*s,-90,40);cam.target.copy(goal.target);}
+const ptrs=new Map();let pinch=null;
+canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY,pan:e.button===2||e.shiftKey});pinch=null;});
+canvas.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+  if(ptrs.size===1){if(p.pan)panBy(dx,dy);else rotateBy(dx,dy);}
+  else if(ptrs.size===2){const [a,b]=[...ptrs.values()],d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;if(pinch){zoomBy(pinch.d/Math.max(1,d));panBy(mx-pinch.mx,my-pinch.my);}pinch={d,mx,my};}});
+const endPtr=e=>{ptrs.delete(e.pointerId);pinch=null;};
+canvas.addEventListener('pointerup',endPtr);canvas.addEventListener('pointercancel',endPtr);
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoomBy(Math.exp(e.deltaY*.0012));},{passive:false});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+
+/* ---------- UI: bar, tabs, toast ---------- */
+let speed=1,paused=false;
+function setPaused(v){paused=v;$('bPause').textContent=v?'Reanudar':'Pausa';$('bPause').setAttribute('aria-pressed',String(v));}
+$('bPause').addEventListener('click',()=>{if(ended&&paused){ended=false;$('expBanner').hidden=true;}setPaused(!paused);});
+document.querySelectorAll('#gSpeed button').forEach(b=>b.addEventListener('click',()=>{speed=+b.dataset.s;document.querySelectorAll('#gSpeed button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
+function setDrawer(open){$('drawer').classList.toggle('closed',!open);$('bar').classList.toggle('full',!open);$('bPanel').setAttribute('aria-pressed',String(open));}
+$('bPanel').addEventListener('click',()=>setDrawer($('drawer').classList.contains('closed')));
+if(isNarrow)setDrawer(false);
+function showTab(id){document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===id)));
+  ['esc','kpi','uni','gui'].forEach(t=>$('tp-'+t).hidden=t!==id);if(id==='uni')calc();try{localStorage.setItem('cedi-tab',id);}catch(e){}}
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2200);}
+function copyText(t,fb){
+  const fall=()=>{fb.value=t;fb.hidden=false;fb.focus();fb.select();toast('Selecciona el texto y cópialo (Ctrl+C)');};
+  try{navigator.clipboard.writeText(t).then(()=>{fb.hidden=true;toast('Copiado al portapapeles');},fall);}catch(e){fall();}
+}
+let dl=null;
+const inClaude=!!(window.claude&&window.claude.use);
+if(!inClaude)document.querySelectorAll('.needs-dl').forEach(b=>b.hidden=false);
+else (async()=>{try{dl=await window.claude.use('downloads');}catch(e){dl=null;}document.querySelectorAll('.needs-dl').forEach(b=>b.hidden=!dl);})();
+function browserSave(name,data){try{const blob=new Blob([data],{type:name.endsWith('.csv')?'text/csv;charset=utf-8':'text/plain;charset=utf-8'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);toast('Archivo descargado');}catch(e){toast('No se pudo descargar; usa Copiar.');}}
+async function saveFile(name,data){if(!inClaude){browserSave(name,data);return;}if(!dl)return;try{await dl.save({filename:name,data});toast('Archivo listo');}catch(e){if(e&&e.code==='declined')return;toast('No se pudo guardar aquí; usa Copiar.');}}
+
+/* ---------- Escenario form ---------- */
+const F={forklifts:['cfForklifts','oForklifts',v=>v],docks:['cfDocks','oDocks',v=>v],interval:['cfInterval','oInterval',v=>`cada ${v} min`],load:['cfLoad','oLoad',v=>v],mix:['cfMix','oMix',v=>`${v}%`],occ0:['cfOcc','oOcc',v=>`${v}%`],walkers:['cfWalkers','oWalkers',v=>v]};
+function syncForm(){
+  Object.entries(F).forEach(([k,[i,o,fmt]])=>{$(i).value=cfg[k];$(o).textContent=fmt(cfg[k]);});
+  $('cfSlotting').value=cfg.slotting;$('cfDispatch').value=cfg.dispatch;$('cfBrake').checked=cfg.brake;$('cfDuration').value=String(cfg.duration);$('cfABC').checked=showABC;
+}
+Object.entries(F).forEach(([k,[i,o,fmt]])=>$(i).addEventListener('input',()=>{$(o).textContent=fmt(+$(i).value);}));
+function readForm(){Object.entries(F).forEach(([k,[i]])=>cfg[k]=+$(i).value);cfg.slotting=$('cfSlotting').value;cfg.dispatch=$('cfDispatch').value;cfg.brake=$('cfBrake').checked;cfg.duration=+$('cfDuration').value;}
+function applyCfg(over){if(over){Object.assign(cfg,DEFAULT_CFG,over);syncForm();}else readForm();resetWorld();setPaused(false);hud();toast('Escenario reiniciado');}
+$('bApply').addEventListener('click',()=>applyCfg());
+$('bDefaults').addEventListener('click',()=>{Object.assign(cfg,DEFAULT_CFG);syncForm();});
+$('cfABC').addEventListener('change',()=>{showABC=$('cfABC').checked;paintABC();});
+function unitUI(){if(unit){$('unitStatus').textContent=`Unidad diseñada: ${unit.label}. Altura total ${nf(unit.total,2)} m ${unit.total>RACK_MAX_H?'· NO cabe en racks':'· cabe en racks'}.`;$('bUnitReset').hidden=false;}
+  else{$('unitStatus').textContent='Carga variada (alturas entre 0,9 y 1,2 m).';$('bUnitReset').hidden=true;}}
+$('bUnitReset').addEventListener('click',()=>{unit=null;unitUI();toast('Los próximos camiones traerán carga variada');});
+
+/* ---------- Unitarización ---------- */
+const PAL={iso:{n:'ISO 1200×1000',L:120,W:100,H:14.4,kg:25},ame:{n:'Americano 1219×1016',L:121.9,W:101.6,H:14.4,kg:25},eur:{n:'Europallet 1200×800',L:120,W:80,H:14.4,kg:25}};
+const VEH=[
+  {n:"Contenedor 20' estándar",L:589,W:235,H:239,kg:28200},{n:"Contenedor 40' estándar",L:1203,W:235,H:239,kg:26700},{n:"Contenedor 40' High Cube",L:1203,W:235,H:269,kg:26500},
+  {n:'Tractomula furgón (12,2 m)',L:1220,W:245,H:260,kg:34000},{n:'Camión sencillo furgón',L:740,W:245,H:240,kg:10000},{n:'Turbo furgón',L:450,W:220,H:220,kg:4500}];
+let selVeh=0,layerView=1,calcRes=null;
+function gridR(x0,y0,L,W,a,b){const nx=Math.floor((L+1e-9)/a),ny=Math.floor((W+1e-9)/b),r=[];for(let i=0;i<nx;i++)for(let j=0;j<ny;j++)r.push({x:x0+i*a,y:y0+j*b,w:a,h:b});return r;}
+function fit2D(L,W,a,b,g){
+  a+=g;b+=g;L+=g;W+=g;let best=[];const c=r=>{if(r.length>best.length)best=r;};
+  c(gridR(0,0,L,W,a,b));c(gridR(0,0,L,W,b,a));
+  for(let i=1;i*b<=W;i++)c(gridR(0,0,L,i*b,a,b).concat(gridR(0,i*b,L,W-i*b,b,a)));
+  for(let i=1;i*a<=W;i++)c(gridR(0,0,L,i*a,b,a).concat(gridR(0,i*a,L,W-i*a,a,b)));
+  for(let j=1;j*a<=L;j++)c(gridR(0,0,j*a,W,a,b).concat(gridR(j*a,0,L-j*a,W,b,a)));
+  for(let j=1;j*b<=L;j++)c(gridR(0,0,j*b,W,b,a).concat(gridR(j*b,0,L-j*b,W,a,b)));
+  return best.map(r=>({x:r.x,y:r.y,w:r.w-g,h:r.h-g}));
+}
+const num=id=>{const v=parseFloat($(id).value);return isFinite(v)?v:0;};
+function calc(){
+  const bl=num('uL'),bw=num('uW'),bh=num('uH'),bkg=num('uKg'),pk=$('uPal').value,P=PAL[pk],hmax=num('uHmax'),wmax=num('uWmax'),ovh=clamp(num('uOvh'),0,10),pat=$('uPat').value;
+  if(bl<=0||bw<=0||bh<=0||bkg<=0||hmax<=P.H){$('uRes').innerHTML='<div class="tile" style="grid-column:1/-1"><span>Revisa los datos: las medidas y el peso deben ser mayores que cero y la altura máxima mayor que la del pallet (14,4 cm).</span></div>';calcRes=null;return;}
+  const fL=P.L+2*ovh,fW=P.W+2*ovh,layer=fit2D(fL,fW,bl,bw,0),per=layer.length;
+  const hLayers=Math.max(0,Math.floor((hmax-P.H+1e-9)/bh)),maxBoxW=Math.max(0,Math.floor((wmax-P.kg)/bkg));
+  const boxes=Math.min(per*hLayers,maxBoxW),layers=per?Math.ceil(boxes/per):0,limit=per*hLayers<=maxBoxW?'altura':'peso';
+  const H=P.H+layers*bh,kg=P.kg+boxes*bkg,areaU=per*bl*bw/(P.L*P.W)*100,volU=boxes*bl*bw*bh/(P.L*P.W*(hmax-P.H))*100;
+  const mir=layer.map(r=>({x:fL-r.x-r.w,y:fW-r.y-r.h,w:r.w,h:r.h}));
+  const same=layer.every(r=>mir.some(m=>Math.abs(m.x-r.x)<.01&&Math.abs(m.y-r.y)<.01&&Math.abs(m.w-r.w)<.01));
+  const stack=$('uStack').checked;
+  const veh=VEH.map(V=>{const fl=fit2D(V.L-10,V.W,fL,fW,2);let sp=fl.length,st=1;if(stack&&2*H<=V.H-5){sp*=2;st=2;}const bw2=kg>0?Math.floor(V.kg/kg):0;const n=Math.min(sp,bw2);return{V,fl,n,st,boxes:n*boxes,lim:sp<=bw2?'espacio':'peso'};});
+  calcRes={P,pk,bl,bw,bh,bkg,hmax,wmax,ovh,pat,per,layers,boxes,H,kg,areaU,volU,limit,layer,mir,same,fL,fW,veh};
+  $('uRes').innerHTML=[['Cajas por capa',per],['Capas',layers],['Cajas por pallet',boxes],['Altura total',nf(H,1)+'<small>cm</small>'],['Peso bruto',nf(kg,0)+'<small>kg</small>'],['Aprov. de área',nf(areaU,0)+'<small>%</small>']].map(([l,v])=>`<div class="tile"><span>${l}</span><b>${v}</b></div>`).join('');
+  const ck=[];const add=(c,t)=>ck.push(`<li><span class="${c}">${c==='ok'?'✔':c==='bad'?'✖':'!'}</span><span>${t}</span></li>`);
+  add(H<=151?'ok':'bad',H<=151?`Altura ${nf(H,1)} cm: cabe en los racks del CEDI (libre 161 cm, holgura ≥ 10 cm).`:`Altura ${nf(H,1)} cm: NO cabe en los racks del CEDI (máx. 151 cm con holgura).`);
+  add(kg<=wmax?'ok':'bad',`Peso bruto ${nf(kg,0)} kg de ${nf(wmax,0)} kg permitidos. Limita la cantidad: ${limit}.`);
+  add(areaU>=85?'ok':'wn',areaU>=85?`Buen aprovechamiento de la superficie (${nf(areaU,0)}%).`:`Aprovechamiento de superficie bajo (${nf(areaU,0)}%): prueba otro pallet o rediseña la caja.`);
+  add('ok',`Aprovechamiento del volumen disponible: ${nf(volU,0)}%.`);
+  if(ovh>0)add('wn','Hay voladizo: las esquinas de las cajas quedan sin apoyo y pierden resistencia. Evítalo cuando puedas.');
+  if(pat==='trab')add(same?'wn':'ok',same?'Con este acomodo las juntas de capas pares e impares coinciden: el trabado no amarra. Considera zuncho, film o cambiar la caja.':'Trabado: las juntas se alternan entre capas y la carga queda más estable; la resistencia a la compresión baja un poco.');
+  else add('ok','Columnado: las esquinas se apoyan una sobre otra y aprovechan toda la resistencia de la caja; necesita film o zuncho para estabilidad.');
+  $('uChecks').innerHTML=ck.join('');
+  $('vBody').innerHTML=veh.map((v,i)=>`<tr data-v="${i}" class="${i===selVeh?'sel':''}" style="cursor:pointer"><td>${v.V.n}${v.st>1?' · 2 niveles':''}</td><td class="num">${v.n}</td><td class="num">${nf(v.boxes,0)}</td><td>${v.lim}</td></tr>`).join('');
+  document.querySelectorAll('#vBody tr').forEach(tr=>tr.addEventListener('click',()=>{selVeh=+tr.dataset.v;calc();}));
+  drawTop();drawSide();drawVeh();
+}
+function prepCanvas(cv){const dpr=window.devicePixelRatio||1,w=cv.clientWidth||360,h=+cv.getAttribute('height');cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+'px';const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,h);return{x,w,h};}
+function drawTop(){
+  const r=calcRes;if(!r)return;const {x,w,h}=prepCanvas($('cvTop'));const pad=22,s=Math.min((w-2*pad)/r.fL,(h-2*pad-14)/r.fW),ox=(w-r.fL*s)/2,oy=pad;
+  const ovx=r.ovh*s;x.fillStyle='#9c7148';x.fillRect(ox+ovx,oy+ovx,r.P.L*s,r.P.W*s);
+  const rects=r.pat==='trab'&&layerView===2?r.mir:r.layer;
+  rects.forEach((b,i)=>{x.fillStyle=layerView===2?'#d8b383':'#c79c6a';x.fillRect(ox+b.x*s,oy+b.y*s,b.w*s,b.h*s);x.strokeStyle='#3a2a18';x.lineWidth=1.2;x.strokeRect(ox+b.x*s+.5,oy+b.y*s+.5,b.w*s-1,b.h*s-1);
+    if(b.w*s>18&&b.h*s>14){x.fillStyle='#3a2a18';x.font='600 11px Barlow, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(i+1,ox+(b.x+b.w/2)*s,oy+(b.y+b.h/2)*s);}});
+  x.fillStyle='#a2ae9f';x.font='500 11px "JetBrains Mono", monospace';x.textAlign='center';x.fillText(`${r.P.L} cm`,w/2,oy+r.fW*s+14);
+  x.textAlign='left';x.fillText(`${r.pat==='trab'?(layerView===1?'Capa impar':'Capa par'):'Todas las capas'} · ${r.per} cajas`,8,12);
+}
+function drawSide(){
+  const r=calcRes;if(!r)return;const {x,w,h}=prepCanvas($('cvSide'));const top=Math.max(r.hmax,165,r.H)+10,pad=14,s=(h-2*pad)/top,bw=Math.min(w*.45,r.P.L*s*1.6),ox=(w-bw)/2-30,base=h-pad;
+  x.fillStyle='#9c7148';x.fillRect(ox,base-r.P.H*s,bw,r.P.H*s);
+  for(let i=0;i<r.layers;i++){x.fillStyle=i%2?'#d8b383':'#c79c6a';x.fillRect(ox,base-(r.P.H+(i+1)*r.bh)*s,bw,r.bh*s);x.strokeStyle='#3a2a18';x.strokeRect(ox+.5,base-(r.P.H+(i+1)*r.bh)*s+.5,bw-1,r.bh*s-1);}
+  const line=(v,c,t)=>{const y=base-v*s;x.strokeStyle=c;x.setLineDash([5,4]);x.beginPath();x.moveTo(12,y);x.lineTo(w-12,y);x.stroke();x.setLineDash([]);x.fillStyle=c;x.font='500 11px Barlow, sans-serif';x.textAlign='right';x.fillText(t,w-12,y-4);};
+  line(161,'#ff6b5e','Viga del rack · 161 cm');line(r.hmax,'#f2b705',`Máx. ${nf(r.hmax,0)} cm`);
+  x.fillStyle='#eef3ea';x.font='600 12px "JetBrains Mono", monospace';x.textAlign='left';x.fillText(`${nf(r.H,1)} cm`,ox+bw+8,base-r.H*s+12);
+}
+function drawVeh(){
+  const r=calcRes;if(!r)return;const v=r.veh[selVeh];const {x,w,h}=prepCanvas($('cvVeh'));const pad=18,s=Math.min((w-2*pad)/v.V.L,(h-2*pad-12)/v.V.W),ox=(w-v.V.L*s)/2,oy=pad;
+  x.fillStyle='rgba(255,255,255,.08)';x.fillRect(ox,oy,v.V.L*s,v.V.W*s);x.strokeStyle='#a2ae9f';x.strokeRect(ox+.5,oy+.5,v.V.L*s-1,v.V.W*s-1);
+  v.fl.slice(0,Math.ceil(v.n/v.st)).forEach(p=>{x.fillStyle='#c79c6a';x.fillRect(ox+(p.x+5)*s,oy+p.y*s,p.w*s,p.h*s);x.strokeStyle='#3a2a18';x.strokeRect(ox+(p.x+5)*s+.5,oy+p.y*s+.5,p.w*s-1,p.h*s-1);});
+  x.fillStyle='#a2ae9f';x.font='500 11px Barlow, sans-serif';x.textAlign='left';x.fillText(`${v.V.n}: ${v.n} pallets (piso ${v.fl.length}${v.st>1?' × 2 niveles':''}) · limita ${v.lim}`,8,h-6);
+}
+['uL','uW','uH','uKg','uPal','uHmax','uWmax','uOvh','uPat','uStack'].forEach(id=>$(id).addEventListener('input',calc));
+document.querySelectorAll('#layerBtns button').forEach(b=>b.addEventListener('click',()=>{layerView=+b.dataset.l;document.querySelectorAll('#layerBtns button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));drawTop();}));
+function calcText(){const r=calcRes;if(!r)return 'Sin cálculo válido';return `Caja ${r.bl}×${r.bw}×${r.bh} cm, ${r.bkg} kg · Pallet ${r.P.n} · Patrón ${r.pat==='trab'?'trabado':'columnado'} · Voladizo ${r.ovh} cm\nCajas/capa ${r.per} · Capas ${r.layers} · Cajas/pallet ${r.boxes} · Altura ${nf(r.H,1)} cm · Peso ${nf(r.kg,0)} kg · Área ${nf(r.areaU,0)}% · Volumen ${nf(r.volU,0)}% · Limita ${r.limit}\nVehículos: ${r.veh.map(v=>`${v.V.n} ${v.n} pallets`).join('; ')}`;}
+$('bCopyCalc').addEventListener('click',()=>copyText(calcText(),$('calcFallback')));
+$('bUseUnit').addEventListener('click',()=>{const r=calcRes;if(!r||!r.boxes){toast('Primero completa un cálculo válido');return;}
+  unit={loadH:(r.H-r.P.H)/100,total:r.H/100,label:`${r.boxes} cajas de ${r.bl}×${r.bw}×${r.bh} cm`};unitUI();
+  log(`Nueva unidad de carga: ${nf(unit.total,2)} m de alto ${unit.total>RACK_MAX_H?'(no cabe en rack)':''}`);toast('Los próximos camiones de entrada traerán esta unidad');});
+window.addEventListener('resize',()=>{if(!$('tp-uni').hidden)calc();});
+
+/* ---------- Guías ---------- */
+const GUIDES={
+  U:{title:'Unitarización y embalaje de la carga',course:'Universidad de La Guajira · Administración Marítima y Portuaria',
+    intro:'Diseña unidades de carga en la pestaña Unitarización y comprueba su efecto en el CEDI 3D. Registra cada cálculo y responde con tus propias palabras.',
+    items:[
+      {t:'Reto 1 · Diseña la unidad de carga',steps:['En Unitarización ingresa una caja de 40 × 30 × 25 cm y 12 kg sobre pallet ISO 1200 × 1000.','Altura máxima 150 cm, peso máximo 1.000 kg, patrón trabado.','Pulsa «Registrar cálculo».'],q:'¿Cuántas cajas por capa y por pallet obtuviste? ¿Qué porcentaje del área aprovechaste y qué limita la cantidad: la altura o el peso?',snap:'calc'},
+      {t:'Reto 2 · ¿Qué pallet conviene?',steps:['Con la misma caja cambia entre ISO, Americano y Europallet.','Revisa cuántos pallets caben en contenedor de 20\' y de 40\' y en la tractomula.','Registra el cálculo de cada pallet.'],q:'¿Qué combinación de pallet y vehículo mueve más cajas por viaje? ¿Por qué un exportador usaría europallet si su cliente está en Europa?',snap:'calc'},
+      {t:'Reto 3 · La altura del rack manda',steps:['La altura libre de cada nivel del rack del CEDI es 1,61 m; la unidad debe medir máximo 1,51 m.','Sube la altura máxima a 185 cm, pulsa «Usar esta unidad en el CEDI» y deja correr la simulación.','Observa dónde terminan esos pallets y registra los indicadores.'],q:'¿Qué pasa con los pallets que no caben en el rack? ¿Qué costos genera al CEDI y cómo lo evitas desde el diseño de la unidad de carga?',snap:'kpi'},
+      {t:'Reto 4 · Columnado vs. trabado',steps:['Alterna el patrón y compara capa impar y capa par en la vista superior.','Prueba una caja de 50 × 40 × 30 cm y observa si el trabado realmente amarra.'],q:'¿Cuándo conviene columnado y cuándo trabado? Relaciónalo con la resistencia a la compresión de la caja y la estabilidad en el transporte.',snap:'calc'},
+      {t:'Reto 5 · Exportación y normatividad',steps:['Consulta los requisitos de la norma NIMF-15 para embalajes de madera.'],q:'¿Qué marca debe tener un pallet de madera para exportar? ¿Qué le puede pasar a un contenedor que llega a destino con pallets sin la marca NIMF-15?',snap:null}
+    ]},
+  S:{title:'Gestión logística · Operación de un CEDI',course:'SENA · Tecnólogo en Gestión Logística',
+    intro:'Cada práctica configura su escenario y corre 2 horas simuladas (se detiene sola). Usa 8× para terminar rápido y pulsa «Registrar indicadores» al final de cada corrida.',
+    items:[
+      {t:'Práctica 1 · Línea base',setups:[['Configurar línea base',{}]],steps:['Configura y deja correr hasta que se detenga.','Registra los indicadores.'],q:'Describe la operación: ¿cuántos camiones se atendieron, cuánto esperaron en cola y cuánto tiempo pasaron en el muelle?',snap:'kpi'},
+      {t:'Práctica 2 · ¿Cuántos montacargas necesito?',setups:[['2 montacargas',{forklifts:2}],['6 montacargas',{forklifts:6}]],steps:['Corre con 2 montacargas y registra.','Corre con 6 montacargas y registra.'],q:'Compara cola, tiempo en muelle y utilización. ¿Cuántos montacargas recomiendas y por qué, si cada uno tiene un costo mensual?',snap:'kpi'},
+      {t:'Práctica 3 · Ubicación ABC',setups:[['Ubicación aleatoria',{slotting:'random'}],['Ubicación ABC',{slotting:'abc'}]],steps:['Activa «Colorear pallets por clase ABC» en Escenario: rojo A, amarillo B, azul C.','Corre ambas políticas y registra.'],q:'¿Cuánto cambió la distancia recorrida por pallet y la productividad? ¿Por qué los productos A van cerca de los muelles y en el nivel más bajo?',snap:'kpi'},
+      {t:'Práctica 4 · FIFO vs. LIFO',setups:[['FIFO / FEFO',{dispatch:'fifo'}],['LIFO',{dispatch:'lifo'}]],steps:['Corre ambos escenarios y registra.'],q:'Compara la antigüedad promedio despachada. ¿Qué riesgo tiene LIFO en una distribuidora de alimentos o medicamentos? ¿Qué le pasa a la distancia recorrida con FIFO?',snap:'kpi'},
+      {t:'Práctica 5 · Seguridad peatonal (SG-SST)',setups:[['Con frenado',{brake:true,walkers:8}],['Sin frenado',{brake:false,walkers:8}]],steps:['Corre ambos escenarios con 8 peatones y registra.'],q:'¿Cuántos conflictos peatón–montacargas hubo sin frenado? Propón un control de ingeniería, uno administrativo y un EPP según la jerarquía de controles del SG-SST (Decreto 1072 de 2015).',snap:'kpi'},
+      {t:'Práctica 6 · Informe al gerente',steps:['Revisa todos tus registros.'],q:'En máximo 10 líneas recomienda al gerente del CEDI: número de montacargas, política de ubicación, política de despacho y medidas de seguridad. Sustenta con tus indicadores.',snap:null}
+    ]}
+};
+let gs={guide:'S',name:'',doc:'',group:'',ans:{U:[],S:[]},recs:{U:[],S:[]}};
+try{const s=JSON.parse(localStorage.getItem('cedi-guides-v1')||'null');if(s&&s.ans&&s.recs)gs=Object.assign(gs,s);}catch(e){}
+function saveGs(){try{localStorage.setItem('cedi-guides-v1',JSON.stringify(gs));}catch(e){}}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function renderGuide(){
+  const G=GUIDES[gs.guide];$('gSel').value=gs.guide;$('gIntro').textContent=G.course+'. '+G.intro;
+  $('guideBody').innerHTML=G.items.map((it,i)=>{const recs=(gs.recs[gs.guide][i]||[]);
+    return `<div class="item"><h3>${it.t}</h3><ol>${it.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+    ${it.setups?`<div class="row">${it.setups.map((s,j)=>`<button type="button" data-setup="${i}:${j}">${s[0]}</button>`).join('')}</div>`:''}
+    ${it.snap?`<div class="row"><button type="button" class="primary" data-snap="${i}">${it.snap==='kpi'?'Registrar indicadores':'Registrar cálculo'}</button>${recs.length?`<button type="button" data-clear="${i}">Borrar registros</button>`:''}</div>`:''}
+    ${recs.length?`<div class="recs">${recs.map((r,k)=>`<div class="rec"><b>Registro ${k+1}</b> · ${esc(r.label)}<br>${esc(r.data).replace(/\n/g,'<br>')}</div>`).join('')}</div>`:''}
+    <p class="q">${it.q}</p><textarea data-ans="${i}" aria-label="Respuesta ${i+1}" placeholder="Escribe tu respuesta…">${esc(gs.ans[gs.guide][i]||'')}</textarea></div>`;}).join('');
+  $('guideBody').querySelectorAll('[data-setup]').forEach(b=>b.addEventListener('click',()=>{const [i,j]=b.dataset.setup.split(':').map(Number);const s=GUIDES[gs.guide].items[i].setups[j];applyCfg(Object.assign({duration:2},s[1]));toast(`Escenario: ${s[0]}`);}));
+  $('guideBody').querySelectorAll('[data-snap]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.snap,it=GUIDES[gs.guide].items[i];
+    const rec=it.snap==='kpi'?{label:cfgSummary(),data:kpiText(kpis())}:{label:'Cálculo de unitarización',data:calcText()};
+    if(it.snap==='calc'&&!calcRes){calc();rec.data=calcText();}
+    (gs.recs[gs.guide][i]=gs.recs[gs.guide][i]||[]).push(rec);if(gs.recs[gs.guide][i].length>4)gs.recs[gs.guide][i].shift();saveGs();renderGuide();toast('Registro guardado');}));
+  $('guideBody').querySelectorAll('[data-clear]').forEach(b=>b.addEventListener('click',()=>{gs.recs[gs.guide][+b.dataset.clear]=[];saveGs();renderGuide();}));
+  $('guideBody').querySelectorAll('[data-ans]').forEach(t=>t.addEventListener('input',()=>{gs.ans[gs.guide][+t.dataset.ans]=t.value;saveGs();}));
+}
+function submissionText(){
+  const G=GUIDES[gs.guide],d=new Date();
+  let s=`LABORATORIO CEDI LOGILAB 3D\n${G.title} — ${G.course}\nEstudiante: ${gs.name||'(sin nombre)'} | Documento: ${gs.doc||'-'} | Ficha/grupo: ${gs.group||'-'}\nFecha: ${d.toLocaleDateString('es-CO')} ${d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}\n`;
+  G.items.forEach((it,i)=>{s+=`\n== ${it.t} ==\n`;(gs.recs[gs.guide][i]||[]).forEach((r,k)=>{s+=`Registro ${k+1} (${r.label}):\n${r.data}\n`;});s+=`Pregunta: ${it.q}\nRespuesta: ${gs.ans[gs.guide][i]||'(sin respuesta)'}\n`;});
+  return s+'\nGenerado con CEDI LogiLab 3D · LogiLab SENA';
+}
+$('gSel').addEventListener('change',()=>{gs.guide=$('gSel').value;saveGs();renderGuide();});
+[['sName','name'],['sDoc','doc'],['sGroup','group']].forEach(([id,k])=>{$(id).value=gs[k]||'';$(id).addEventListener('input',()=>{gs[k]=$(id).value;saveGs();});});
+$('bCopyG').addEventListener('click',()=>copyText(submissionText(),$('gFallback')));
+$('waLink').addEventListener('click',()=>{$('waLink').href='https://wa.me/?text='+encodeURIComponent(submissionText());});
+$('mailLink').addEventListener('click',()=>{const G=GUIDES[gs.guide];$('mailLink').href='mailto:?subject='+encodeURIComponent(`Entrega ${G.title} - ${gs.name||'estudiante'}`)+'&body='+encodeURIComponent(submissionText().slice(0,1800));});
+$('bTxt').addEventListener('click',()=>saveFile(`entrega-${(gs.name||'estudiante').replace(/\s+/g,'-')}.txt`,submissionText()));
+$('bCopyKpi').addEventListener('click',()=>copyText(`CEDI LogiLab 3D · ${clock()}\nEscenario: ${cfgSummary()}\n${kpiText(kpis())}`,$('kpiFallback')));
+$('bCsv').addEventListener('click',()=>{const k=kpis();const rows=[['Indicador','Valor','Unidad']];KPI.forEach(([g,it])=>it.forEach(([key,l,u,d])=>rows.push([l,nf(k[key],d).replace(/\./g,''),u])));
+  rows.push([],['Escenario',cfgSummary(),'']);saveFile('indicadores-cedi.csv','﻿'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n'));});
+
+/* ---------- loop ---------- */
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+window.addEventListener('resize',resize);resize();
+function step(dt){
+  simT+=dt;
+  trucks.forEach(t=>t.update(dt));trucks=trucks.filter(t=>t.state!=='gone');
+  dispatch(dt);forklifts.forEach(f=>f.update(dt));walkers.forEach(w=>w.update(dt));arrivals(dt);ncReturns();safetyCheck();
+  docks.forEach(d=>{const t=d.truck,open=t&&(t.state==='opening'||t.state==='service'||t.state==='closing');
+    d.doorF+=((open?1:0)-d.doorF)*Math.min(1,dt*2.2);const hh=4.2*(1-d.doorF)+.35*d.doorF;d.door.scale.y=hh/4.2;d.door.position.y=4.2-hh/2;
+    d.lm.emissive.setHex(!d.enabled?0x222222:t?0xff3b2f:0x2bd14a);});
+  if(cfg.duration>0&&!ended&&simT*TS/3600>=cfg.duration){ended=true;setPaused(true);const b=$('expBanner');b.hidden=false;
+    b.textContent=`Experimento finalizado: ${cfg.duration} h simuladas. Registra tus indicadores en la pestaña Guías o cópialos abajo. Pulsa «Reanudar» para seguir.`;log(`Experimento finalizado (${cfg.duration} h)`);hud();}
+}
+let last=performance.now(),hudT=0;
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(!paused){const sd=dt*speed,n=Math.ceil(sd/.04);for(let i=0;i<n;i++){step(sd/n);if(paused)break;}}
+  hudT-=dt;if(hudT<=0){hudT=.3;hud();}
+  camUpdate(dt);renderer.render(scene,camera);requestAnimationFrame(frame);
+}
+syncForm();unitUI();resetWorld();renderGuide();
+try{const t=localStorage.getItem('cedi-tab');if(t&&['esc','kpi','uni','gui'].includes(t))showTab(t);}catch(e){}
+step(.01);hud();requestAnimationFrame(frame);
+if(document.fonts&&document.fonts.load){Promise.all(['700 40px "Barlow Condensed"','600 40px "Barlow Condensed"'].map(f=>document.fonts.load(f))).then(()=>{redrawers.forEach(r=>r());if(!$('tp-uni').hidden)calc();}).catch(()=>{});}
+})();
+</script>
+
+</body>
+</html>
