@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taller Excel Documental</title>
+<meta name="description" content="Taller de funciones de Excel (SI, SI.CONJUNTO, BUSCARV, BUSCARH, BUSCARX, CONTAR, CONTARA, CONTAR.SI, CONTAR.SI.CONJUNTO, ALEATORIO.ENTRE, gráficas y tablas dinámicas) para Gestión Documental · Competencia 240201528.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--sena:#39A900;--sena-deep:#2a7d00;--sena-soft:#e9f6df;--bg:#f7f8f4;--card:#fff;--fg:#17201a;--muted:#56635a;--line:#d9dfd3;
+--amber:#c98a00;--amber-soft:#fff4cc;--red:#b3261e;--red-soft:#fde8e6;--blue:#1f6f9a;--blue-soft:#e3f1f8;--code:#f1f4ec;--fill:#2a7d00;--fill-h:#1f5e00;
+--display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif;--mono:"JetBrains Mono",Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sena:#5cc91f;--sena-deep:#7ad94a;--sena-soft:#1d2b16;--bg:#121612;--card:#1a1f1a;--fg:#eef2ea;--muted:#a6b2a3;--line:#2f382d;
+--amber:#f0b429;--amber-soft:#3a2f12;--red:#ff8a80;--red-soft:#3b1d1a;--blue:#7cc4ea;--blue-soft:#15293a;--code:#222a21;--fill:#2b7a0b;--fill-h:#236409;color-scheme:dark}}
+:root[data-theme="dark"]{--sena:#5cc91f;--sena-deep:#7ad94a;--sena-soft:#1d2b16;--bg:#121612;--card:#1a1f1a;--fg:#eef2ea;--muted:#a6b2a3;--line:#2f382d;
+--amber:#f0b429;--amber-soft:#3a2f12;--red:#ff8a80;--red-soft:#3b1d1a;--blue:#7cc4ea;--blue-soft:#15293a;--code:#222a21;--fill:#2b7a0b;--fill-h:#236409;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.55;font-size:17px}
+a{color:var(--sena-deep)}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px}
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:1.25rem;text-decoration:none;color:var(--fg)}
+.brand i{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:8px;background:var(--sena);color:#fff;font-style:normal;font-size:1rem}
+.top .sp{flex:1}
+.prog{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted)}
+.bar{width:120px;height:8px;border-radius:9px;background:var(--line);overflow:hidden}.bar b{display:block;height:100%;width:0;background:var(--sena);transition:width .3s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-weight:700;font-size:.95rem;border-radius:9px;padding:9px 14px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;text-decoration:none;min-height:42px}
+.btn:hover{border-color:var(--sena)}
+.btn.pri{background:var(--fill);border-color:var(--fill);color:#fff}
+.btn.pri:hover{background:var(--fill-h)}
+:root[data-theme="dark"] .btn.pri,.btn.pri{color:#fff}
+.btn.sm{padding:6px 10px;min-height:34px;font-size:.85rem}
+.hero{padding-block:34px 20px;display:grid;gap:18px}
+.kicker{font-weight:700;color:var(--sena-deep);letter-spacing:.04em;text-transform:uppercase;font-size:.85rem}
+h1{font-family:var(--display);font-size:clamp(2.2rem,6vw,3.6rem);line-height:1.02;margin:0}
+h2{font-family:var(--display);font-size:clamp(1.7rem,4vw,2.3rem);margin:0 0 6px;line-height:1.1}
+h3{font-family:var(--display);font-size:1.45rem;margin:0;line-height:1.15}
+p{margin:0 0 10px}.muted{color:var(--muted)}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.meta div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.92rem}
+.meta b{display:block;font-family:var(--display);font-size:1.15rem}
+.deadline{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:var(--amber-soft);border:1px solid var(--amber);border-radius:12px;padding:12px 16px}
+.deadline strong{font-family:var(--display);font-size:1.35rem}
+.cd{font-family:var(--mono);font-size:1.05rem;font-weight:500}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+section{padding-block:26px;border-top:1px solid var(--line)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.route{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.route a{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);text-decoration:none;color:var(--fg);font-weight:600;font-size:.92rem}
+.route a span{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--fill);color:#fff;font-size:.8rem}
+code,.f{font-family:var(--mono);font-size:.88em;background:var(--code);border:1px solid var(--line);border-radius:6px;padding:1px 6px;word-break:break-word}
+.f{display:block;padding:10px 12px;margin:8px 0;font-size:.92rem;overflow-x:auto;white-space:pre-wrap}
+.note{border-left:4px solid var(--blue);background:var(--blue-soft);padding:10px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:.95rem}
+.warn{border-left:4px solid var(--red);background:var(--red-soft);padding:10px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:.95rem}
+.ok{border-left:4px solid var(--sena);background:var(--sena-soft);padding:10px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:.95rem}
+.fn{display:grid;gap:10px;align-content:start}
+.fn header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{font-family:var(--mono);font-weight:500;font-size:.85rem;background:var(--fill);color:#fff;padding:3px 10px;border-radius:999px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button{font:inherit;font-weight:700;font-size:.9rem;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--fill);border-color:var(--fill);color:#fff}
+.xl{border-collapse:collapse;font-size:.88rem;width:100%;min-width:420px}
+.xl th,.xl td{border:1px solid var(--line);padding:5px 8px;text-align:left;white-space:nowrap}
+.xl thead th{background:var(--fill);color:#fff;font-weight:700}
+.xl .rn,.xl .cl{background:var(--code);color:var(--muted);font-family:var(--mono);font-size:.78rem;text-align:center;font-weight:500}
+.xl td.hit{background:var(--amber-soft);outline:2px solid var(--amber);outline-offset:-2px;font-weight:700}
+.xl tr.hit td:not(.rn){background:var(--sena-soft)}
+.xl td.num{text-align:right;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
+.lab{border:2px dashed var(--sena);border-radius:12px;padding:14px;background:color-mix(in srgb,var(--sena-soft) 45%,var(--card))}
+.lab h4{margin:0 0 8px;font-family:var(--display);font-size:1.2rem;display:flex;gap:8px;align-items:center}
+.lab h4::before{content:"🧪"}
+label{font-weight:600;font-size:.92rem;display:block;margin-bottom:4px}
+input,select,textarea{font:inherit;font-size:16px;width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+textarea{min-height:88px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--sena);outline-offset:1px;border-color:var(--sena)}
+.fld{display:grid;gap:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.res{font-family:var(--mono);font-size:1.05rem;font-weight:500;padding:8px 12px;border-radius:8px;background:var(--card);border:1px solid var(--line);display:inline-block}
+.ex{display:grid;gap:10px;scroll-margin-top:70px}
+.ex .hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ex .num{display:inline-grid;place-items:center;min-width:44px;height:44px;border-radius:10px;background:var(--fill);color:#fff;font-family:var(--display);font-weight:800;font-size:1.2rem}
+.ex.done .num{background:var(--fill-h)}
+.ex .st{margin-left:auto;font-size:.85rem;font-weight:700;color:var(--muted)}
+.ex.done .st{color:var(--sena-deep)}
+.mom{margin-top:18px;font-family:var(--display);font-size:1.3rem;color:var(--sena-deep);display:flex;align-items:center;gap:10px}
+.mom::after{content:"";flex:1;height:2px;background:var(--line)}
+.fld input.formula{font-family:var(--mono);font-size:15px}
+.freq{display:flex;align-items:flex-end;gap:3px;height:90px;margin-top:8px}
+.freq div{flex:1;background:var(--sena);border-radius:3px 3px 0 0;min-height:2px;position:relative}
+.nums{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.nums span{font-family:var(--mono);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:3px 8px;min-width:42px;text-align:center}
+.chartbox{position:relative;height:280px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px}
+table.rub{border-collapse:collapse;width:100%;font-size:.93rem}
+table.rub th,table.rub td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+table.rub th{background:var(--sena-soft)}
+.check{display:flex;gap:10px;align-items:flex-start;padding:6px 0}
+.check input{width:20px;height:20px;flex:none;margin-top:3px}
+pre.preview{white-space:pre-wrap;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px;max-height:340px;overflow:auto;font-family:var(--mono);font-size:.82rem}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(120px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;transition:transform .25s;z-index:50;max-width:calc(100% - 32px)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+footer{border-top:1px solid var(--line);padding-block:20px 40px;color:var(--muted);font-size:.92rem}
+.steps{margin:6px 0 0;padding-left:22px}.steps li{margin-bottom:4px}
+.vs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:8px;font-size:.9rem}
+.vs div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--card)}
+@media (max-width:560px){body{font-size:16px}.bar{width:70px}.hide-sm{display:none}}
+@media print{header.top,.lab,.no-print{display:none!important}section{break-inside:avoid}}
+</style></head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../../"><i>LL</i>LogiLab SENA</a>
+  <span class="sp"></span>
+  <div class="prog" title="Avance del taller"><span class="hide-sm">Avance</span><div class="bar"><b id="pbar"></b></div><span id="ptxt">0%</span></div>
+  <button class="btn sm" id="themeBtn" aria-label="Cambiar tema">◐</button>
+</div></header>
+
+<main class="wrap">
+<div class="hero">
+  <div class="kicker">Recuperación de competencia · Taller práctico en Excel</div>
+  <h1>Excel para la ventanilla única: buscar, contar, simular y mostrar</h1>
+  <p class="muted" style="max-width:760px">Vas a convertir 120 radicados en información para el comité de archivo: completar datos con funciones de búsqueda, medir la oportunidad de respuesta con funciones lógicas, contar con condiciones, simular la carga de trabajo, graficar y resumir con tablas dinámicas.</p>
+  <div class="meta">
+    <div>Programa<b>Gestión Documental</b></div>
+    <div>Fichas<b>3410084 · 3326720 · 3538385</b></div>
+    <div>Competencia<b>240201528 · Razonar cuantitativamente</b></div>
+    <div>Herramienta<b>Excel 365 / 2021 o Google Sheets</b></div>
+  </div>
+  <div class="deadline">
+    <div><span class="muted">Fecha límite de entrega</span><br><strong>Viernes 16 de octubre de 2026 · 11:59 p. m.</strong></div>
+    <div class="cd" id="cd" aria-live="polite"></div>
+  </div>
+  <div class="row">
+    <a class="btn pri" href="archivos/Base_Taller_Excel_Gestion_Documental.xlsx" download>⬇ Descargar la base de datos (.xlsx)</a>
+    <a class="btn" href="#taller">Ir directo al taller</a>
+    <a class="btn" href="#entrega">Entregar</a>
+  </div>
+  <nav class="route" aria-label="Ruta del taller">
+    <a href="#caso"><span>0</span>Caso</a>
+    <a href="#buscar"><span>1</span>Buscar</a>
+    <a href="#logica"><span>2</span>Decidir</a>
+    <a href="#contar"><span>3</span>Contar</a>
+    <a href="#aleatorio"><span>4</span>Simular</a>
+    <a href="#graficas"><span>5</span>Graficar</a>
+    <a href="#dinamicas"><span>6</span>Resumir</a>
+    <a href="#taller"><span>✎</span>Taller</a>
+    <a href="#entrega"><span>✓</span>Entrega</a>
+  </nav>
+</div>
+
+<!-- ============ CASO ============ -->
+<section id="caso">
+  <h2>0 · El caso: ventanilla única de Aguas del Cardón S.A. E.S.P.</h2>
+  <div class="grid2">
+    <div class="card">
+      <p>Aguas del Cardón es una empresa de servicios públicos de Riohacha. Su <b>ventanilla única</b> radica todo lo que llega: <b>derechos de petición, quejas, reclamos, consultas, oficios de entes de control y facturas</b> de proveedores, por ventanilla, correo electrónico, página web, correo certificado y WhatsApp.</p>
+      <p>El comité de archivo te entrega los radicados de <b>julio a septiembre de 2026</b> y quiere respuestas con números:</p>
+      <ul class="steps">
+        <li>¿Qué porcentaje de las PQRSD se respondió dentro del plazo legal?</li>
+        <li>¿Por qué medio llega más correspondencia y cuánto cuesta gestionarla?</li>
+        <li>¿Qué dependencia y qué funcionario concentran la carga y los vencimientos?</li>
+        <li>¿Cuántas personas se necesitan en ventanilla un día pico?</li>
+      </ul>
+      <p class="muted" style="font-size:.88rem">La entidad y los datos son ficticios y fueron creados con fines formativos.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:8px">Qué trae el archivo</h3>
+      <div class="vs">
+        <div><b>Radicados</b><br>120 registros. Columnas amarillas (K a S) para completar con fórmulas.</div>
+        <div><b>TiposDoc</b><br>Tabla <b>vertical</b> con serie y plazo → BUSCARV.</div>
+        <div><b>Medios</b><br>Tabla <b>horizontal</b> con costo por folio → BUSCARH.</div>
+        <div><b>Funcionarios</b><br>El ID está a la <b>derecha</b> → BUSCARX.</div>
+        <div><b>Resumen</b><br>21 preguntas de conteo.</div>
+        <div><b>Simulacion</b><br>30 días y muestra de auditoría con ALEATORIO.ENTRE.</div>
+      </div>
+    </div>
+  </div>
+  <div class="grid3" style="margin-top:14px">
+    <div class="note"><b>Plazos legales.</b> Ley 1755 de 2015: petición general <b>15</b> días hábiles, documentos e información <b>10</b>, consultas <b>30</b>. En la base, el plazo de cada tipo documental ya está en la hoja TiposDoc.</div>
+    <div class="note"><b>Punto y coma.</b> En Excel con configuración de Colombia los argumentos se separan con <code>;</code>. Si tu Excel usa <code>,</code>, cámbialo.</div>
+    <div class="note"><b>Signo $.</b> <code>$A$2:$D$9</code> fija la tabla para que no se “corra” al arrastrar la fórmula. Atajo: <b>F4</b>. Sin Excel 365: usa Google Sheets o SI anidados, y explícalo.</div>
+  </div>
+</section>
+
+<!-- ============ BUSCAR ============ -->
+<section id="buscar">
+  <h2>1 · Buscar: BUSCARV, BUSCARH y BUSCARX</h2>
+  <p class="muted">Las tres responden la misma pregunta: <i>“con este código que conozco, tráeme el dato que me falta desde otra tabla”</i>. En gestión documental es lo que haces al pasar del código del tipo documental a su nombre, su serie o su plazo.</p>
+  <div class="grid3">
+    <div class="card fn"><header><span class="pill">BUSCARV</span><b>Busca en vertical</b></header>
+      <code class="f">=BUSCARV(valor_buscado; tabla; columna; FALSO)</code>
+      <p>Busca el valor en la <b>primera columna</b> de la tabla y devuelve el dato de la columna número N, en la misma fila.</p>
+      <div class="warn">Siempre usa <b>FALSO</b> (coincidencia exacta). Con VERDADERO u omitido puede traer un dato equivocado sin avisar.</div></div>
+    <div class="card fn"><header><span class="pill">BUSCARH</span><b>Busca en horizontal</b></header>
+      <code class="f">=BUSCARH(valor_buscado; tabla; fila; FALSO)</code>
+      <p>Igual que BUSCARV, pero busca en la <b>primera fila</b> y baja hasta la fila número N. Útil para tablas de tarifas o tiempos por medio de recepción.</p></div>
+    <div class="card fn"><header><span class="pill">BUSCARX</span><b>Busca en cualquier dirección</b></header>
+      <code class="f">=BUSCARX(valor; rango_donde_busco; rango_que_devuelvo; "si no está")</code>
+      <p>No le importa si el dato está a la izquierda o a la derecha, no necesita contar columnas y trae su propio mensaje cuando no encuentra.</p>
+      <div class="ok">Es la recomendada en Excel 365. BUSCARV no puede devolver datos que estén a la izquierda de la columna de búsqueda.</div></div>
+  </div>
+  <div class="lab" style="margin-top:14px">
+    <h4>Laboratorio de búsqueda (datos de ejemplo, no son los del taller)</h4>
+    <div class="tabs" role="tablist" id="lkTabs">
+      <button role="tab" aria-selected="true" data-m="V">BUSCARV</button>
+      <button role="tab" aria-selected="false" data-m="H">BUSCARH</button>
+      <button role="tab" aria-selected="false" data-m="X">BUSCARX</button>
+      <button role="tab" aria-selected="false" data-m="VX">BUSCARV falla</button>
+    </div>
+    <div class="fields" style="margin-bottom:10px">
+      <div class="fld"><label for="lkVal">Valor buscado</label><select id="lkVal"></select></div>
+      <div class="fld"><label for="lkWhat">Dato que quiero traer</label><select id="lkWhat"></select></div>
+    </div>
+    <div class="scroll" id="lkTable"></div>
+    <code class="f" id="lkF"></code>
+    <div>Resultado: <span class="res" id="lkR"></span></div>
+    <p class="muted" id="lkExp" style="margin-top:8px"></p>
+  </div>
+</section>
+
+<!-- ============ LOGICA ============ -->
+<section id="logica">
+  <h2>2 · Decidir: SI y SI.CONJUNTO</h2>
+  <div class="grid2">
+    <div class="card fn"><header><span class="pill">SI</span><b>Una pregunta, dos caminos</b></header>
+      <code class="f">=SI(prueba_lógica; valor_si_verdadero; valor_si_falso)</code>
+      <p>Ejemplo: <code>=SI(H2&lt;=L2;"A tiempo";"Vencida")</code>: si los días que tardó la respuesta no superan el plazo, está a tiempo. La prueba usa <code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code> <code>=</code> <code>&lt;&gt;</code>. El texto va entre comillas.</p>
+      <div class="warn">Error típico: comparar contra un número escrito (<code>H2&lt;=15</code>). Así todos los tipos tendrían 15 días. Compara contra la celda del plazo (<code>L2</code>).</div></div>
+    <div class="card fn"><header><span class="pill">SI.CONJUNTO</span><b>Varias pruebas, en orden</b></header>
+      <code class="f">=SI.CONJUNTO(prueba1; valor1; prueba2; valor2; …; VERDADERO; valor_por_defecto)</code>
+      <p>Semáforo de oportunidad con la <b>Diferencia</b> = Plazo − Días de respuesta: <b>Rojo</b> si es negativa (vencida), <b>Amarillo</b> si sobraron 3 días o menos, <b>Verde</b> en los demás casos.</p>
+      <div class="note">El orden importa: pregunta primero por el caso <b>más grave</b>. Si preguntas primero “Diferencia &lt;= 3”, una vencida (−2) quedaría en Amarillo.</div></div>
+  </div>
+  <div class="lab" style="margin-top:14px">
+    <h4>Laboratorio: semáforo de una PQRSD</h4>
+    <div class="fields">
+      <div class="fld"><label for="lgP">Tipo documental (plazo)</label><select id="lgP"><option value="15">Derecho de petición (15 días)</option><option value="10">Solicitud de información (10 días)</option><option value="30">Consulta (30 días)</option></select></div>
+      <div class="fld"><label for="lgD">Días que tardó la respuesta: <span id="lgDv"></span></label><input type="range" id="lgD" min="1" max="40" value="13"></div>
+    </div>
+    <code class="f" id="lgF1"></code><div>SI → <span class="res" id="lgR1"></span></div>
+    <code class="f" id="lgF2"></code><div>SI.CONJUNTO → <span class="res" id="lgR2"></span></div>
+    <p class="muted" style="margin-top:8px">Lo mismo con SI anidados (versiones antiguas de Excel):</p>
+    <code class="f">=SI(M2&lt;0;"Rojo";SI(M2&lt;=3;"Amarillo";"Verde"))</code>
+  </div>
+</section>
+
+<!-- ============ CONTAR ============ -->
+<section id="contar">
+  <h2>3 · Contar: CONTAR, CONTARA, CONTAR.SI y CONTAR.SI.CONJUNTO</h2>
+  <div class="grid3">
+    <div class="card fn"><header><span class="pill">CONTAR</span></header><p>Cuenta solo celdas con <b>números</b>. Ignora textos y vacías.</p><code class="f">=CONTAR(G2:G121)</code></div>
+    <div class="card fn"><header><span class="pill">CONTARA</span></header><p>Cuenta celdas <b>no vacías</b>: números, textos, fechas. Úsala para saber cuántos radicados hay.</p><code class="f">=CONTARA(A2:A121)</code></div>
+    <div class="card fn"><header><span class="pill">CONTAR.SI</span></header><p>Cuenta las celdas que cumplen <b>un</b> criterio.</p><code class="f">=CONTAR.SI(E2:E121;"Ventanilla")
+=CONTAR.SI(G2:G121;"&gt;=20")</code></div>
+    <div class="card fn"><header><span class="pill">CONTAR.SI.CONJUNTO</span></header><p>Cuenta las filas que cumplen <b>todos</b> los criterios a la vez (lógica “Y”).</p><code class="f">=CONTAR.SI.CONJUNTO(K2:K121;"Reclamo"; Q2:Q121;"Vencida")</code><p class="muted" style="font-size:.88rem">Todos los rangos deben tener el mismo tamaño.</p></div>
+  </div>
+  <div class="note">Criterio con operador: va entre comillas, <code>"&gt;=20"</code>. Si el número está en una celda: <code>"&gt;="&amp;H1</code>. Las PQRSD anónimas dejan vacía la celda del remitente: por eso CONTARA sobre Remitente da menos que el total.</div>
+  <div class="lab">
+    <h4>Laboratorio de conteo</h4>
+    <div class="fields">
+      <div class="fld"><label for="ctFn">Función</label><select id="ctFn"><option>CONTAR</option><option>CONTARA</option><option selected>CONTAR.SI</option><option>CONTAR.SI.CONJUNTO</option></select></div>
+      <div class="fld" id="ctC1w"><label for="ctC1">Criterio 1: medio</label><select id="ctC1"></select></div>
+      <div class="fld" id="ctC2w"><label for="ctC2">Criterio 2: dependencia</label><select id="ctC2"></select></div>
+      <div class="fld" id="ctC3w"><label for="ctC3">Criterio 3: días de respuesta mayores que</label><input id="ctC3" type="number" min="0" value="0"></div>
+    </div>
+    <div class="scroll" style="margin-top:10px" id="ctTable"></div>
+    <code class="f" id="ctF"></code>
+    <div>Resultado: <span class="res" id="ctR"></span></div>
+    <p class="muted" id="ctExp" style="margin-top:8px"></p>
+  </div>
+</section>
+
+<!-- ============ ALEATORIO ============ -->
+<section id="aleatorio">
+  <h2>4 · Simular: ALEATORIO.ENTRE</h2>
+  <div class="grid2">
+    <div class="card fn"><header><span class="pill">ALEATORIO.ENTRE</span><b>Un entero al azar entre dos límites</b></header>
+      <code class="f">=ALEATORIO.ENTRE(inferior; superior)</code>
+      <p>En gestión documental sirve para <b>simular la carga</b> de la ventanilla y planear personal, y para escoger una <b>muestra de auditoría</b> sin sesgo: nadie elige “los expedientes que están bien”.</p>
+      <div class="warn">Es una función <b>volátil</b>: cambia cada vez que la hoja se recalcula (al escribir algo o al presionar F9). Para conservar la muestra: copia → Pegado especial → <b>Valores</b>.</div>
+      <p>Radicado al azar y su tipo documental: <code>=BUSCARX("R-"&amp;TEXTO(ALEATORIO.ENTRE(1;120);"0000"); A2:A121; K2:K121)</code></p></div>
+    <div class="lab">
+      <h4>Laboratorio: presiona F9</h4>
+      <div class="fields">
+        <div class="fld"><label for="rdMin">Inferior</label><input id="rdMin" type="number" value="20"></div>
+        <div class="fld"><label for="rdMax">Superior</label><input id="rdMax" type="number" value="60"></div>
+        <div class="fld"><label for="rdN">Días a simular</label><input id="rdN" type="number" value="30" min="5" max="120"></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn pri" id="rdGo">F9 · Recalcular</button><span class="res" id="rdStats"></span></div>
+      <div class="nums" id="rdNums"></div>
+      <div class="freq" id="rdFreq" aria-hidden="true"></div>
+      <p class="muted" style="font-size:.88rem;margin-top:6px">Si cada funcionario radica 25 documentos al día, ¿cuántos necesitas el día más cargado? Se calcula con REDONDEAR.MAS(máximo/25; 0).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GRAFICAS ============ -->
+<section id="graficas">
+  <h2>5 · Graficar: elegir la gráfica correcta</h2>
+  <div class="grid3">
+    <div class="card"><h3>Columnas / barras</h3><p>Comparar categorías: radicados por medio, por dependencia, por funcionario. Barras horizontales cuando los nombres son largos.</p></div>
+    <div class="card"><h3>Líneas</h3><p>Ver una <b>tendencia en el tiempo</b>: radicados por mes o por semana. El eje X debe tener un orden temporal.</p></div>
+    <div class="card"><h3>Circular</h3><p>Mostrar <b>partes de un todo</b> con pocas categorías, como la participación de cada serie documental. No sirve para comparar meses.</p></div>
+  </div>
+  <div class="card" style="margin-top:12px"><b>En Excel:</b>
+    <ol class="steps"><li>Prepara una tabla pequeña de resumen (con una tabla dinámica o con CONTAR.SI).</li><li>Selecciónala → <b>Insertar</b> → Gráficos recomendados o el tipo que elijas.</li><li>Agrega un <b>título que diga la conclusión</b> (“El correo electrónico ya es el primer medio de recepción”), etiquetas de datos y elimina lo que sobre.</li></ol></div>
+  <div class="lab" style="margin-top:12px">
+    <h4>Laboratorio: ¿esta gráfica dice lo que necesito?</h4>
+    <div class="fields">
+      <div class="fld"><label for="chData">Datos</label><select id="chData"><option value="canal">Radicados por medio (categorías)</option><option value="mes">Radicados por mes (tiempo)</option></select></div>
+      <div class="fld"><label for="chType">Tipo de gráfica</label><select id="chType"><option value="bar">Columnas</option><option value="barh">Barras horizontales</option><option value="line">Líneas</option><option value="pie">Circular</option></select></div>
+    </div>
+    <div class="chartbox" style="margin-top:10px"><canvas id="chCanvas" aria-label="Gráfica de ejemplo con radicados" role="img"></canvas></div>
+    <div id="chVerdict" style="margin-top:8px"></div>
+  </div>
+</section>
+
+<!-- ============ DINAMICAS ============ -->
+<section id="dinamicas">
+  <h2>6 · Resumir: tablas dinámicas</h2>
+  <div class="grid2">
+    <div class="card">
+      <p>Una tabla dinámica resume cientos de radicados en segundos <b>sin escribir fórmulas</b>. Tú decides qué va en filas, columnas, valores y filtros.</p>
+      <ol class="steps">
+        <li>Haz clic dentro de la hoja Radicados (con las columnas K a S ya completas).</li>
+        <li><b>Insertar → Tabla dinámica → Nueva hoja de cálculo</b>.</li>
+        <li>Arrastra campos: <b>Filas</b> (Dependencia), <b>Columnas</b> (Medio), <b>Valores</b> (Radicado), <b>Filtros</b> (Mes).</li>
+        <li>En Valores, “Configuración de campo de valor” para cambiar entre <b>Cuenta</b>, <b>Suma</b> y <b>Promedio</b>.</li>
+        <li>Ordena de mayor a menor: clic derecho → Ordenar.</li>
+        <li><b>Gráfico dinámico</b>: Analizar tabla dinámica → Gráfico dinámico.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <div class="note" style="margin-top:0">Si agregas radicados nuevos, la tabla dinámica <b>no</b> se actualiza sola: clic derecho → <b>Actualizar</b>.</div>
+      <div class="note"><b>Cuenta</b> responde “¿cuántos radicados?”. <b>Suma de Folios</b> responde “¿cuánto papel?”. <b>Promedio de Días</b> responde “¿qué tan rápido?”. Son preguntas distintas.</div>
+      <div class="warn">Un campo de texto (como Radicado) en Valores solo puede <b>contarse</b>. Si ves “Cuenta de Folios” en vez de “Suma”, revisa si hay textos en esa columna.</div>
+    </div>
+  </div>
+  <div class="lab" style="margin-top:12px">
+    <h4>Laboratorio: arma tu tabla dinámica</h4>
+    <div class="fields">
+      <div class="fld"><label for="pvR">Filas</label><select id="pvR"><option>Dependencia</option><option>Medio</option><option>Mes</option><option>Tipo</option></select></div>
+      <div class="fld"><label for="pvC">Columnas</label><select id="pvC"><option value="">(ninguna)</option><option selected>Medio</option><option>Mes</option><option>Dependencia</option></select></div>
+      <div class="fld"><label for="pvV">Valores</label><select id="pvV"><option value="cnt">Cuenta de radicados</option><option value="fol">Suma de Folios</option><option value="avg">Promedio de Días</option></select></div>
+      <div class="fld"><label for="pvF">Filtro: Mes</label><select id="pvF"><option value="">(Todos)</option><option>Ene</option><option>Feb</option></select></div>
+    </div>
+    <div class="scroll" style="margin-top:10px" id="pvOut"></div>
+    <p class="muted" style="font-size:.88rem;margin-top:6px">Usa la misma tabla de ejemplo del laboratorio de conteo.</p>
+  </div>
+</section>
+
+<!-- ============ TALLER ============ -->
+<section id="taller">
+  <h2>✎ Taller: 13 ejercicios con la base de datos</h2>
+  <p>Trabaja en el archivo <b>.xlsx</b> y registra aquí cada fórmula y resultado. Lo que escribes se guarda en este navegador; usa también <b>Guardar avance</b> para tener una copia.</p>
+  <div class="row no-print" style="margin-bottom:6px">
+    <a class="btn pri" href="archivos/Base_Taller_Excel_Gestion_Documental.xlsx" download>⬇ Base de datos (.xlsx)</a>
+    <button class="btn" id="saveJson">💾 Guardar avance (.json)</button>
+    <label class="btn" style="margin:0">📂 Cargar avance<input type="file" id="loadJson" accept=".json,application/json" hidden></label>
+  </div>
+  <div class="warn">Escribe las fórmulas como están en tu Excel, empezando por <code>=</code>. Los valores en pesos, sin signo ni puntos (ejemplo: <code>2280</code>). El instructor revisará también tu archivo.</div>
+  <div id="exList"></div>
+</section>
+
+<!-- ============ RUBRICA ============ -->
+<section id="rubrica">
+  <h2>Cómo se evalúa</h2>
+  <div class="scroll"><table class="rub">
+    <thead><tr><th>Criterio</th><th>Evidencia que se revisa</th><th>Ejercicios</th></tr></thead>
+    <tbody>
+      <tr><td><b>Funciones de búsqueda</b> (esencial)</td><td>Columnas K, L, N, P y S completas con BUSCARV, BUSCARH y BUSCARX, con referencias absolutas y coincidencia exacta.</td><td>1, 2, 3</td></tr>
+      <tr><td><b>Funciones lógicas</b> (esencial)</td><td>Columnas Q y R correctas; comparación contra el plazo de cada tipo y orden lógico en SI.CONJUNTO.</td><td>4, 5</td></tr>
+      <tr><td><b>Funciones de conteo</b> (esencial)</td><td>Hoja Resumen con fórmulas (no números escritos a mano) y resultados coherentes.</td><td>6, 7, 8</td></tr>
+      <tr><td><b>Simulación</b></td><td>Uso de ALEATORIO.ENTRE con límites correctos, cálculo de personal y muestra de auditoría congelada.</td><td>9</td></tr>
+      <tr><td><b>Gráficas</b> (esencial)</td><td>Tipo de gráfica adecuado al dato, título con conclusión, etiquetas legibles.</td><td>10</td></tr>
+      <tr><td><b>Tablas dinámicas</b> (esencial)</td><td>Dos tablas dinámicas con la estructura pedida y su lectura correcta.</td><td>11, 12</td></tr>
+      <tr><td><b>Razonamiento cuantitativo</b> (esencial)</td><td>Porcentajes, promedios y variaciones bien calculados; recomendaciones sustentadas en cifras.</td><td>4, 10, 12, 13</td></tr>
+    </tbody></table></div>
+  <p class="muted" style="margin-top:8px">Juicio de evaluación: Aprobado cuando se cumplen todos los criterios esenciales y se entregan el archivo .xlsx y el reporte de esta página dentro del plazo.</p>
+</section>
+
+<!-- ============ ENTREGA ============ -->
+<section id="entrega">
+  <h2>✓ Entrega</h2>
+  <div class="grid2">
+    <div class="card">
+      <div class="fields">
+        <div class="fld"><label for="sNom">Nombre completo</label><input id="sNom" autocomplete="name"></div>
+        <div class="fld"><label for="sDoc">Documento</label><input id="sDoc" inputmode="numeric"></div>
+        <div class="fld"><label for="sFicha">Ficha</label><select id="sFicha"><option value="">Selecciona tu ficha</option><option>3410084</option><option>3326720</option><option>3538385</option></select></div>
+        <div class="fld"><label for="sCorreo">Tu correo</label><input id="sCorreo" type="email" autocomplete="email"></div>
+        <div class="fld"><label for="sWa">WhatsApp del instructor (con indicativo, sin +)</label><input id="sWa" placeholder="57300XXXXXXX" inputmode="numeric"></div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="check"><input type="checkbox" id="chk1"><label for="chk1" style="font-weight:400">Mi archivo se llama <code>Taller_Excel_GD_Ficha_MiNombre.xlsx</code> y tiene fórmulas, no valores escritos a mano.</label></div>
+        <div class="check"><input type="checkbox" id="chk2"><label for="chk2" style="font-weight:400">El archivo tiene las 3 gráficas y las 2 tablas dinámicas en hojas aparte.</label></div>
+        <div class="check"><input type="checkbox" id="chk3"><label for="chk3" style="font-weight:400">Congelé la simulación (Pegado especial → Valores) y revisé que el reporte no tenga ejercicios vacíos.</label></div>
+      </div>
+    </div>
+    <div class="card">
+      <p><b>Envía las dos cosas:</b> el reporte de esta página y tu archivo .xlsx. Si un método falla, usa otro.</p>
+      <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))">
+        <a class="btn pri" id="bWa" href="#" target="_blank" rel="noopener">WhatsApp</a>
+        <button class="btn" id="bMail">Correo</button>
+        <button class="btn" id="bCopy">Copiar texto</button>
+        <button class="btn" id="bTxt">Descargar .txt</button>
+      </div>
+      <div class="note">WhatsApp y el correo <b>no adjuntan</b> el Excel solos. Después de enviar el texto, adjunta el archivo .xlsx en el mismo chat o correo.</div>
+      <p class="muted" id="pend" style="font-size:.92rem"></p>
+    </div>
+  </div>
+  <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">Ver el reporte que se enviará</summary><pre class="preview" id="preview"></pre></details>
+</section>
+</main>
+
+<footer><div class="wrap">LogiLab SENA · Centro Industrial y de Energías Alternativas · Regional Guajira · <b>By Carlos Barrios · Instructor</b></div></footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const DOCENTE_CORREO="cabarriosn@gmail.com";
+const KEY="ll-excel-gd-v1";
+const APP="taller-excel-gestion-documental";
+const $=id=>document.getElementById(id);
+const fmt=n=>"$"+Math.round(n).toLocaleString("es-CO");
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),2600)}
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+/* ---------- tema ---------- */
+(function(){let t=null;try{t=localStorage.getItem("ll-theme")}catch(e){}
+ if(t)document.documentElement.dataset.theme=t;
+ $("themeBtn").onclick=()=>{const dark=document.documentElement.dataset.theme?document.documentElement.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
+  const n=dark?"light":"dark";document.documentElement.dataset.theme=n;try{localStorage.setItem("ll-theme",n)}catch(e){}drawChart()}})();
+
+/* ---------- cuenta regresiva ---------- */
+const LIMITE=new Date("2026-10-16T23:59:00-05:00");
+function tick(){const d=LIMITE-new Date();const el=$("cd");
+ if(d<=0){el.textContent="Plazo vencido";return}
+ const D=Math.floor(d/864e5),H=Math.floor(d/36e5)%24,M=Math.floor(d/6e4)%60;
+ el.textContent=`Faltan ${D} d ${H} h ${M} min`}
+tick();setInterval(tick,30000);
+
+/* =====================================================
+   DATOS DE EJEMPLO para laboratorios (no son los del taller)
+===================================================== */
+const EXP=[["X01","Derecho de petición","PQRSD",15],["X02","Solicitud de copias","PQRSD",10],["X03","Consulta","PQRSD",30],["X04","Tutela","Jurídica",2],["X05","Cuenta de cobro","Contable",30]];
+const EXC=[["Ventanilla","Correo-e","Web","Certificado"],[250,60,60,900],[6,3,2,8]];
+const EXV=[["Mery Ipuana","Archivo central","B11"],["Jhon Fince","Jurídica","B12"],["Sara Gómez","Atención al usuario","B13"]];
+const EXR=[ // Mes, Dependencia, Medio, Tipo, Folios, Días, Remitente
+ ["Ene","Atención","Ventanilla","Petición",3,12,"Rosa Epieyú"],
+ ["Ene","Jurídica","Correo-e","Tutela",18,2,"Juzgado 2 Civil"],
+ ["Ene","Atención","Web","Queja",1,9,""],
+ ["Ene","Financiera","Correo-e","Factura",6,20,"Ferretería El Faro"],
+ ["Ene","Atención","WhatsApp","Reclamo",2,17,"Pedro Bolaño"],
+ ["Feb","Jurídica","Ventanilla","Petición","N/D",14,"JAC Cooperativo"],
+ ["Feb","Atención","Correo-e","Consulta",4,25,"Laura Arpushana"],
+ ["Feb","Atención","Web","Queja",1,6,""],
+ ["Feb","Financiera","Ventanilla","Factura",9,28,"Distribuidora del Cabo"],
+ ["Feb","Atención","Correo-e","Petición",2,16,"Diana Solano"],
+ ["Feb","Jurídica","Correo-e","Oficio",12,8,"Personería"],
+ ["Feb","Atención","WhatsApp","Reclamo",3,11,""]];
+const EXH=["Mes","Dependencia","Medio","Tipo","Folios","Días","Remitente"];
+
+/* ---------- laboratorio de búsqueda ---------- */
+let lkMode="V";
+function lkSetup(){
+ const v=$("lkVal"),w=$("lkWhat");
+ if(lkMode==="V"){v.innerHTML=EXP.map(p=>`<option>${p[0]}</option>`).join("");w.innerHTML=`<option value="2">Tipo documental (columna 2)</option><option value="3">Serie (columna 3)</option><option value="4">Plazo en días (columna 4)</option>`}
+ else if(lkMode==="H"){v.innerHTML=EXC[0].map(c=>`<option>${c}</option>`).join("");w.innerHTML=`<option value="2">Costo por folio (fila 2)</option><option value="3">Minutos de radicación (fila 3)</option>`}
+ else{v.innerHTML=EXV.map(x=>`<option>${x[2]}</option>`).join("")+`<option>B99</option>`;w.innerHTML=`<option value="1">Nombre</option><option value="2">Dependencia</option>`}
+ lkRun()}
+function lkRun(){
+ const val=$("lkVal").value,what=+$("lkWhat").value;let html="",f="",r="",exp="";
+ if(lkMode==="V"){
+  const i=EXP.findIndex(p=>p[0]===val);
+  html=`<table class="xl"><thead><tr><th class="cl"></th><th>A · Código</th><th>B · Tipo documental</th><th>C · Serie</th><th>D · Plazo</th></tr></thead><tbody>`+
+   EXP.map((p,k)=>`<tr class="${k===i?"hit":""}"><td class="rn">${k+2}</td><td>${p[0]}</td>${[1,2,3].map(c=>`<td class="${c===3?"num":""} ${k===i&&what===c+1?"hit":""}">${p[c]}</td>`).join("")}</tr>`).join("")+`</tbody></table>`;
+  f=`=BUSCARV("${val}"; $A$2:$D$6; ${what}; FALSO)`;r=EXP[i][what-1]+(what===4?" días":"");
+  exp=`Excel bajó por la columna A hasta encontrar ${val} (fila ${i+2}) y se movió a la columna ${what} de la tabla.`+(val==="X04"&&what===4?" Ojo: una tutela se responde en 2 días; por eso cada tipo necesita su propio plazo.":"")}
+ else if(lkMode==="H"){
+  const j=EXC[0].indexOf(val);const lab=["Medio","Costo por folio","Minutos"];
+  html=`<table class="xl"><tbody>`+[0,1,2].map(r_=>`<tr><td class="rn">${r_+1}</td><th style="background:var(--fill);color:#fff">${lab[r_]}</th>`+EXC[r_].map((c,k)=>`<td class="${k===j&&r_===what-1?"hit":""} ${r_?"num":""}" style="${k===j&&r_===0?"font-weight:700":""}">${r_===1?fmt(c):c}</td>`).join("")+`</tr>`).join("")+`</tbody></table>`;
+  f=`=BUSCARH("${val}"; $B$1:$E$3; ${what}; FALSO)`;const x=EXC[what-1][j];r=what===2?fmt(x):x+" min";
+  exp=`Excel recorrió la fila 1 hacia la derecha hasta ${val} y bajó a la fila ${what}.`}
+ else{
+  const i=EXV.findIndex(x=>x[2]===val);
+  html=`<table class="xl"><thead><tr><th class="cl"></th><th>A · Nombre</th><th>B · Dependencia</th><th>C · ID</th></tr></thead><tbody>`+
+   EXV.map((x,k)=>`<tr class="${k===i?"hit":""}"><td class="rn">${k+2}</td><td class="${k===i&&what===1?"hit":""}">${x[0]}</td><td class="${k===i&&what===2?"hit":""}">${x[1]}</td><td>${x[2]}</td></tr>`).join("")+`</tbody></table>`;
+  const col=what===1?"A":"B";
+  if(lkMode==="X"){f=`=BUSCARX("${val}"; $C$2:$C$4; $${col}$2:$${col}$4; "No asignado")`;r=i<0?"No asignado":EXV[i][what-1];
+   exp=i<0?"El ID no existe (funcionario retirado): en vez de #N/D, BUSCARX muestra el mensaje del cuarto argumento.":"Buscó en la columna C y devolvió el dato de la columna "+col+", que está a la IZQUIERDA. BUSCARV no puede hacer esto."}
+  else{f=`=BUSCARV("${val}"; $A$2:$C$4; ${what}; FALSO)`;r="#N/D";
+   exp="BUSCARV siempre busca en la PRIMERA columna del rango (Nombre). Como el ID está en la columna C, no lo encuentra. Solución: BUSCARX o reordenar la tabla."}}
+ $("lkTable").innerHTML=html;$("lkF").textContent=f;$("lkR").textContent=r;$("lkExp").textContent=exp}
+$("lkTabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+ [...$("lkTabs").children].forEach(x=>x.setAttribute("aria-selected",x===b));lkMode=b.dataset.m;lkSetup()});
+$("lkVal").onchange=lkRun;$("lkWhat").onchange=lkRun;lkSetup();
+
+/* ---------- laboratorio lógico ---------- */
+function lgRun(){const p=+$("lgP").value,d=+$("lgD").value,dif=p-d;$("lgDv").textContent=d+" días";
+ $("lgF1").textContent=`=SI(H2<=L2;"A tiempo";"Vencida")   → H2 = ${d}, L2 = ${p}`;
+ $("lgR1").textContent=d<=p?"A tiempo":"Vencida";
+ $("lgF2").textContent=`=SI.CONJUNTO(M2<0;"Rojo"; M2<=3;"Amarillo"; VERDADERO;"Verde")   → M2 = L2−H2 = ${dif}`;
+ const s=dif<0?"Rojo":dif<=3?"Amarillo":"Verde";const col={Rojo:"var(--red)",Amarillo:"var(--amber)",Verde:"var(--sena-deep)"}[s];
+ $("lgR2").innerHTML=`<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${col};margin-right:6px;vertical-align:-1px"></span>${s}`}
+$("lgD").oninput=lgRun;$("lgP").onchange=lgRun;lgRun();
+
+/* ---------- laboratorio de conteo ---------- */
+$("ctC1").innerHTML=`<option value="">(sin criterio)</option>`+["Ventanilla","Correo-e","Web","WhatsApp"].map(x=>`<option>${x}</option>`).join("");
+$("ctC2").innerHTML=`<option value="">(sin criterio)</option>`+["Atención","Jurídica","Financiera"].map(x=>`<option>${x}</option>`).join("");
+$("ctC1").value="Correo-e";
+function ctRun(){const fn=$("ctFn").value;const c1=$("ctC1").value,c2=$("ctC2").value,c3=+$("ctC3").value||0;
+ $("ctC1w").style.display=fn.startsWith("CONTAR.SI")?"":"none";
+ $("ctC2w").style.display=$("ctC3w").style.display=fn==="CONTAR.SI.CONJUNTO"?"":"none";
+ let hits=[],hitCol=-1,f="",exp="";
+ if(fn==="CONTAR"){hitCol=4;hits=EXR.map((r,i)=>typeof r[4]==="number"?i:-1).filter(i=>i>=0);f="=CONTAR(E2:E13)";exp="Hay 12 radicados, pero E7 dice “N/D” (texto): CONTAR solo cuenta números."}
+ else if(fn==="CONTARA"){hitCol=6;hits=EXR.map((r,i)=>r[6]?i:-1).filter(i=>i>=0);f="=CONTARA(G2:G13)";exp="Cuenta los radicados con remitente. Las PQRSD anónimas (celda vacía) quedan por fuera. Para contar las vacías: =CONTAR.BLANCO(G2:G13)."}
+ else if(fn==="CONTAR.SI"){hitCol=2;const v=c1||"Correo-e";hits=EXR.map((r,i)=>r[2]===v?i:-1).filter(i=>i>=0);f=`=CONTAR.SI(C2:C13;"${v}")`;exp="Un solo criterio: el medio de recepción."}
+ else{const parts=[];hits=EXR.map((r,i)=>((!c1||r[2]===c1)&&(!c2||r[1]===c2)&&r[5]>c3)?i:-1).filter(i=>i>=0);
+  if(c1)parts.push(`C2:C13;"${c1}"`);if(c2)parts.push(`B2:B13;"${c2}"`);parts.push(`F2:F13;">${c3}"`);
+  f=`=CONTAR.SI.CONJUNTO(${parts.join("; ")})`;exp="Solo cuenta los radicados que cumplen TODOS los criterios al mismo tiempo."}
+ $("ctTable").innerHTML=`<table class="xl"><thead><tr><th class="cl"></th>${EXH.map((h,k)=>`<th>${"ABCDEFG"[k]} · ${h}</th>`).join("")}</tr></thead><tbody>`+
+  EXR.map((r,i)=>`<tr class="${hits.includes(i)&&hitCol<0?"hit":""}"><td class="rn">${i+2}</td>${r.map((c,k)=>`<td class="${k>=4&&k<=5?"num":""} ${hits.includes(i)&&k===hitCol?"hit":""}">${esc(c)}</td>`).join("")}</tr>`).join("")+`</tbody></table>`;
+ $("ctF").textContent=f;$("ctR").textContent=hits.length;$("ctExp").textContent=exp}
+["ctFn","ctC1","ctC2","ctC3"].forEach(id=>$(id).addEventListener("input",ctRun));ctRun();
+
+/* ---------- laboratorio aleatorio ---------- */
+function rdRun(){let a=Math.round(+$("rdMin").value),b=Math.round(+$("rdMax").value),n=Math.min(120,Math.max(5,Math.round(+$("rdN").value||30)));
+ if(b<a)[a,b]=[b,a];const v=Array.from({length:n},()=>a+Math.floor(Math.random()*(b-a+1)));
+ const s=v.reduce((x,y)=>x+y,0),mx=Math.max(...v);
+ $("rdStats").textContent=`Prom ${(s/n).toFixed(1)} · Máx ${mx} · Mín ${Math.min(...v)} · Total ${s} · Personal día pico ${Math.ceil(mx/25)}`;
+ $("rdNums").innerHTML=v.map(x=>`<span>${x}</span>`).join("");
+ const fr={};v.forEach(x=>fr[x]=(fr[x]||0)+1);const top=Math.max(...Object.values(fr));const span=b-a+1;
+ $("rdFreq").innerHTML=span<=80?Array.from({length:span},(_,k)=>`<div style="height:${((fr[a+k]||0)/top)*100}%" title="${a+k}: ${fr[a+k]||0}"></div>`).join(""):""}
+$("rdGo").onclick=rdRun;rdRun();
+document.addEventListener("keydown",e=>{if(e.key==="F9"){e.preventDefault();rdRun();toast("Recalculado (F9)")}});
+
+/* ---------- laboratorio de gráficas ---------- */
+let chart=null;
+const CH={canal:{l:["Ventanilla","Correo-e","Web","Certificado","WhatsApp"],d:[42,58,21,9,30]},mes:{l:["Ene","Feb","Mar","Abr","May","Jun"],d:[96,104,99,118,131,140]}};
+const VER={canal:{bar:[1,"Bien: las columnas comparan categorías."],barh:[1,"Bien: barras horizontales comparan categorías y dejan espacio a nombres largos."],line:[0,"No recomendada: una línea sugiere un orden o una tendencia entre Ventanilla y Correo-e, y no la hay."],pie:[1,"Aceptable: son pocas categorías y forman un todo. Pon los porcentajes como etiqueta."]},
+ mes:{bar:[1,"Aceptable: muestra los valores, pero la tendencia se lee mejor con líneas."],barh:[0,"No recomendada: el tiempo se lee de izquierda a derecha, no de arriba abajo."],line:[1,"La mejor opción: se ve que la radicación crece mes a mes."],pie:[0,"Incorrecta: los meses no son “partes de un todo” para comparar en porciones; se pierde la tendencia."]}};
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function drawChart(){if(typeof Chart==="undefined"){$("chVerdict").innerHTML='<div class="warn">No se pudo cargar la librería de gráficas (revisa tu conexión). El resto del taller funciona.</div>';return}
+ const k=$("chData").value,t=$("chType").value,D=CH[k];const pal=["#39A900","#1f6f9a","#e0a100","#c8553d","#7b6d8d"];
+ Chart.defaults.color=css("--muted");Chart.defaults.font.family=css("--body");
+ if(chart)chart.destroy();
+ chart=new Chart($("chCanvas"),{type:t==="barh"?"bar":t,data:{labels:D.l,datasets:[{label:"Radicados",data:D.d,backgroundColor:t==="pie"?pal:css("--sena"),borderColor:t==="pie"?css("--card"):css("--sena"),borderWidth:2,tension:.25,pointRadius:4}]},
+  options:{indexAxis:t==="barh"?"y":"x",maintainAspectRatio:false,plugins:{legend:{display:t==="pie",position:"right"},tooltip:{callbacks:{label:c=>c.raw+" radicados"}}},
+   scales:t==="pie"?{}:{x:{grid:{color:css("--line")}},y:{grid:{color:css("--line")},beginAtZero:true}}}});
+ const [ok,txt]=VER[k][t];$("chVerdict").innerHTML=`<div class="${ok?"ok":"warn"}">${ok?"✔ ":"✘ "}${txt}</div>`}
+$("chData").onchange=drawChart;$("chType").onchange=drawChart;
+window.addEventListener("load",drawChart);
+
+/* ---------- laboratorio tabla dinámica ---------- */
+function pvRun(){const R=$("pvR").value,C=$("pvC").value,V=$("pvV").value,F=$("pvF").value;
+ const idx={Mes:0,Dependencia:1,Medio:2,Tipo:3};
+ const rows=EXR.filter(r=>!F||r[0]===F);
+ const agg=L=>{if(!L.length)return null;if(V==="cnt")return L.length;if(V==="fol")return L.reduce((s,r)=>s+(typeof r[4]==="number"?r[4]:0),0);return L.reduce((s,r)=>s+r[5],0)/L.length};
+ const show=n=>n==null?"":V==="avg"?n.toLocaleString("es-CO",{maximumFractionDigits:1}):n.toLocaleString("es-CO");
+ const rk=[...new Set(rows.map(r=>r[idx[R]]))].sort();
+ const ck=C&&C!==R?[...new Set(rows.map(r=>r[idx[C]]))].sort():[];
+ const sel=(a,b)=>rows.filter(r=>(a==null||r[idx[R]]===a)&&(b==null||r[idx[C]]===b));
+ const vname=V==="cnt"?"Cuenta de radicados":V==="fol"?"Suma de Folios":"Promedio de Días";
+ let h=`<table class="xl"><thead><tr><th>${vname}${F?" · Mes = "+F:""}</th>${ck.map(c=>`<th>${c}</th>`).join("")}<th>Total general</th></tr></thead><tbody>`;
+ rk.forEach(a=>{h+=`<tr><td><b>${a}</b></td>${ck.map(c=>`<td class="num">${show(agg(sel(a,c)))}</td>`).join("")}<td class="num"><b>${show(agg(sel(a,null)))}</b></td></tr>`});
+ h+=`<tr><td><b>Total general</b></td>${ck.map(c=>`<td class="num"><b>${show(agg(sel(null,c)))}</b></td>`).join("")}<td class="num"><b>${show(agg(rows))}</b></td></tr></tbody></table>`;
+ if(C===R)h+=`<p class="muted" style="margin-top:6px">El mismo campo no puede ir en filas y columnas a la vez.</p>`;
+ if(V==="fol")h+=`<p class="muted" style="margin-top:6px">La fila con “N/D” suma 0 folios: un dato de texto en una columna numérica cambia el resultado.</p>`;
+ if(V==="avg")h+=`<p class="muted" style="margin-top:6px">Ojo: el promedio de días no dice si se cumplió el plazo. Una factura con 28 días está a tiempo (plazo 30); una tutela con 3 días está vencida (plazo 2).</p>`;
+ $("pvOut").innerHTML=h}
+["pvR","pvC","pvV","pvF"].forEach(id=>$(id).onchange=pvRun);pvRun();
+
+/* =====================================================
+   TALLER
+===================================================== */
+const EJ=[
+ {m:"Momento 1 · Completar la base con funciones de búsqueda"},
+ {id:"e1",fn:"BUSCARV",t:"Tipo documental, plazo, diferencia y serie",
+  q:`En la hoja <b>Radicados</b>, completa con BUSCARV desde <b>TiposDoc</b>: <b>K (Tipo_Documental)</b>, <b>L (Plazo_Dias)</b> y <b>S (Serie)</b>. Luego calcula <b>M (Diferencia) = Plazo_Dias − Dias_Respuesta</b>. Arrastra hasta la fila 121.`,
+  f:[["f1","Fórmula de K2 (Tipo_Documental)","formula"],["f2","Fórmula de L2 (Plazo_Dias)","formula"],["r1","Tipo documental del radicado R-0001","text"],["r2","Diferencia del radicado R-0001 (días)","num"],["a1","¿Qué significa que la Diferencia sea negativa? ¿Por qué la tabla lleva signos $?","area"]]},
+ {id:"e2",fn:"BUSCARH",t:"Costo de gestión por medio",
+  q:`La hoja <b>Medios</b> está en horizontal. Completa <b>N (Costo_Folio)</b> con BUSCARH y <b>O (Costo_Gestion) = Folios × Costo_Folio</b>.`,
+  f:[["f1","Fórmula de N2","formula"],["r1","Costo de gestión de R-0001 ($)","num"],["r2","Costo total de gestión de los 120 radicados ($)","num"],["a1","¿Por qué aquí BUSCARH y no BUSCARV?","area"]]},
+ {id:"e3",fn:"BUSCARX",t:"Funcionario responsable",
+  q:`En la hoja <b>Funcionarios</b> el ID está en la última columna. Completa <b>P (Funcionario)</b> con BUSCARX y haz que muestre <b>"No asignado"</b> cuando el ID no exista (funcionario retirado).`,
+  f:[["f1","Fórmula de P2","formula"],["r1","Funcionario del radicado R-0050","text"],["r2","¿Cuántos radicados quedaron “No asignado”?","num"],["a1","¿Qué pasa si lo intentas con BUSCARV? ¿Qué riesgo documental hay en los radicados “No asignado”?","area"]]},
+ {m:"Momento 2 · Medir la oportunidad con funciones lógicas"},
+ {id:"e4",fn:"SI",t:"¿Respondido a tiempo?",
+  q:`Completa <b>Q (Oportunidad)</b>: si Dias_Respuesta es menor o igual a Plazo_Dias, “A tiempo”; si no, “Vencida”.`,
+  f:[["f1","Fórmula de Q2","formula"],["r1","¿Cuántos radicados están A tiempo?","num"],["r2","Porcentaje de oportunidad: A tiempo ÷ 120 (%)","num"],["a1","Escribe la operación que hiciste para el porcentaje.","text"]]},
+ {id:"e5",fn:"SI.CONJUNTO",t:"Semáforo de respuesta",
+  q:`Completa <b>R (Semaforo)</b> con la Diferencia: <b>Rojo</b> si es menor que 0; <b>Amarillo</b> si es menor o igual a 3; <b>Verde</b> en los demás casos.`,
+  f:[["f1","Fórmula de R2 con SI.CONJUNTO","formula"],["f2","La misma con SI anidados","formula"],["r1","Radicados en Rojo","num"],["r2","Radicados en Amarillo","num"],["r3","Radicados en Verde","num"],["a1","¿Por qué importa el orden de las pruebas? ¿Qué debería hacer la entidad con los radicados en Amarillo?","area"]]},
+ {m:"Momento 3 · Contar con y sin condiciones (hoja Resumen)"},
+ {id:"e6",fn:"CONTAR · CONTARA",t:"¿Cuántos radicados hay?",
+  q:`Responde las preguntas 1 a 6 de la hoja <b>Resumen</b>.`,
+  f:[["r1","1. Radicados (CONTARA en Radicado)","num"],["r2","2. Radicados con remitente","num"],["r3","3. Radicados anónimos","num"],["r4","4. CONTAR en Folios","num"],["r5","5. Total de folios recibidos","num"],["a1","¿Qué diferencia hay entre CONTAR y CONTARA? ¿Por qué CONTARA de Remitente no da 120?","area"]]},
+ {id:"e7",fn:"CONTAR.SI",t:"Conteos con un criterio",
+  q:`Responde las preguntas 12 a 18 de la hoja <b>Resumen</b>.`,
+  f:[["r1","Ventanilla","num"],["r2","Correo electrónico","num"],["r3","Página web","num"],["r4","Correo certificado","num"],["r5","WhatsApp","num"],["r6","Dependencia Jurídica","num"],["r7","Radicados con 20 folios o más","num"],["f1","Fórmula usada para 20 folios o más","formula"],["a1","Suma los radicados de los medios digitales (correo, web y WhatsApp). ¿Qué porcentaje del total representan y qué implica para el archivo?","text"]]},
+ {id:"e8",fn:"CONTAR.SI.CONJUNTO",t:"Conteos con varios criterios",
+  q:`Responde las preguntas 19, 20 y 21 de la hoja <b>Resumen</b>.`,
+  f:[["r1","Correo electrónico + Atención al Usuario + Agosto","num"],["r2","Reclamo + Vencida","num"],["r3","Rojo + Septiembre","num"],["f1","Fórmula de la pregunta 20","formula"]]},
+ {m:"Momento 4 · Simular la carga y auditar"},
+ {id:"e9",fn:"ALEATORIO.ENTRE",t:"Carga de la ventanilla y muestra de auditoría",
+  q:`En la hoja <b>Simulacion</b>, genera los radicados diarios (entre 20 y 60) para 30 días. Calcula promedio, máximo, mínimo, días con más de 50 radicados, total del mes y el <b>personal necesario el día pico</b> si cada funcionario radica 25 al día (REDONDEAR.MAS). Luego escoge <b>3 radicados al azar</b> (1 a 120) para auditoría y trae el tipo documental del primero con BUSCARX. <b>Congela tus resultados</b> con Pegado especial → Valores.`,
+  f:[["f1","Fórmula de los radicados diarios (B4)","formula"],["r1","Promedio diario","num"],["r2","Máximo","num"],["r3","Mínimo","num"],["r4","Días con más de 50 radicados","num"],["r5","Total del mes","num"],["r6","Personal necesario el día pico","num"],["r7","Radicados de la muestra de auditoría (los 3)","text"],["r8","Tipo documental del primer radicado de la muestra","text"],["a1","¿Por qué una muestra al azar es mejor que dejar que el funcionario escoja qué auditar? ¿Por qué tu compañero obtuvo números distintos?","area"]]},
+ {m:"Momento 5 · Graficar para comunicar"},
+ {id:"e10",fn:"Gráficas",t:"Tres gráficas, tres preguntas",
+  q:`Crea en una hoja nueva llamada <b>Graficas</b>: (a) número de radicados por <b>medio</b>; (b) radicados por <b>mes</b> (julio, agosto, septiembre); (c) participación de cada <b>serie documental</b> (PQRSD, Correspondencia, Contable). Construye las tablas de apoyo con tablas dinámicas o con CONTAR.SI. Cada gráfica debe tener un título que diga la conclusión.`,
+  f:[["r1","Medio con más radicados y cuántos","text"],["r2","Participación % de ese medio sobre el total","num"],["r3","Radicados de julio","num"],["r4","Radicados de septiembre","num"],["r5","Variación % de julio a septiembre","num"],["a2","Fórmula o cálculo de la variación %","text"],["r6","Serie con mayor participación y su %","text"],["a1","¿Qué tipo de gráfica usaste en (a), (b) y (c) y por qué?","area"]]},
+ {m:"Momento 6 · Resumir con tablas dinámicas"},
+ {id:"e11",fn:"Tabla dinámica 1",t:"Dependencia × medio",
+  q:`Crea una tabla dinámica en una hoja nueva <b>TD_Dependencias</b>: Filas = Dependencia, Columnas = Medio, Valores = Cuenta de Radicado, Filtro = Mes. Ordénala de mayor a menor.`,
+  f:[["r1","Dependencia con más radicados (los tres meses)","text"],["r2","Cantidad de radicados de esa dependencia","num"],["r3","Filtrando Septiembre: medio con más radicados","text"],["r4","Cantidad de ese medio en Septiembre","num"],["a1","¿Qué dato te sorprendió y por qué?","text"]]},
+ {id:"e12",fn:"Tabla dinámica 2",t:"Desempeño por funcionario",
+  q:`Crea otra tabla dinámica en <b>TD_Funcionarios</b>: Filas = Funcionario, Columnas = Oportunidad, Valores = Cuenta de Radicado. Agrega en Valores el <b>Promedio de Dias_Respuesta</b> y un gráfico dinámico. Calcula el <b>% de vencidas</b> de cada funcionario = Vencidas ÷ Total del funcionario.`,
+  f:[["r1","Funcionario con más radicados","text"],["r2","Funcionario con el mayor % de vencidas y su valor","text"],["r3","Funcionario con el promedio de días más alto y su valor","text"],["a1","¿El funcionario con el promedio de días más alto es el que más incumple? Explica con tus cifras por qué el promedio de días no basta para evaluar la oportunidad.","area"]]},
+ {m:"Momento 7 · Razonar y recomendar"},
+ {id:"e13",fn:"Informe",t:"Informe para el comité de archivo",
+  q:`Escribe tres recomendaciones para el comité. Cada una debe citar <b>al menos una cifra o porcentaje</b> obtenido en el taller y decir qué decisión tomar (por ejemplo: reforzar personal en ventanilla, redistribuir PQRSD, digitalizar un medio, priorizar los radicados en Amarillo, auditar a una dependencia).`,
+  f:[["a1","Recomendación 1","area"],["a2","Recomendación 2","area"],["a3","Recomendación 3","area"]]}
+];
+
+let S={};try{S=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){S={}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let bound=false;
+function renderEx(){let n=0,h="";
+ EJ.forEach(e=>{if(e.m){h+=`<div class="mom">${e.m}</div>`;return}n++;e.n=n;
+  h+=`<article class="card ex" id="${e.id}"><div class="hd"><span class="num">${n}</span><div><span class="pill">${e.fn}</span><h3 style="margin-top:4px">${e.t}</h3></div><span class="st" id="st-${e.id}"></span></div><p>${e.q}</p><div class="fields">`+
+  e.f.map(([k,l,t])=>{const id=`${e.id}-${k}`,v=esc(S[id]||"");
+   if(t==="area")return `<div class="fld" style="grid-column:1/-1"><label for="${id}">${l}</label><textarea id="${id}" data-k="${id}">${v}</textarea></div>`;
+   return `<div class="fld" ${t==="formula"?'style="grid-column:1/-1"':""}><label for="${id}">${l}</label><input id="${id}" data-k="${id}" value="${v}" ${t==="formula"?'class="formula" placeholder="=..." spellcheck="false"':t==="num"?'inputmode="decimal"':""}></div>`}).join("")+`</div></article>`});
+ $("exList").innerHTML=h;
+ if(!bound){$("exList").addEventListener("input",ev=>{const k=ev.target.dataset.k;if(!k)return;S[k]=ev.target.value;persist();progress();upd()});bound=true}
+ progress()}
+function progress(){let tot=0,ok=0;
+ EJ.filter(e=>e.id).forEach(e=>{let d=0;e.f.forEach(([k,,t])=>{tot++;const v=(S[`${e.id}-${k}`]||"").trim();if(v){ok++;d++}
+   if(t==="formula"){const el=$(`${e.id}-${k}`);if(el)el.style.borderColor=v&&!v.startsWith("=")?"var(--red)":""}});
+  const done=d===e.f.length;$(e.id).classList.toggle("done",done);$("st-"+e.id).textContent=done?"✔ Completo":`${d}/${e.f.length}`});
+ const p=Math.round(ok/tot*100);$("pbar").style.width=p+"%";$("ptxt").textContent=p+"%";return{p,ok,tot}}
+renderEx();
+
+/* ---------- datos del aprendiz ---------- */
+const SF=["sNom","sDoc","sFicha","sCorreo","sWa","chk1","chk2","chk3"];
+function fillSF(){SF.forEach(id=>{const el=$(id),v=S["_"+id];if(v!==undefined){if(el.type==="checkbox")el.checked=!!v;else el.value=v}})}
+fillSF();
+SF.forEach(id=>{const el=$(id);el.addEventListener(el.tagName==="SELECT"||el.type==="checkbox"?"change":"input",()=>{S["_"+id]=el.type==="checkbox"?el.checked:el.value;persist();upd()})});
+
+function txt(){const pr=progress();const L=[];
+ L.push("TALLER EXCEL PARA GESTIÓN DOCUMENTAL · LogiLab SENA");
+ L.push("Competencia 240201528 · Razonar cuantitativamente");
+ L.push(`Aprendiz: ${$("sNom").value||"(sin nombre)"} · Doc: ${$("sDoc").value||"-"} · Ficha: ${$("sFicha").value||"-"}`);
+ L.push(`Correo: ${$("sCorreo").value||"-"} · Avance: ${pr.p}% (${pr.ok}/${pr.tot} campos)`);
+ L.push(`Enviado: ${new Date().toLocaleString("es-CO",{timeZone:"America/Bogota"})}`);
+ L.push(`Lista de chequeo: archivo con fórmulas ${$("chk1").checked?"SÍ":"NO"} · gráficas y TD ${$("chk2").checked?"SÍ":"NO"} · simulación congelada y revisado ${$("chk3").checked?"SÍ":"NO"}`);
+ EJ.filter(e=>e.id).forEach(e=>{L.push("");L.push(`--- ${e.n}. ${e.fn}: ${e.t} ---`);
+  e.f.forEach(([k,l])=>{const v=(S[`${e.id}-${k}`]||"").trim();L.push(`${l}: ${v||"(vacío)"}`)})});
+ L.push("");L.push(`Adjunto: Taller_Excel_GD_${$("sFicha").value||"Ficha"}_${(($("sNom").value||"Nombre").trim().split(/\s+/)[0])}.xlsx`);
+ L.push("By Carlos Barrios · Instructor");return L.join("\n")}
+function pending(){const v=EJ.filter(e=>e.id&&e.f.some(([k])=>!(S[`${e.id}-${k}`]||"").trim())).map(e=>e.n);
+ const miss=[];if(!$("sNom").value.trim())miss.push("tu nombre");if(!$("sDoc").value.trim())miss.push("tu documento");if(!$("sFicha").value)miss.push("tu ficha");
+ $("pend").textContent=(miss.length?`Falta: ${miss.join(", ")}. `:"")+(v.length?`Ejercicios con campos vacíos: ${v.join(", ")}.`:"Todos los ejercicios tienen respuesta.")}
+function upd(){$("preview").textContent=txt();const n=$("sWa").value.replace(/\D/g,"");$("bWa").href="https://wa.me/"+n+"?text="+encodeURIComponent(txt());pending()}
+function needName(){if(!$("sNom").value.trim()){toast("Escribe tu nombre antes de enviar");$("sNom").focus();return true}
+ if(!$("sFicha").value){toast("Selecciona tu ficha antes de enviar");$("sFicha").focus();return true}return false}
+$("bWa").addEventListener("click",e=>{if(needName()){e.preventDefault();return}upd();toast("Ahora adjunta tu archivo .xlsx en el chat")});
+$("bMail").onclick=()=>{if(needName())return;const sub=`Taller Excel Gestión Documental ${$("sFicha").value} - ${$("sNom").value}`;
+ location.href=`mailto:${DOCENTE_CORREO}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(txt())}`;toast("Adjunta el .xlsx. Si el correo no abre, usa Copiar o Descargar .txt")};
+$("bCopy").onclick=async()=>{const t=txt();try{await navigator.clipboard.writeText(t);toast("Reporte copiado")}catch(e){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");toast("Reporte copiado")}catch(x){toast("No se pudo copiar: usa Descargar .txt")}a.remove()}};
+function dl(name,content,type){const b=new Blob([content],{type});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+const slug=()=>($("sNom").value||"aprendiz").trim().replace(/\s+/g,"_").normalize("NFD").replace(/[̀-ͯ]/g,"");
+$("bTxt").onclick=()=>{if(needName())return;dl(`Reporte_Taller_Excel_GD_${$("sFicha").value}_${slug()}.txt`,txt(),"text/plain;charset=utf-8");toast("Reporte descargado")};
+$("saveJson").onclick=()=>{dl(`Avance_Taller_Excel_GD_${slug()}.json`,JSON.stringify({app:APP,v:1,data:S},null,1),"application/json");toast("Avance guardado")};
+$("loadJson").onchange=ev=>{const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(o.app!==APP)throw 0;S=o.data||{};persist();renderEx();fillSF();upd();toast("Avance cargado")}catch(e){toast("Ese archivo no es un avance de este taller")}};r.readAsText(f);ev.target.value=""};
+["visibilitychange","pagehide"].forEach(ev=>addEventListener(ev,persist));
+upd();
+</script>
+</body></html>
