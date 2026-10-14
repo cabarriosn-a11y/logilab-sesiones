@@ -104,6 +104,47 @@ footer.f{color:var(--muted);font-size:.85rem;padding:16px;text-align:center;bord
 .doc th,.doc td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
 .doc th{background:var(--sena-soft)}
 .doc .empty{color:var(--alert);font-style:italic}
+/* código de entrega */
+.codebox{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:10px;border:2px dashed var(--sena);background:var(--sena-soft)}
+.codebox textarea{font-family:var(--mono);font-size:.74rem;min-height:72px;word-break:break-all;background:var(--card)}
+.codehead{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:space-between;align-items:baseline}
+.warn{color:var(--alert);font-weight:700}
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.sent{font-size:.85rem;color:var(--sena-deep);font-weight:700}
+
+/* diagrama de la cadena */
+.chainwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:#fff;-webkit-overflow-scrolling:touch}
+.chainwrap svg{display:block;width:100%;min-width:820px;height:auto}
+
+/* zona instructor */
+.mx{border-collapse:collapse;width:100%;min-width:780px}
+.mx th,.mx td{border:1px solid var(--line);padding:4px;text-align:center;font-size:.85rem}
+.mx th{background:var(--sena);color:#fff;font-family:var(--display);font-size:.95rem;font-weight:700}
+.mx td.tm{text-align:left;padding:6px 8px;min-width:200px}
+.mx td.tm small{display:block;color:var(--muted)}
+.cell{width:100%;min-width:38px;height:34px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--muted);font-weight:800;font-family:var(--mono);padding:0}
+.cell.p{background:var(--sun);border-color:var(--sun);color:#17201a}
+.cell.r{background:color-mix(in srgb,var(--sun) 30%,var(--card));border-color:var(--sun);color:var(--fg)}
+.cell.A{background:var(--sena);border-color:var(--sena);color:#fff}
+.cell.D{background:var(--alert);border-color:var(--alert);color:#fff}
+.cell.on{outline:3px solid var(--fg);outline-offset:1px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:.85rem;color:var(--muted)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:16px;height:16px;border-radius:4px;display:inline-block;border:1px solid var(--line)}
+.ihead{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.isplit{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+@media (max-width:1000px){.isplit{grid-template-columns:1fr}}
+.evalbox{position:sticky;top:84px;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--bg)}
+@media (max-width:1000px){.evalbox{position:static}}
+.evalbox .ck{display:flex;gap:8px;align-items:flex-start;font-size:.92rem}
+.evalbox input[type=checkbox]{width:20px;height:20px;accent-color:var(--sena);flex:none;margin-top:2px}
+.jz{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.jz button{padding:9px 4px;border:1px solid var(--line);border-radius:8px;font-weight:800;background:var(--card);color:var(--fg)}
+.jz button.sel[data-j="A"]{background:var(--sena);border-color:var(--sena);color:#fff}
+.jz button.sel[data-j="D"]{background:var(--alert);border-color:var(--alert);color:#fff}
+.jz button.sel[data-j=""]{background:var(--sun);border-color:var(--sun);color:#17201a}
+.ok{color:var(--sena-deep);font-weight:700}.late{color:var(--alert);font-weight:700}
+.prevev{padding:8px 10px;border-radius:8px;background:var(--sand);font-size:.85rem}
 @media print{.top,nav.route,.noprint,footer.f{display:none!important}.wrap{display:block;padding:0}.card{border:0;padding:0}body{background:#fff;color:#000}}
 </style>
 </head>
@@ -119,13 +160,16 @@ footer.f{color:var(--muted);font-size:.85rem;padding:16px;text-align:center;bord
   <nav class="route" id="route" aria-label="Ruta de talleres"></nav>
   <main id="main"></main>
 </div>
-<footer class="f">LogiLab SENA · Gestión Logística · Competencia 210101007 · <b>By Carlos Barrios · Instructor</b> · <a href="../../">← Portal</a></footer>
+<footer class="f">LogiLab SENA · Gestión Logística · Competencia 210101007 · <b>By Carlos Barrios · Instructor</b> · <a href="../../">← Portal</a> · <a href="#instructor" id="lnkInstr">Zona instructor</a></footer>
 
+<script>/* lz-string 1.5.0 · MIT License · (c) 2013 pieroxy · https://github.com/pieroxy/lz-string */
+var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",e={};function t(r,o){if(!e[r]){e[r]={};for(var n=0;n<r.length;n++)e[r][r.charAt(n)]=n}return e[r][o]}var i={compressToBase64:function(r){if(null==r)return"";var n=i._compress(r,6,function(r){return o.charAt(r)});switch(n.length%4){default:case 0:return n;case 1:return n+"===";case 2:return n+"==";case 3:return n+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(n){return t(o,r.charAt(n))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(r){return null==r?"":""==r?null:i._decompress(r.length,16384,function(o){return r.charCodeAt(o)-32})},compressToUint8Array:function(r){for(var o=i.compress(r),n=new Uint8Array(2*o.length),e=0,t=o.length;e<t;e++){var s=o.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null==o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;e<t;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(r){return null==r?"":i._compress(r,6,function(r){return n.charAt(r)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(o){return t(n,r.charAt(o))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(r,o,n){if(null==r)return"";var e,t,i,s={},u={},a="",p="",c="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<r.length;i+=1)if(a=r.charAt(i),Object.prototype.hasOwnProperty.call(s,a)||(s[a]=f++,u[a]=!0),p=c+a,Object.prototype.hasOwnProperty.call(s,p))c=p;else{if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++),s[p]=f++,c=String(a)}if(""!==c){if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==o-1){d.push(n(m));break}v++}return d.join("")},decompress:function(r){return null==r?"":""==r?null:i._decompress(r.length,32768,function(o){return r.charCodeAt(o)})},_decompress:function(o,n,e){var t,i,s,u,a,p,c,l=[],f=4,h=4,d=3,m="",v=[],g={val:e(0),position:n,index:1};for(t=0;t<3;t+=1)l[t]=t;for(s=0,a=Math.pow(2,2),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 2:return""}for(l[3]=c,i=c,v.push(c);;){if(g.index>o)return"";for(s=0,a=Math.pow(2,d),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(c=s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 2:return v.join("")}if(0==f&&(f=Math.pow(2,d),d++),l[c])m=l[c];else{if(c!==h)return null;m=i+i.charAt(0)}v.push(m),l[h++]=i+m.charAt(0),i=m,0==--f&&(f=Math.pow(2,d),d++)}}};return i}();"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module?module.exports=LZString:"undefined"!=typeof angular&&null!=angular&&angular.module("LZString",[]).factory("LZString",function(){return LZString});
+</script>
 <script>
 (function(){
 /* ======== RUTA DE TALLERES ======== */
 const T=[
-{id:'T1',fase:'Diagnóstico',ev:'3.3.1',fecha:'Mié 14 oct',c:'var(--sena)',t:'Escoger la empresa y conocerla',
+{id:'T1',dl:'2026-10-14',fase:'Diagnóstico',ev:'3.3.1',fecha:'Mié 14 oct',c:'var(--sena)',t:'Escoger la empresa y conocerla',
  obj:'Seleccionar la empresa real de Riohacha sobre la que el equipo hará todo el plan y levantar su ficha técnica.',
  prod:'Matriz de selección y ficha técnica de la empresa.',
  pasos:['Cada integrante propone una empresa que conozca y a la que pueda entrar: tienda, distribuidora, panadería, ferretería, droguería, hotel, restaurante o transportadora.','Calificar las 3 mejores opciones de 1 a 5 en cada criterio de la matriz. Gana la de mayor puntaje.','Pedir permiso al dueño o administrador. Explicar que es un ejercicio académico del SENA y que el plan se le entregará gratis al final.','Visitar la empresa o llamar al contacto y llenar la ficha técnica.'],
@@ -136,17 +180,18 @@ const T=[
   {k:'empresa',type:'text',l:'Empresa seleccionada (nombre comercial)',ph:'Ej.: Panadería La Esperanza',main:true},
   {k:'ficha',type:'table',l:'Ficha técnica de la empresa',rowLabels:['Sector y actividad','Dirección o barrio','Años de funcionamiento','Número de empleados','Productos principales','Clientes principales','Proveedores principales','Cargo de la persona que nos atiende'],cols:['Dato','Respuesta'],rl:true}
  ]},
-{id:'T2',fase:'Diagnóstico',ev:'3.3.1',fecha:'Jue 15 oct',c:'var(--sena)',t:'Dibujar la cadena y los procesos',
+{id:'T2',dl:'2026-10-15',fase:'Diagnóstico',ev:'3.3.1',fecha:'Jue 15 oct',c:'var(--sena)',t:'Dibujar la cadena y los procesos',
  obj:'Mapear de dónde viene y hacia dónde va lo que mueve la empresa, y cómo trabaja por dentro.',
  prod:'Mapa de la cadena de suministro y tabla de procesos logísticos internos.',
  pasos:['Preguntar en la empresa: ¿a quién le compran?, ¿cómo llega la mercancía?, ¿a quién le venden?, ¿cómo la entregan?','Llenar la tabla de eslabones, de izquierda a derecha.','Recorrer la empresa y observar cada proceso interno: compras, recepción, almacenamiento, alistamiento, despacho y devoluciones.','Medir o preguntar cuánto tiempo toma cada proceso y anotar un problema por proceso.','Dibujar el mapa en papelógrafo con flechas de los 4 flujos: materiales, información, dinero y energía.'],
  tip:'Anoten solo lo que vieron o les dijeron. Separen hechos de interpretaciones, como en la sesión 1.',
  campos:[
-  {k:'cadena',type:'table',l:'Eslabones de la cadena',rowLabels:['Proveedores','Transporte de entrada','La empresa (almacén)','Transporte de salida','Clientes'],cols:['Eslabón','¿Quiénes son?','¿Qué se mueve?','¿Cada cuánto?','Problema observado'],rl:true},
+  {k:'cadena',type:'table',l:'Eslabones de la cadena',help:'Si hay varios proveedores o clientes, sepárenlos con coma o en renglón aparte: así salen como cajas separadas en el diagrama.',rowLabels:['Proveedores','Transporte de entrada','La empresa (almacén)','Transporte de salida','Clientes'],cols:['Eslabón','¿Quiénes son?','¿Qué se mueve?','¿Cada cuánto?','Problema observado'],rl:true},
   {k:'procesos',type:'table',l:'Procesos logísticos internos',rowLabels:['Compras','Recepción','Almacenamiento','Alistamiento (picking)','Despacho','Devoluciones'],cols:['Proceso','¿Cómo se hace hoy?','¿Quién lo hace?','Tiempo aproximado','Problema'],rl:true},
-  {k:'flujos',type:'area',l:'Los 4 flujos en una frase cada uno',ph:'Materiales: la harina llega de Barranquilla cada 15 días…\nInformación: el pedido se hace por WhatsApp…\nDinero: se paga de contado al distribuidor…\nEnergía: horno a gas y neveras con energía eléctrica…'}
+  {k:'flujos',type:'area',l:'Los 4 flujos en una frase cada uno',ph:'Materiales: la harina llega de Barranquilla cada 15 días…\nInformación: el pedido se hace por WhatsApp…\nDinero: se paga de contado al distribuidor…\nEnergía: horno a gas y neveras con energía eléctrica…'},
+  {k:'diagrama',type:'chain',l:'Diagrama de la cadena de abastecimiento'}
  ]},
-{id:'T3',fase:'Diagnóstico',ev:'3.3.1',fecha:'Mié 21 oct',c:'var(--sena)',t:'Escuchar a clientes y proveedores',
+{id:'T3',dl:'2026-10-21',fase:'Diagnóstico',ev:'3.3.1',fecha:'Mié 21 oct',c:'var(--sena)',t:'Escuchar a clientes y proveedores',
  obj:'Aplicar la guía de entrevista de la sesión 2 y descubrir qué necesita cada eslabón.',
  prod:'Resultados de entrevistas y matriz de necesidades por eslabón.',
  pasos:['Usar la guía de entrevista de la sesión 2 y adaptarla a la empresa escogida.','Entrevistar como mínimo a 4 actores: el dueño o administrador, un proveedor, un empleado y un cliente.','Registrar en la tabla la necesidad y la queja principal de cada entrevistado.','Llenar la matriz de necesidades por eslabón usando las 6 dimensiones: precio, tiempo, frecuencia, cantidad, calidad y servicio.','Escribir los 3 hallazgos más importantes, cada uno con su evidencia.'],
@@ -156,7 +201,7 @@ const T=[
   {k:'necesidades',type:'table',l:'Matriz de necesidades por eslabón',rowLabels:['Proveedor','Transporte','La empresa','Cliente intermedio','Cliente final'],cols:['Eslabón','Necesidad principal','Problema observado','Fuente del dato'],rl:true},
   {k:'hallazgos',type:'area',l:'Tres hallazgos con su evidencia',ph:'1. Se agota el pan de la tarde 3 de 5 días (observación y entrevista al administrador)…'}
  ]},
-{id:'T4',fase:'Diagnóstico',ev:'3.3.1',fecha:'Jue 22 oct',c:'var(--sena)',t:'Entorno y DOFA',
+{id:'T4',dl:'2026-10-22',fase:'Diagnóstico',ev:'3.3.1',fecha:'Jue 22 oct',c:'var(--sena)',t:'Entorno y DOFA',
  obj:'Analizar los factores externos con PESTEL y resumir el diagnóstico en una matriz DOFA.',
  prod:'PESTEL, DOFA y conclusión del diagnóstico. Con los talleres 1 a 4 se escribe el informe ICONTEC (evidencia 3.3.1).',
  pasos:['Buscar al menos 3 datos oficiales (DANE, Cámara de Comercio, Alcaldía) y llenar el PESTEL de la empresa.','Clasificar lo encontrado: lo interno que ayuda (fortalezas) o estorba (debilidades), y lo externo que ayuda (oportunidades) o amenaza (amenazas).','Escoger los 3 puntos más importantes de cada cuadrante de la DOFA.','Escribir la conclusión del diagnóstico: los 3 problemas logísticos que el plan debe resolver.','Tarea: redactar el informe de diagnóstico con normas ICONTEC (mínimo 5 páginas) uniendo los talleres 1 a 4.'],
@@ -166,7 +211,7 @@ const T=[
   {k:'dofa',type:'table',l:'Matriz DOFA',rowLabels:['Debilidades','Oportunidades','Fortalezas','Amenazas'],cols:['Cuadrante','1','2','3'],rl:true},
   {k:'conclusion',type:'area',l:'Conclusión: los 3 problemas logísticos que el plan va a resolver',ph:'1. Abastecimiento: …\n2. Inventario: …\n3. Distribución: …'}
  ]},
-{id:'T5',fase:'Políticas',ev:'3.3.2',fecha:'Mié 28 oct',c:'var(--sea)',t:'Rumbo estratégico logístico',
+{id:'T5',dl:'2026-10-28',fase:'Políticas',ev:'3.3.2',fecha:'Mié 28 oct',c:'var(--sea)',t:'Rumbo estratégico logístico',
  obj:'Alinear la logística con lo que la empresa quiere lograr: misión y visión logística y objetivos SMART.',
  prod:'Misión y visión logística y 4 objetivos logísticos SMART alineados con los objetivos de la empresa.',
  pasos:['Preguntar al dueño: ¿qué quiere lograr la empresa en los próximos 3 años? Esos son los objetivos corporativos.','Escribir la misión logística: qué hace la logística, para quién y cómo.','Escribir la visión logística: cómo se verá la logística de la empresa en 3 años.','Redactar 4 objetivos logísticos SMART: específicos, medibles, alcanzables, relevantes y con tiempo. Cada uno debe responder a un problema de la conclusión del taller 4.','Conectar cada objetivo logístico con el objetivo corporativo al que aporta.'],
@@ -177,7 +222,7 @@ const T=[
   {k:'vision',type:'area',l:'Visión logística a 3 años',ph:'En 2029 seremos…'},
   {k:'objetivos',type:'table',l:'Objetivos logísticos SMART',cols:['Objetivo logístico SMART','Problema que resuelve','Objetivo corporativo al que aporta','Plazo'],rows:4}
  ]},
-{id:'T6',fase:'Políticas',ev:'3.3.2',fecha:'Jue 29 oct',c:'var(--sea)',t:'Política de compras y proveedores',
+{id:'T6',dl:'2026-10-29',fase:'Políticas',ev:'3.3.2',fecha:'Jue 29 oct',c:'var(--sea)',t:'Política de compras y proveedores',
  obj:'Evaluar a los proveedores y definir las reglas de aprovisionamiento de la empresa.',
  prod:'Evaluación de proveedores y política de aprovisionamiento.',
  pasos:['Listar los 4 proveedores más importantes de la empresa.','Calificar cada uno de 1 a 5 en precio, cumplimiento, calidad y crédito. La app suma el total.','Decidir con qué proveedores seguir, cuáles negociar y si hace falta buscar un segundo proveedor.','Escribir la política de aprovisionamiento con reglas claras: cuántos proveedores por producto, cada cuánto se compra, quién autoriza y cómo se recibe.'],
@@ -187,7 +232,7 @@ const T=[
   {k:'decision',type:'area',l:'Decisión sobre proveedores',ph:'Seguimos con…, negociamos con…, buscamos un segundo proveedor de…'},
   {k:'politicaCompras',type:'area',l:'Política de aprovisionamiento (mínimo 5 reglas)',ph:'1. Todo producto crítico tendrá mínimo 2 proveedores.\n2. Los pedidos se hacen los lunes y jueves.\n3. …'}
  ]},
-{id:'T7',fase:'Políticas',ev:'3.3.2',fecha:'Mié 4 nov',c:'var(--sea)',t:'Política de inventarios',
+{id:'T7',dl:'2026-11-04',fase:'Políticas',ev:'3.3.2',fecha:'Mié 4 nov',c:'var(--sea)',t:'Política de inventarios',
  obj:'Clasificar los productos con el método ABC y calcular cuándo y cuánto pedir.',
  prod:'Clasificación ABC, punto de reorden y política de inventarios.',
  pasos:['Listar 10 productos de la empresa con sus unidades vendidas al mes y su costo unitario.','La app calcula el valor, el porcentaje acumulado y la clase A, B o C.','Para un producto clase A, calcular el stock de seguridad y el punto de reorden con la calculadora.','Escribir la política de inventarios: cada cuánto se revisa, cómo se rota (PEPS), qué stock de seguridad tiene cada clase.'],
@@ -197,7 +242,7 @@ const T=[
   {k:'rop',type:'rop',l:'Punto de reorden de un producto clase A'},
   {k:'politicaInv',type:'area',l:'Política de inventarios (mínimo 5 reglas)',ph:'1. Los productos A se cuentan todos los días al cierre.\n2. Se despacha primero lo que entró primero (PEPS).\n3. …'}
  ]},
-{id:'T8',fase:'Políticas',ev:'3.3.2',fecha:'Jue 5 nov',c:'var(--sea)',t:'Política de distribución y transporte',
+{id:'T8',dl:'2026-11-05',fase:'Políticas',ev:'3.3.2',fecha:'Jue 5 nov',c:'var(--sea)',t:'Política de distribución y transporte',
  obj:'Organizar cómo llegan los productos al cliente: zonas, frecuencias, vehículos y costos.',
  prod:'Plan de distribución y política de distribución. Con los talleres 5 a 8 se escribe el informe técnico de políticas (evidencia 3.3.2).',
  pasos:['Identificar las zonas o clientes a los que la empresa entrega o que vienen a comprar.','Para cada zona, anotar la frecuencia de entrega, el vehículo y el costo aproximado por viaje.','Proponer mejoras: agrupar entregas por zona, horarios fijos, pedido mínimo.','Escribir la política de distribución y la de devoluciones.','Tarea: redactar el informe técnico de políticas en PDF uniendo los talleres 5 a 8.'],
@@ -206,7 +251,7 @@ const T=[
   {k:'zonas',type:'table',l:'Zonas o clientes de distribución',cols:['Zona o cliente','Frecuencia de entrega','Vehículo','Costo por viaje ($)','Problema'],rows:4,num:[3]},
   {k:'politicaDist',type:'area',l:'Política de distribución y devoluciones (mínimo 5 reglas)',ph:'1. Entregas por zona: norte lunes y jueves, sur martes y viernes.\n2. Pedido mínimo para domicilio: …\n3. …'}
  ]},
-{id:'T9',fase:'Estrategias',ev:'3.3.3',fecha:'Mié 11 nov',c:'var(--sun)',t:'Estrategias con Balanced Scorecard',
+{id:'T9',dl:'2026-11-11',fase:'Estrategias',ev:'3.3.3',fecha:'Mié 11 nov',c:'var(--sun)',t:'Estrategias con Balanced Scorecard',
  obj:'Convertir los objetivos en estrategias concretas usando las 4 perspectivas del Cuadro de Mando Integral.',
  prod:'Cuadro de Mando Integral logístico y mapa causa-efecto.',
  pasos:['Tomar los objetivos SMART del taller 5 y ubicarlos en la perspectiva que les corresponde.','Para cada perspectiva, escribir qué van a hacer (la estrategia), con qué indicador lo miden y cuál es la meta.','Revisar que las 4 perspectivas se conecten: aprender → mejores procesos → clientes satisfechos → mejores resultados financieros.','Dibujar el mapa causa-efecto en papelógrafo con flechas de abajo hacia arriba.'],
@@ -215,7 +260,7 @@ const T=[
   {k:'bsc',type:'table',l:'Cuadro de Mando Integral logístico',rowLabels:['Financiera','Clientes','Procesos internos','Aprendizaje y crecimiento'],cols:['Perspectiva','Objetivo estratégico','Estrategia (qué vamos a hacer)','Indicador','Meta'],rl:true},
   {k:'causa',type:'area',l:'Mapa causa-efecto en palabras',ph:'Capacitar al personal en inventarios → se reducen los agotados → el cliente encuentra lo que busca → aumentan las ventas.'}
  ]},
-{id:'T10',fase:'Estrategias',ev:'3.3.3',fecha:'Jue 12 nov',c:'var(--sun)',t:'Costos, reversa y tecnología',
+{id:'T10',dl:'2026-11-12',fase:'Estrategias',ev:'3.3.3',fecha:'Jue 12 nov',c:'var(--sun)',t:'Costos, reversa y tecnología',
  obj:'Demostrar que las estrategias valen la pena con costo-beneficio y costeo ABC, y sumar logística de reversa y tecnología.',
  prod:'Análisis costo-beneficio, costeo ABC por actividad, plan de reversa y tecnología. Con los talleres 9 y 10 se escribe el documento de estrategias (evidencia 3.3.3).',
  pasos:['Estimar cuánto cuesta implementar cada estrategia y cuánto ahorra o deja de ganancia al año. La app calcula la relación beneficio/costo.','Costeo ABC: para cada actividad logística, anotar cuánto cuesta al mes y cuántas veces se hace. La app calcula el costo por vez.','Diseñar la logística de reversa: qué regresa (envases, devoluciones, residuos) y qué se hace con eso.','Escoger herramientas tecnológicas al alcance de la empresa: WhatsApp Business, facturación electrónica, código de barras, hoja de cálculo compartida (versión sencilla de EDI/ECR).','Tarea: redactar el documento técnico de estrategias (máximo 15 páginas) con los talleres 9 y 10.'],
@@ -226,7 +271,7 @@ const T=[
   {k:'reversa',type:'area',l:'Logística de reversa',ph:'Qué regresa: … Cómo se recoge: … Qué se hace con eso: …'},
   {k:'tec',type:'area',l:'Tecnologías para la cadena (EDI/ECR adaptado)',ph:'WhatsApp Business con catálogo para pedidos de clientes, hoja compartida de inventario con el proveedor…'}
  ]},
-{id:'T11',fase:'Plan maestro',ev:'3.3.4',fecha:'Mié 18 nov',c:'var(--violet)',t:'Plan maestro: flujos, capacidad y caja',
+{id:'T11',dl:'2026-11-18',fase:'Plan maestro',ev:'3.3.4',fecha:'Mié 18 nov',c:'var(--violet)',t:'Plan maestro: flujos, capacidad y caja',
  obj:'Integrar todo en el plan maestro: cómo fluirán materiales, información, dinero y energía, con qué capacidad y con qué plata.',
  prod:'Plan maestro con flujos, capacidad, trazabilidad y flujo de caja a 6 meses (evidencia 3.3.4).',
  pasos:['Para cada flujo, escribir cómo funciona hoy y cómo funcionará con el plan.','Calcular la capacidad: cuánto cabe en el almacén, cuánto lleva el vehículo y cuántos pedidos al día se pueden atender (ritmo).','Definir la trazabilidad: cómo se sabe de dónde vino cada producto y a quién se le vendió.','Proyectar el flujo de caja de 6 meses con los ingresos y egresos que genera el plan. La app calcula el saldo.','Tarea: documento técnico del plan maestro (10 a 15 páginas) para sustentar en plenaria.'],
@@ -237,7 +282,7 @@ const T=[
   {k:'traza',type:'area',l:'Trazabilidad',ph:'Cada lote se marca con la fecha de llegada y el proveedor…'},
   {k:'caja',type:'table',l:'Flujo de caja proyectado del plan (6 meses)',rowLabels:['Mes 1','Mes 2','Mes 3','Mes 4','Mes 5','Mes 6'],cols:['Mes','Ingresos ($)','Egresos ($)','Saldo ($)'],rl:true,num:[1,2],calc:{t:3,op:'sub',c:[1,2]}}
  ]},
-{id:'T12',fase:'Indicadores y cierre',ev:'3.3.5 · 3.4',fecha:'Jue 19 nov',c:'var(--alert)',t:'Indicadores y plan de acción',
+{id:'T12',dl:'2026-11-19',fase:'Indicadores y cierre',ev:'3.3.5 · 3.4',fecha:'Jue 19 nov',c:'var(--alert)',t:'Indicadores y plan de acción',
  obj:'Definir cómo se va a medir el plan y quién hace qué, cuándo y con cuánto. Cerrar el portafolio.',
  prod:'Fichas técnicas de indicadores, plan de acción y portafolio técnico del plan estratégico logístico (evidencias 3.3.5 y 3.4).',
  pasos:['Escoger 5 indicadores que midan los objetivos SMART y el Cuadro de Mando Integral.','Para cada uno llenar la ficha técnica: fórmula, naturaleza (eficacia, eficiencia o efectividad), frecuencia, responsable y rangos.','Armar el plan de acción: cada acción con responsable, fecha, presupuesto e indicador que la mide.','Escribir el resumen ejecutivo del plan en media página.','Abrir "Mi plan", revisar que no falte nada, descargarlo y prepararse para sustentarlo en el juego de negocios.'],
@@ -251,8 +296,10 @@ const T=[
 
 /* ======== ESTADO ======== */
 const KEY='pel-v1';
-let S={v:1,d:{},done:{},wa:''};
+let S={v:1,d:{},done:{},wa:'',mail:'',sent:{},tid:''};
 try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+function ensureTid(){if(!S.tid)S.tid=Math.random().toString(36).slice(2,8);if(!S.sent)S.sent={}}
+ensureTid();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}refreshTop()}
 function val(tid,k){return (S.d[tid]||{})[k]}
 function setv(tid,k,v){S.d[tid]=S.d[tid]||{};S.d[tid][k]=v;save()}
@@ -274,7 +321,7 @@ function drawRoute(){
 }
 function refreshTop(){const n=T.filter(t=>S.done[t.id]).length;document.getElementById('progBar').style.width=(n/T.length*100)+'%';document.getElementById('progTxt').textContent=n+'/'+T.length+' talleres';document.getElementById('coName').textContent=empresa()||'— escojan su empresa en la clase 1 —'}
 document.getElementById('goPlan').onclick=()=>go('PLAN');
-function go(id){cur=id;try{localStorage.setItem(KEY+'-cur',id)}catch(e){}drawRoute();const m=document.getElementById('main');if(id==='INICIO')m.innerHTML=inicio();else if(id==='PLAN')m.innerHTML=plan();else{m.innerHTML=taller(T.find(t=>t.id===id));bindTaller(id)}if(id==='INICIO')bindInicio();if(id==='PLAN')bindPlan();window.scrollTo({top:0,behavior:'smooth'})}
+function go(id){cur=id;try{localStorage.setItem(KEY+'-cur',id)}catch(e){}drawRoute();const m=document.getElementById('main');m.oninput=null;if(id==='INICIO')m.innerHTML=inicio();else if(id==='PLAN')m.innerHTML=plan();else{m.innerHTML=taller(T.find(t=>t.id===id));bindTaller(id)}if(id==='INICIO')bindInicio();if(id==='PLAN')bindPlan();window.scrollTo({top:0,behavior:'smooth'})}
 
 /* ======== INICIO ======== */
 function inicio(){
@@ -300,7 +347,7 @@ function inicio(){
 function bindInicio(){document.querySelectorAll('#main [data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));bindBackup()}
 function bindBackup(){
   const e=document.getElementById('bExp');if(e)e.onclick=()=>download(JSON.stringify(S,null,1),'respaldo-plan-'+slug()+'.json','application/json');
-  const f=document.getElementById('fImp');if(f)f.onchange=ev=>{const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||!o.d)throw 0;S=Object.assign({v:1,d:{},done:{},wa:''},o);save();drawRoute();toast('Respaldo cargado');go('INICIO')}catch(err){toast('Ese archivo no es un respaldo válido')}};r.readAsText(file)};
+  const f=document.getElementById('fImp');if(f)f.onchange=ev=>{const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||!o.d)throw 0;S=Object.assign({v:1,d:{},done:{},wa:'',mail:'',sent:{},tid:''},o);ensureTid();save();drawRoute();toast('Respaldo cargado');go('INICIO')}catch(err){toast('Ese archivo no es un respaldo válido')}};r.readAsText(file)};
 }
 function slug(){return (empresa()||'mi-empresa').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 
@@ -312,8 +359,14 @@ function taller(t){
   <section class="card"><h2>Paso a paso</h2><ol class="steps">${t.pasos.map(p=>`<li><span>${p}</span></li>`).join('')}</ol><div class="tip">💡 ${t.tip}</div></section>
   <section class="card"><h2>Formato del taller</h2>${t.campos.map(c=>campo(t.id,c)).join('')}</section>
   <section class="card noprint"><h2>Entregar el taller</h2>
-  <label class="field"><span class="lbl">WhatsApp del instructor (con indicativo, sin +)</span><input type="text" id="wa" inputmode="numeric" placeholder="57300XXXXXXX" value="${esc(S.wa)}"></label>
-  <div class="acts"><button class="btn" id="bCopy">📋 Copiar texto</button><a class="btn wa" id="bWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn mail" id="bMail">✉ Correo</button><button class="btn dl" id="bDl">⬇ Descargar .txt</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button></div>
+  <p class="muted">Al entregar, la app convierte todo el taller en un <b>código de entrega</b>. Envíen solo ese código: el instructor lo abre en su zona y ve el taller completo, con tablas y cálculos.</p>
+  <div class="codebox"><div class="codehead"><b>Código de entrega · Clase ${i+1}</b><span class="note" id="codeMeta"></span></div>
+  <textarea id="codeOut" readonly aria-label="Código de entrega"></textarea>
+  <span class="note">Copien el código completo, desde <b>LLPE</b> hasta la <b>~</b> final. Si le cambian una sola letra, no abre.</span></div>
+  <div class="duo"><label class="field"><span class="lbl">WhatsApp del instructor (con indicativo, sin +)</span><input type="text" id="wa" inputmode="numeric" placeholder="57300XXXXXXX" value="${esc(S.wa)}"></label>
+  <label class="field"><span class="lbl">Correo del instructor</span><input type="text" id="mailTo" inputmode="email" placeholder="correo@sena.edu.co" value="${esc(S.mail||'')}"></label></div>
+  <div class="acts"><button class="btn pri" id="bCopy">📋 Copiar código</button><a class="btn wa" id="bWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn mail" id="bMail">✉ Correo</button><button class="btn dl" id="bDl">⬇ Descargar .txt</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button></div>
+  <p class="note">Si un botón no funciona en su dispositivo, use "Copiar código" y péguelo en un chat de WhatsApp o en un correo al instructor.${S.sent&&S.sent[t.id]?` <span class="sent">Último envío: ${fdate(S.sent[t.id])}</span>`:''}</p>
   <label style="display:flex;gap:10px;align-items:center;font-weight:700"><input type="checkbox" id="doneChk" ${S.done[t.id]?'checked':''} style="width:22px;height:22px;accent-color:var(--sena)"> Terminamos este taller</label>
   <div class="acts">${i>0?`<button class="btn" data-go="${T[i-1].id}">← Clase ${i}</button>`:''}${i<T.length-1?`<button class="btn pri" data-go="${T[i+1].id}">Clase ${i+2} →</button>`:`<button class="btn pri" data-go="PLAN">Ver mi plan completo →</button>`}</div></section>`;
 }
@@ -324,12 +377,13 @@ function campo(tid,c){
   if(c.type==='table')return tableField(tid,c);
   if(c.type==='abc')return abcField(tid,c);
   if(c.type==='rop')return ropField(tid,c);
+  if(c.type==='chain')return `<div class="field"><span class="lbl">${c.l} <span class="chip">se dibuja solo</span></span><span class="help">Se arma con la tabla de eslabones y los 4 flujos. Cada cambio que escriban aparece aquí. Descárguenlo para el papelógrafo y el informe ICONTEC.</span><div class="chainwrap" id="chainBox">${chainSvg(S.d[tid]||{},empresa())}</div><div class="acts"><button class="btn pri" id="bPng">⬇ Diagrama en imagen (.png)</button><button class="btn" id="bSvg">⬇ Diagrama editable (.svg)</button></div></div>`;
   return '';
 }
 function rowsOf(c){return c.rowLabels?c.rowLabels.length:c.rows}
 function tableField(tid,c){
   const data=val(tid,c.k)||[];const n=rowsOf(c);
-  let h=`<div class="field"><span class="lbl">${c.l}</span><div class="tw"><table class="f" data-t="${c.k}"><thead><tr>${c.cols.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>`;
+  let h=`<div class="field"><span class="lbl">${c.l}</span>${c.help?`<span class="help">${c.help}</span>`:''}<div class="tw"><table class="f" data-t="${c.k}"><thead><tr>${c.cols.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>`;
   for(let r=0;r<n;r++){h+='<tr>';c.cols.forEach((col,ci)=>{
     if(c.rl&&ci===0){h+=`<td class="rl">${c.rowLabels[r]}</td>`;return}
     if(c.calc&&ci===c.calc.t){h+=`<td class="calc" data-r="${r}">—</td>`;return}
@@ -383,11 +437,26 @@ function bindTaller(tid){
   const rop=document.querySelectorAll('#main [data-rop]');if(rop.length){rop.forEach(el=>el.addEventListener('input',()=>{const d=Object.assign({},val(tid,'rop')||{});d[el.dataset.rop]=el.value;setv(tid,'rop',d);drawRop(tid)}));drawRop(tid)}
   document.getElementById('doneChk').onchange=e=>{S.done[tid]=e.target.checked;save();drawRoute();if(e.target.checked)toast('¡Taller terminado!')};
   const wa=document.getElementById('wa');wa.oninput=()=>{S.wa=wa.value.replace(/\D/g,'');save()};
-  const text=()=>tallerText(t);
-  document.getElementById('bCopy').onclick=()=>copy(text());
-  document.getElementById('bWa').onclick=e=>{e.currentTarget.href='https://wa.me/'+(S.wa||'')+'?text='+encodeURIComponent(text())};
-  document.getElementById('bMail').onclick=()=>{location.href='mailto:?subject='+encodeURIComponent(`${t.id} ${t.t} - ${empresa()||'Mi empresa'}`)+'&body='+encodeURIComponent(text());toast('Si no se abre el correo, use Copiar texto')};
-  document.getElementById('bDl').onclick=()=>download(text(),`${t.id}-${slug()}.txt`,'text/plain');
+  const mt=document.getElementById('mailTo');mt.oninput=()=>{S.mail=mt.value.trim();save()};
+  /* código de entrega */
+  const i=T.indexOf(t);
+  const code=()=>makeCode(t.id,{v:1,k:S.tid,e:empresa(),q:(val('T1','equipo')||'').trim(),ts:Date.now(),done:!!S.done[t.id],d:S.d[t.id]||{}});
+  let last='';
+  const refresh=()=>{last=code();document.getElementById('codeOut').value=last;const p=completeness(t,S.d[t.id]||{});document.getElementById('codeMeta').innerHTML=`${last.length.toLocaleString('es-CO')} caracteres · <b>${p} % del formato lleno</b>`+(p<60?' · <span class="warn">les falta llenar buena parte</span>':'')};
+  refresh();
+  const msg=c=>`📦 ENTREGA LogiLab · Plan Estratégico Logístico\nClase ${i+1}: ${t.t} (Ev. ${t.ev})\nEmpresa: ${empresa()||'—'}\nEquipo: ${(val('T1','equipo')||'—').trim()}\nFormato lleno: ${completeness(t,S.d[t.id]||{})} %\n\nCódigo de entrega:\n${c}`;
+  const mark=()=>{S.sent[t.id]=Date.now();save()};
+  document.getElementById('codeOut').onfocus=e=>e.target.select();
+  document.getElementById('bCopy').onclick=()=>{refresh();copy(last,'Código copiado');mark()};
+  document.getElementById('bWa').onclick=e=>{refresh();e.currentTarget.href='https://wa.me/'+(S.wa||'')+'?text='+encodeURIComponent(msg(last));mark()};
+  document.getElementById('bMail').onclick=()=>{refresh();const subj=`Entrega clase ${i+1} · ${t.t} · ${empresa()||'Mi empresa'}`;let body=msg(last);
+    if(body.length>1700){copy(last,'Código copiado');body=msg('(El código ya quedó copiado: péguelo aquí con Ctrl+V o mantenga presionado y Pegar)')}
+    location.href='mailto:'+encodeURIComponent(S.mail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);mark();toast('Si no se abre el correo, use Copiar código')};
+  document.getElementById('bDl').onclick=()=>{refresh();download(msg(last)+'\n\n----- Contenido legible del taller -----\n'+tallerText(t),`entrega-${t.id}-${slug()}.txt`,'text/plain');mark()};
+  /* diagrama de la cadena */
+  const cb=document.getElementById('chainBox');
+  if(cb){document.getElementById('bPng').onclick=()=>svgToPng(cb.querySelector('svg'),`cadena-${slug()}.png`);document.getElementById('bSvg').onclick=()=>download(new XMLSerializer().serializeToString(cb.querySelector('svg')),`cadena-${slug()}.svg`,'image/svg+xml')}
+  let tm=null;document.getElementById('main').oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>{refresh();if(cb)cb.innerHTML=chainSvg(S.d[t.id]||{},empresa())},350)};
   document.querySelectorAll('#main [data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
   bindBackup();
 }
@@ -403,8 +472,9 @@ function fieldText(tid,c){
 }
 function tallerText(t){const i=T.indexOf(t);return `PLAN ESTRATÉGICO LOGÍSTICO · ${empresa()||'Empresa sin definir'}\nEquipo: ${(val('T1','equipo')||'—')}\nClase ${i+1}: ${t.t} (Evidencia ${t.ev})\n\n`+t.campos.map(c=>fieldText(t.id,c)).join('\n')}
 
-function fieldHtml(tid,c){
-  const v=val(tid,c.k);const E='<p class="empty">Pendiente</p>';
+function fieldHtml(tid,c,D,emp){
+  D=D||S.d[tid]||{};const v=D[c.k];const E='<p class="empty">Pendiente</p>';
+  if(c.type==='chain')return `<h3>${c.l}</h3><div class="chainwrap">${chainSvg(D,emp===undefined?empresa():emp)}</div>`;
   if(c.type==='text'||c.type==='area')return `<h3>${c.l}</h3>`+(v&&v.trim()?`<p>${esc(v).replace(/\n/g,'<br>')}</p>`:E);
   if(c.type==='table'){const n=rowsOf(c);let body='',any=false;for(let r=0;r<n;r++){const row=(v||[])[r]||[];const cells=c.cols.map((col,ci)=>{if(c.rl&&ci===0)return `<th>${c.rowLabels[r]}</th>`;if(c.calc&&ci===c.calc.t)return `<td>${calcRow(c,row)}</td>`;if(row[ci])any=true;return `<td>${esc(row[ci]||'').replace(/\n/g,'<br>')}</td>`}).join('');if(c.rl||row.some(x=>x))body+=`<tr>${cells}</tr>`}return `<h3>${c.l}</h3>`+(any?`<table><thead><tr>${c.cols.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`:E)}
   if(c.type==='abc'){const {items,tot}=abcCalc(v);return `<h3>${c.l}</h3>`+(items.length?`<table><thead><tr><th>Producto</th><th>Valor al mes ($)</th><th>%</th><th>% acumulado</th><th>Clase</th></tr></thead><tbody>${items.map(x=>`<tr><td>${esc(x.p)}</td><td>${money(x.v)}</td><td>${x.pct.toFixed(1)} %</td><td>${x.acc.toFixed(1)} %</td><td>${x.cl}</td></tr>`).join('')}<tr><th>Total</th><th>${money(tot)}</th><td colspan="3"></td></tr></tbody></table>`:E)}
@@ -412,14 +482,19 @@ function fieldHtml(tid,c){
   return '';
 }
 const SECC=[['1. Diagnóstico de la situación logística',['T1','T2','T3','T4']],['2. Direccionamiento y políticas logísticas',['T5','T6','T7','T8']],['3. Estrategias logísticas',['T9','T10']],['4. Plan maestro',['T11']],['5. Indicadores y plan de acción',['T12']]];
-function planBody(){
-  return `<div class="doc"><p class="eyebrow">SENA · Gestión Logística · Competencia 210101007</p><h1>Plan Estratégico Logístico</h1><h2 style="border:0;margin-top:4px">${esc(empresa()||'Empresa sin definir')}</h2><p><b>Equipo:</b> ${esc(val('T1','equipo')||'—')}</p><p class="muted">Proyecto formativo: Plan Maestro Modelo de Logística Comercial del Distrito de Riohacha · Instructor: Carlos Barrios</p>
-  ${SECC.map(([tt,ids])=>`<h2>${tt}</h2>`+ids.map(id=>{const t=T.find(x=>x.id===id);return `<h3 style="font-size:1.35rem;color:var(--fg)">${t.t}</h3>`+t.campos.filter(c=>!(id==='T1'&&(c.k==='empresa'||c.k==='equipo'))).map(c=>fieldHtml(id,c)).join('')}).join('')).join('')}</div>`;
+function planBody(DD){
+  DD=DD||S.d;const emp=((DD.T1||{}).empresa||'').trim();
+  return `<div class="doc"><p class="eyebrow">SENA · Gestión Logística · Competencia 210101007</p><h1>Plan Estratégico Logístico</h1><h2 style="border:0;margin-top:4px">${esc(emp||'Empresa sin definir')}</h2><p><b>Equipo:</b> ${esc((DD.T1||{}).equipo||'—')}</p><p class="muted">Proyecto formativo: Plan Maestro Modelo de Logística Comercial del Distrito de Riohacha · Instructor: Carlos Barrios</p>
+  ${SECC.map(([tt,ids])=>`<h2>${tt}</h2>`+ids.map(id=>{const t=T.find(x=>x.id===id);return `<h3 style="font-size:1.35rem;color:var(--fg)">${t.t}</h3>`+t.campos.filter(c=>!(id==='T1'&&(c.k==='empresa'||c.k==='equipo'))).map(c=>fieldHtml(id,c,DD[id]||{},emp)).join('')}).join('')).join('')}</div>`;
 }
 function plan(){
   const n=T.filter(t=>S.done[t.id]).length;
   return `<section class="card noprint"><span class="eyebrow">Resultado de los 12 talleres</span><h1>Mi plan estratégico logístico</h1><p class="muted">Este documento se arma solo con lo que el equipo llenó en cada clase. Van ${n} de ${T.length} talleres terminados. Lo que dice <span style="color:var(--alert);font-style:italic">Pendiente</span> todavía falta.</p>
   <div class="acts"><button class="btn pri" id="bWord">⬇ Descargar en Word (.doc)</button><button class="btn" id="bPrint">🖨 Imprimir o guardar PDF</button><button class="btn" id="bCopyAll">📋 Copiar todo</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button><label class="btn" for="fImp">⬆ Cargar respaldo</label><input type="file" id="fImp" accept=".json,application/json" hidden></div></section>
+  <section class="card noprint"><h2>Entregar el plan completo</h2><p class="muted">Para el portafolio final (evidencias 3.3.5 y 3.4): un solo código con los 12 talleres.</p>
+  <div class="codebox"><div class="codehead"><b>Código del plan completo</b><span class="note" id="pCodeMeta"></span></div><textarea id="pCodeOut" readonly aria-label="Código del plan completo"></textarea></div>
+  <div class="acts"><button class="btn pri" id="pCopy">📋 Copiar código</button><a class="btn wa" id="pWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn dl" id="pDl">⬇ Descargar .txt</button></div>
+  <p class="note">El código del plan es largo. Si WhatsApp no lo abre completo, use "Copiar código" y péguelo en el chat, o envíe el .txt.</p></section>
   <section class="card">${planBody()}</section>`;
 }
 function bindPlan(){
@@ -427,18 +502,226 @@ function bindPlan(){
   document.getElementById('bWord').onclick=()=>{const css='body{font-family:Arial;font-size:11pt}h1{font-size:20pt}h2{font-size:15pt;color:#2a7d00;border-bottom:2px solid #39A900}h3{font-size:12pt;color:#2a7d00}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:4px;font-size:10pt;vertical-align:top}th{background:#e9f6df}.empty{color:#c2412d;font-style:italic}.eyebrow{font-size:9pt;color:#2a7d00}';
     download(`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>${css}</style></head><body>${planBody()}</body></html>`,`Plan-Estrategico-Logistico-${slug()}.doc`,'application/msword')};
   document.getElementById('bCopyAll').onclick=()=>copy(T.map(t=>tallerText(t)).join('\n\n'));
+  const pc=()=>makeCode('PLAN',{v:1,k:S.tid,e:empresa(),q:(val('T1','equipo')||'').trim(),ts:Date.now(),done:S.done,d:S.d});
+  let lp=pc();document.getElementById('pCodeOut').value=lp;document.getElementById('pCodeMeta').textContent=lp.length.toLocaleString('es-CO')+' caracteres';
+  const pmsg=c=>`📦 ENTREGA LogiLab · PLAN COMPLETO\nEmpresa: ${empresa()||'—'}\nEquipo: ${(val('T1','equipo')||'—').trim()}\nTalleres terminados: ${T.filter(t=>S.done[t.id]).length}/${T.length}\n\nCódigo de entrega:\n${c}`;
+  document.getElementById('pCodeOut').onfocus=e=>e.target.select();
+  document.getElementById('pCopy').onclick=()=>{lp=pc();copy(lp,'Código copiado');S.sent.PLAN=Date.now();save()};
+  document.getElementById('pWa').onclick=e=>{lp=pc();if(lp.length>6000){e.preventDefault();copy(lp,'Código copiado: péguelo en el chat');window.open('https://wa.me/'+(S.wa||''),'_blank','noopener')}else e.currentTarget.href='https://wa.me/'+(S.wa||'')+'?text='+encodeURIComponent(pmsg(lp));S.sent.PLAN=Date.now();save()};
+  document.getElementById('pDl').onclick=()=>{lp=pc();download(pmsg(lp),`entrega-PLAN-${slug()}.txt`,'text/plain');S.sent.PLAN=Date.now();save()};
   bindBackup();
 }
 
+/* ======== CÓDIGO DE ENTREGA ======== */
+/* Formato: LLPE.<clase>.<Z|B><control>.<contenido>~  (Z = comprimido lz-string, B = base64 de respaldo) */
+function fdate(ts){try{return new Date(ts).toLocaleString('es-CO',{weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}catch(e){return String(ts)}}
+function fnv(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return ('000000'+h.toString(36)).slice(-6)}
+function b64u(str){return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function unb64u(b){b=b.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';return decodeURIComponent(escape(atob(b)))}
+function makeCode(kind,payload){const json=JSON.stringify(payload);let f='Z',body='';try{body=LZString.compressToEncodedURIComponent(json);if(!body)throw 0}catch(e){f='B';body=b64u(json)}return `LLPE.${kind}.${f}${fnv(body)}.${body}~`}
+function readCode(raw){
+  raw=String(raw||'').replace(/\s+/g,'');if(raw.includes('%'))try{raw=decodeURIComponent(raw)}catch(e){}
+  raw=raw.replace(/~$/,'');
+  const m=/^LLPE\.([A-Z0-9]{1,5})\.([ZB])([0-9a-z]{6})\.(.+)$/.exec(raw);
+  if(!m)return {err:'formato'};
+  const kind=m[1],f=m[2],chk=m[3],body=m[4];
+  if(fnv(body)!==chk)return {err:'dañado',kind};
+  let o=null;try{o=JSON.parse(f==='Z'?LZString.decompressFromEncodedURIComponent(body):unb64u(body))}catch(e){}
+  if(!o||typeof o!=='object'||!o.d)return {err:'dañado',kind};
+  if(kind!=='PLAN'&&!T.some(t=>t.id===kind))return {err:'formato'};
+  return {kind,p:o};
+}
+function extractCodes(text){
+  const out=[];text=String(text||'');let i=0;
+  while((i=text.indexOf('LLPE.',i))>=0){let j=text.indexOf('~',i);const n=text.indexOf('LLPE.',i+5);let closed=true;
+    if(j<0||(n>=0&&n<j)){j=n>=0?n:text.length;closed=false}
+    out.push({raw:text.slice(i,j),closed});i=j+(closed?1:0)}
+  return out;
+}
+function completeness(t,D){D=D||{};const parts=t.campos.filter(c=>c.type!=='chain').map(c=>{const v=D[c.k];
+  if(c.type==='text'||c.type==='area')return v&&String(v).trim()?1:0;
+  if(c.type==='table'){const n=rowsOf(c);let tot=0,fil=0;for(let r=0;r<n;r++)c.cols.forEach((col,ci)=>{if(c.rl&&ci===0)return;if(c.calc&&ci===c.calc.t)return;tot++;const x=((v||[])[r]||[])[ci];if(x&&String(x).trim())fil++});return tot?fil/tot:0}
+  if(c.type==='abc')return Math.min(1,abcCalc(v).items.length/c.rows);
+  if(c.type==='rop')return ropCalc(v)?1:0;
+  return 0});
+  return parts.length?Math.round(parts.reduce((a,b)=>a+b,0)/parts.length*100):0}
+
+/* ======== DIAGRAMA DE LA CADENA ======== */
+const CC={mat:'#2a7d00',info:'#0f6e8c',din:'#6b4fa3',ene:'#b86e00',alert:'#c2412d',ink:'#17201a',muted:'#56635a',line:'#b9c4b2',soft:'#e9f6df',paper:'#ffffff'};
+function noacc(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}
+function splitList(s){/* separa por coma, punto y coma, renglón, " y " o " / ", pero nunca dentro de paréntesis */
+  s=String(s||'');const out=[];let cur='',dep=0;
+  for(let i=0;i<s.length;i++){const ch=s[i];if(ch==='('||ch==='[')dep++;else if((ch===')'||ch===']')&&dep>0)dep--;
+    if(dep===0){if(ch===','||ch===';'||ch==='\n'){out.push(cur);cur='';continue}
+      const rest=s.slice(i);let m=/^\s+y\s+/.exec(rest)||/^\s\/\s/.exec(rest);if(m&&cur.trim()){out.push(cur);cur='';i+=m[0].length-1;continue}}
+    cur+=ch}
+  out.push(cur);return out.map(x=>x.replace(/^\s*(?:[-•*·]|\d+[.)])\s*/,'').trim()).filter(Boolean)}
+function wrapT(s,n,max){const w=String(s||'').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);const L=[];let cur='';
+  for(let x of w){while(x.length>n){if(cur){L.push(cur);cur=''}L.push(x.slice(0,n-1)+'-');x=x.slice(n-1)}
+    if(!cur)cur=x;else if((cur+' '+x).length<=n)cur+=' '+x;else{L.push(cur);cur=x}}
+  if(cur)L.push(cur);
+  if(L.length>max){const k=L.slice(0,max);k[max-1]=k[max-1].slice(0,n-1)+'…';return k}return L}
+function parseFlujos(t){const o={};String(t||'').split('\n').forEach(l=>{const m=/^\s*[-•*]?\s*([^:]{3,22}):\s*(.+)$/.exec(l);if(!m)return;const k=noacc(m[1]).trim(),v=m[2].trim();
+  if(k.startsWith('material'))o.mat=v;else if(k.startsWith('informa'))o.info=v;else if(k.startsWith('dinero'))o.din=v;else if(k.startsWith('energ'))o.ene=v});return o}
+function chainSvg(D,emp){
+  D=D||{};const rows=D.cadena||[];const R=i=>rows[i]||[];const F=parseFlujos(D.flujos);
+  const st=[{h:'PROVEEDORES',multi:true,r:R(0)},{h:'TRANSPORTE DE ENTRADA',r:R(1)},{h:'LA EMPRESA (ALMACÉN)',r:R(2),core:true},{h:'TRANSPORTE DE SALIDA',r:R(3)},{h:'CLIENTES',multi:true,r:R(4)}];
+  const W=1200,M=25,BW=190,GAP=(W-2*M-5*BW)/4,LH=17;
+  st.forEach((s,i)=>{s.x=M+i*(BW+GAP);
+    let names;const who=String(s.r[1]||'').trim();
+    if(s.core){names=[emp||'Nuestra empresa'];if(who)names[0]+=' · '+who}
+    else names=s.multi?splitList(who):(who?[who]:[]);
+    s.empty=!names.length;if(s.empty)names=['¿Quiénes son?'];
+    if(s.multi&&names.length>4){const extra=names.length-3;names=names.slice(0,3).concat([`+${extra} más`])}
+    s.nodes=names.map(n=>{const lines=wrapT(n,22,s.multi?2:4);return {lines,h:18+lines.length*LH}});
+    s.total=s.nodes.reduce((a,n)=>a+n.h,0)+12*(s.nodes.length-1);
+    s.cap=[];const q=String(s.r[2]||'').trim(),f=String(s.r[3]||'').trim(),pr=String(s.r[4]||'').trim();
+    if(q)wrapT('Mueve: '+q,28,3).forEach(l=>s.cap.push([l,CC.ink]));
+    if(f)wrapT('Frecuencia: '+f,28,2).forEach(l=>s.cap.push([l,CC.muted]));
+    if(pr)wrapT('Problema: '+pr,28,3).forEach(l=>s.cap.push([l,CC.alert]));
+  });
+  const top=86,maxT=Math.max(...st.map(s=>s.total)),cy=top+maxT/2;
+  const capY=top+maxT+28,maxCap=Math.max(1,...st.map(s=>s.cap.length));
+  const laneY=capY+maxCap*16+40,H=laneY+128;
+  const mk=(id,c)=>`<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`;
+  let g=`<defs>${mk('am',CC.mat)}${mk('ai',CC.info)}${mk('ad',CC.din)}</defs><rect width="${W}" height="${H}" fill="#fff"/>`;
+  g+=`<text x="${M}" y="30" font-size="21" font-weight="700" fill="${CC.ink}">Cadena de abastecimiento · ${esc(emp||'nuestra empresa')}</text>`;
+  g+=`<line x1="${M}" y1="45" x2="${M+34}" y2="45" stroke="${CC.mat}" stroke-width="3" marker-end="url(#am)"/><text x="${M+44}" y="49" font-size="12.5" fill="${CC.mat}" font-weight="700">Materiales:</text><text x="${M+118}" y="49" font-size="12.5" fill="${CC.ink}">${esc(wrapT(F.mat||'la mercancía va del proveedor hacia el cliente',120,1)[0])}</text>`;
+  st.forEach(s=>{g+=`<text x="${s.x+BW/2}" y="74" text-anchor="middle" font-size="11.5" font-weight="700" letter-spacing=".8" fill="${s.core?CC.mat:CC.muted}">${s.h}</text>`;
+    let y=cy-s.total/2;
+    s.nodes.forEach(n=>{n.y=y;n.cy=y+n.h/2;
+      g+=`<rect x="${s.x}" y="${y}" width="${BW}" height="${n.h}" rx="10" fill="${s.core?CC.soft:CC.paper}" stroke="${s.core?CC.mat:(s.empty?CC.line:CC.ink)}" stroke-width="${s.core?2.6:1.4}"${s.empty?' stroke-dasharray="6 5"':''}/>`;
+      n.lines.forEach((l,k)=>{g+=`<text x="${s.x+BW/2}" y="${y+5+LH*(k+1)}" text-anchor="middle" font-size="14" font-weight="${s.core?700:600}"${s.empty?' font-style="italic"':''} fill="${s.empty?CC.muted:CC.ink}">${esc(l)}</text>`});
+      y+=n.h+12});
+    s.cap.forEach((c,k)=>{g+=`<text x="${s.x}" y="${capY+k*16}" font-size="12.5" fill="${c[1]}">${esc(c[0])}</text>`});
+  });
+  for(let i=0;i<st.length-1;i++)st[i].nodes.forEach(a=>st[i+1].nodes.forEach(b=>{const x1=st[i].x+BW,x2=st[i+1].x-3,mx=(x1+x2)/2;
+    g+=`<path d="M${x1},${a.cy} C${mx},${a.cy} ${mx},${b.cy} ${x2},${b.cy}" fill="none" stroke="${CC.mat}" stroke-width="2.6" marker-end="url(#am)"/>`}));
+  const lane=(y,c,id,lab,txt)=>`<path d="M${W-M},${y} L${M+4},${y}" stroke="${c}" stroke-width="2.4" stroke-dasharray="9 6" fill="none" marker-end="url(#${id})"/><text x="${W/2}" y="${y-8}" text-anchor="middle" font-size="12.5" fill="${CC.ink}"><tspan font-weight="700" fill="${c}">${lab}</tspan> ${esc(wrapT(txt,125,1)[0])}</text>`;
+  g+=lane(laneY,CC.info,'ai','← Información:',F.info||'pedidos, inventarios y facturas van del cliente hacia el proveedor');
+  g+=lane(laneY+46,CC.din,'ad','← Dinero:',F.din||'los pagos y créditos van del cliente hacia el proveedor');
+  g+=`<text x="${M}" y="${laneY+86}" font-size="12.5" fill="${CC.ink}"><tspan font-weight="700" fill="${CC.ene}">⚡ Energía:</tspan> ${esc(wrapT(F.ene||'combustible, electricidad y cadena de frío que usa cada eslabón',140,1)[0])}</text>`;
+  g+=`<text x="${W-M}" y="${H-12}" text-anchor="end" font-size="10.5" fill="${CC.muted}">LogiLab SENA · Taller Plan Estratégico Logístico</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="Arial, Helvetica, sans-serif" role="img" aria-label="Diagrama de la cadena de abastecimiento de ${esc(emp||'la empresa')}">${g}</svg>`;
+}
+function dlBlob(b,name){const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('Descarga iniciada')}
+function svgToPng(svg,name){const fail=()=>toast('No se pudo crear la imagen: descargue el .svg');if(!svg)return fail();
+  try{const xml=new XMLSerializer().serializeToString(svg);const w=+svg.getAttribute('width'),h=+svg.getAttribute('height');const img=new Image();
+    img.onload=()=>{try{const c=document.createElement('canvas');c.width=w*2;c.height=h*2;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);c.toBlob(b=>b?dlBlob(b,name):fail(),'image/png')}catch(e){fail()}};
+    img.onerror=fail;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml)}catch(e){fail()}}
+
+/* ======== ZONA INSTRUCTOR ======== */
+const IKEY='pel-instr-v1';
+const CRIT=[['c1','Formato completo: llenó todas las tablas y campos'],['c2','Datos reales con fuente (observación, entrevista o fuente oficial)'],['c3','Coherencia técnica con la empresa y con los talleres anteriores'],['c4','Redacción clara, sin nombres ni teléfonos de terceros']];
+const KINDS=[...T.map(t=>t.id),'PLAN'];
+let I={subs:{},ev:{}},isel=null;
+function iload(){try{const r=localStorage.getItem(IKEY);if(r)I=Object.assign({subs:{},ev:{}},JSON.parse(r))}catch(e){}}
+function isave(){try{localStorage.setItem(IKEY,JSON.stringify(I))}catch(e){toast('No se pudo guardar: descargue el respaldo')}}
+function kindName(k){if(k==='PLAN')return 'Plan completo';const i=T.findIndex(t=>t.id===k);return `Clase ${i+1} · ${T[i].t}`}
+function slugOf(s){return noacc(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'sin-equipo'}
+function teamKey(p){return p.k||('x-'+slugOf(p.q||p.e))}
+function teamShort(q){q=String(q||'').trim();const i=q.indexOf(':');return i>0&&i<30?q.slice(0,i):q.slice(0,40)}
+function lateInfo(kind,ts){const t=T.find(x=>x.id===kind);if(!t||!t.dl)return null;const d=Math.ceil((ts-new Date(t.dl+'T23:59:59').getTime())/86400000);return d>0?{late:true,txt:`Tarde: ${d} día${d>1?'s':''} después del ${t.fecha}`}:{late:false,txt:`A tiempo (límite ${t.fecha})`}}
+function subComp(s){if(s.kind==='PLAN')return Math.round(T.reduce((a,t)=>a+completeness(t,(s.d||{})[t.id]),0)/T.length);return completeness(T.find(t=>t.id===s.kind),s.d)}
+function importText(text){const found=extractCodes(text);const r={n:found.length,nu:0,dup:0,bad:0,last:null};
+  found.forEach(f=>{const x=readCode(f.raw);if(x.err){r.bad++;return}const p=x.p;const team=teamKey(p);const sid=x.kind+'|'+team+'|'+(p.ts||0);
+    if(I.subs[sid]){r.dup++;r.last=sid;return}
+    I.subs[sid]={sid,kind:x.kind,team,e:p.e||'',q:p.q||'',ts:p.ts||Date.now(),done:p.done,d:p.d,recv:Date.now()};r.nu++;r.last=sid});
+  isave();return r}
+function teams(){const m={};Object.values(I.subs).forEach(s=>{const t=m[s.team]=m[s.team]||{key:s.team,e:'',q:'',ts:0,by:{}};if(s.ts>=t.ts){t.ts=s.ts;if(s.e)t.e=s.e;if(s.q)t.q=s.q}(t.by[s.kind]=t.by[s.kind]||[]).push(s)});
+  Object.values(m).forEach(t=>Object.values(t.by).forEach(a=>a.sort((x,y)=>y.ts-x.ts)));
+  return Object.values(m).sort((a,b)=>(a.q||a.e).localeCompare(b.q||b.e,'es',{numeric:true}))}
+function cellState(a){if(!a||!a.length)return {c:'',t:'·'};const ev=I.ev[a[0].sid];if(ev&&ev.j)return {c:ev.j,t:ev.j};if(a.slice(1).some(s=>(I.ev[s.sid]||{}).j))return {c:'r',t:'↻'};return {c:'p',t:'●'}}
+function pendingList(){const out=[];teams().forEach(t=>KINDS.forEach(k=>{const a=t.by[k];const s=cellState(a);if(s.c==='p'||s.c==='r')out.push(a[0])}));return out.sort((a,b)=>a.ts-b.ts)}
+function nextPending(cur){const p=pendingList().filter(s=>s.sid!==cur);if(!p.length){toast('No hay más entregas por evaluar');return}openSub(p[0].sid)}
+function instructorApp(){
+  iload();document.title='Zona instructor · Plan Estratégico Logístico';
+  document.querySelector('.top').innerHTML=`<div class="brand"><i>LL</i>LogiLab SENA</div><div class="co"><span class="eyebrow">Zona instructor</span><b>Plan Estratégico Logístico · entregas por código</b></div><button class="btn" id="iBack">← Volver al taller</button>`;
+  route.hidden=true;document.querySelector('.wrap').style.gridTemplateColumns='1fr';const lk=document.getElementById('lnkInstr');if(lk)lk.hidden=true;
+  const m=document.getElementById('main');
+  m.innerHTML=`<section class="card hero" style="--c:var(--violet)"><span class="eyebrow">Zona instructor · Taller Plan Estratégico Logístico</span><h1>Recibir y evaluar entregas</h1>
+  <p class="muted" style="max-width:76ch">Pegue los códigos que le llegan por WhatsApp o correo. Puede pegar varios a la vez, o el chat completo: la app encuentra todos los códigos y los ordena por equipo y por clase. Las entregas y sus evaluaciones se guardan solo en este dispositivo; descargue el respaldo de vez en cuando.</p>
+  <textarea id="iPaste" style="min-height:110px;font-family:var(--mono);font-size:.8rem" placeholder="Pegue aquí uno o varios códigos: LLPE.T2.Z…~"></textarea>
+  <div class="acts"><button class="btn pri" id="iOpen">Abrir códigos</button><label class="btn" for="iFile">⬆ Cargar chat exportado de WhatsApp (.txt)</label><input type="file" id="iFile" accept=".txt,text/plain" multiple hidden><span class="note" id="iMsg"></span></div></section>
+  <section class="card"><div class="ihead"><div><h2>Tablero de entregas</h2><p class="note" id="iSum"></p></div>
+  <div class="acts"><button class="btn pri" id="iNextTop">Evaluar siguiente →</button><button class="btn" id="iCsv">⬇ Notas para Excel (.csv)</button><button class="btn dl" id="iExp">⬇ Respaldo</button><label class="btn" for="iImp">⬆ Cargar respaldo</label><input type="file" id="iImp" accept=".json,application/json" hidden><button class="btn" id="iClear">Borrar todo</button></div></div>
+  <div class="legend"><span><i style="background:var(--sun)"></i>● Por evaluar</span><span><i style="background:color-mix(in srgb,var(--sun) 30%,var(--card))"></i>↻ Reenvío tras corrección</span><span><i style="background:var(--sena)"></i>A · Aprobado</span><span><i style="background:var(--alert)"></i>D · No aprobado</span><span><i></i>· Sin entregar</span></div>
+  <div class="tw" id="iBoard"></div></section>
+  <section class="card" id="iDetail" hidden></section>`;
+  const msg=document.getElementById('iMsg');
+  const report=r=>{if(!r.n){msg.innerHTML='<span class="warn">No encontré códigos LLPE en ese texto.</span>';return}
+    msg.innerHTML=`<b>${r.nu} nueva${r.nu===1?'':'s'}</b> · ${r.dup} repetida${r.dup===1?'':'s'}`+(r.bad?` · <span class="warn">${r.bad} dañada${r.bad===1?'':'s'}: pida al equipo reenviar con "Copiar código"</span>`:'');
+    renderBoard();if(r.last&&(r.n===1||r.nu===1))openSub(r.last)};
+  document.getElementById('iOpen').onclick=()=>{const ta=document.getElementById('iPaste');const r=importText(ta.value);if(r.n&&!r.bad)ta.value='';report(r)};
+  document.getElementById('iFile').onchange=ev=>{const fs=[...ev.target.files];if(!fs.length)return;let all='',k=0;fs.forEach(f=>{const rd=new FileReader();rd.onload=()=>{all+='\n'+rd.result;if(++k===fs.length)report(importText(all))};rd.readAsText(f)});ev.target.value=''};
+  document.getElementById('iBack').onclick=()=>{location.hash=''};
+  document.getElementById('iNextTop').onclick=()=>nextPending(null);
+  document.getElementById('iCsv').onclick=exportCsv;
+  document.getElementById('iExp').onclick=()=>download(JSON.stringify(I),'respaldo-instructor-plan-estrategico.json','application/json');
+  document.getElementById('iImp').onchange=ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o||!o.subs)throw 0;Object.assign(I.subs,o.subs);Object.assign(I.ev,o.ev||{});isave();renderBoard();toast('Respaldo cargado')}catch(e){toast('Ese archivo no es un respaldo de la zona instructor')}};rd.readAsText(f);ev.target.value=''};
+  document.getElementById('iClear').onclick=()=>{if(!confirm('¿Borrar todas las entregas y evaluaciones de este dispositivo? Descargue antes el respaldo.'))return;I={subs:{},ev:{}};isel=null;isave();document.getElementById('iDetail').hidden=true;renderBoard()};
+  renderBoard();instrHash();
+}
+function instrHash(){if(!location.hash.startsWith('#c='))return;let c=location.hash.slice(3);try{c=decodeURIComponent(c)}catch(e){}const r=importText(c);try{history.replaceState(null,'','#instructor')}catch(e){}renderBoard();if(r.last)openSub(r.last);else toast('El código del enlace está dañado')}
+function renderBoard(){const box=document.getElementById('iBoard');if(!box)return;const ts=teams();
+  document.getElementById('iSum').textContent=`${ts.length} equipo${ts.length===1?'':'s'} · ${Object.keys(I.subs).length} entregas recibidas · ${pendingList().length} por evaluar`;
+  if(!ts.length){box.innerHTML='<p class="note" style="padding:14px">Aún no hay entregas. Pegue arriba los códigos que le enviaron.</p>';return}
+  box.innerHTML=`<table class="mx"><thead><tr><th>Equipo · Empresa</th>${T.map((t,i)=>`<th title="${esc(t.t)}">${i+1}</th>`).join('')}<th>Plan</th></tr></thead><tbody>${ts.map(t=>`<tr><td class="tm" title="${esc(t.q)}"><b>${esc(teamShort(t.q)||'Equipo sin nombre')}</b><small>${esc(t.e||'Empresa sin definir')}</small></td>${KINDS.map(k=>{const a=t.by[k];if(!a)return `<td><span class="cell" style="display:grid;place-items:center">·</span></td>`;const s=cellState(a);return `<td><button class="cell ${s.c}${a.some(x=>x.sid===isel)?' on':''}" data-sid="${esc(a[0].sid)}" title="${esc(kindName(k))}${a.length>1?' · '+a.length+' versiones':''}">${s.t}</button></td>`}).join('')}</tr>`).join('')}</tbody></table>`;
+  box.querySelectorAll('[data-sid]').forEach(b=>b.onclick=()=>openSub(b.dataset.sid))}
+function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();
+  const vers=Object.values(I.subs).filter(x=>x.team===s.team&&x.kind===s.kind).sort((a,b)=>b.ts-a.ts);
+  const prev=vers.filter(x=>x.sid!==sid&&x.ts<s.ts).map(x=>({x,ev:I.ev[x.sid]})).find(o=>o.ev&&(o.ev.j||o.ev.obs));
+  const t=T.find(x=>x.id===s.kind);const ev=I.ev[sid]||{j:'',cr:{},obs:''};const li=lateInfo(s.kind,s.ts);
+  const content=s.kind==='PLAN'?planBody(s.d||{}):`<div class="doc">${t.campos.map(c=>fieldHtml(t.id,c,s.d||{},s.e)).join('')}</div>`;
+  const det=document.getElementById('iDetail');det.hidden=false;
+  det.innerHTML=`<div class="chips"><span class="chip">${esc(kindName(s.kind))}</span>${t?`<span class="chip alt">Evidencia ${t.ev}</span>`:''}<span class="chip alt">Formato lleno: ${subComp(s)} %</span><span class="chip alt">${s.kind==='PLAN'?'':(s.done?'El equipo lo marcó terminado':'No lo marcaron terminado')}</span></div>
+  <h2>${esc(teamShort(s.q)||'Equipo sin nombre')} · ${esc(s.e||'Empresa sin definir')}</h2>${s.q?`<p class="muted">${esc(s.q)}</p>`:''}
+  <p>Enviado: <b>${fdate(s.ts)}</b>${li?` · <span class="${li.late?'late':'ok'}">${li.txt}</span>`:''}</p>
+  ${vers.length>1?`<label class="field" style="max-width:440px"><span class="lbl">Versiones recibidas (${vers.length})</span><select id="iVer">${vers.map((v,k)=>`<option value="${esc(v.sid)}"${v.sid===sid?' selected':''}>${k===0?'Más reciente · ':''}${fdate(v.ts)}${(I.ev[v.sid]||{}).j?' · juicio '+I.ev[v.sid].j:''}</option>`).join('')}</select></label>`:''}
+  <div class="isplit"><div class="card" style="padding:14px">${content}</div>
+  <aside class="evalbox"><h3>Evaluación</h3>
+  ${prev?`<div class="prevev"><b>Versión anterior:</b> juicio ${prev.ev.j||'pendiente'}${prev.ev.obs?' · '+esc(prev.ev.obs):''}</div>`:''}
+  ${CRIT.map(([k,l])=>`<label class="ck"><input type="checkbox" data-cr="${k}"${ev.cr&&ev.cr[k]?' checked':''}><span>${l}</span></label>`).join('')}
+  <span style="font-weight:700">Juicio evaluativo</span>
+  <div class="jz"><button data-j="A" title="Aprobado">✓ A</button><button data-j="D" title="No aprobado">✗ D</button><button data-j="" title="Sin juicio todavía">Pendiente</button></div><span class="note">A = aprobado · D = no aprobado (corrigen y reenvían)</span>
+  <label class="field"><span class="lbl">Observaciones para el equipo</span><textarea id="iObs" placeholder="Qué está bien, qué deben corregir y para cuándo">${esc(ev.obs||'')}</textarea></label>
+  <div class="acts"><button class="btn" id="iFbCopy">📋 Copiar retroalimentación</button><a class="btn wa" id="iFbWa" href="#" target="_blank" rel="noopener">WhatsApp</a></div>
+  <div class="acts"><button class="btn pri" id="iNext">Siguiente por evaluar →</button><button class="btn" id="iDel">Eliminar entrega</button></div>
+  <p class="note">Todo se guarda solo, en este dispositivo.</p></aside></div>`;
+  const E=()=>I.ev[sid]=I.ev[sid]||{j:'',cr:{},obs:''};
+  const upd=()=>{E().at=Date.now();isave();renderBoard()};
+  det.querySelectorAll('[data-cr]').forEach(c=>c.onchange=()=>{const e=E();e.cr=e.cr||{};e.cr[c.dataset.cr]=c.checked;upd()});
+  const jb=det.querySelectorAll('.jz button');const markJ=j=>jb.forEach(b=>b.classList.toggle('sel',b.dataset.j===j));markJ(ev.j||'');
+  jb.forEach(b=>b.onclick=()=>{E().j=b.dataset.j;markJ(b.dataset.j);upd()});
+  const ob=document.getElementById('iObs');ob.oninput=()=>{const e=E();e.obs=ob.value;e.at=Date.now();isave()};
+  const fb=()=>{const e=I.ev[sid]||{};return `Retroalimentación LogiLab · ${kindName(s.kind)}\nEmpresa: ${s.e||'—'}\nEquipo: ${teamShort(s.q)||'—'}\nEntrega del ${fdate(s.ts)}\n\nJuicio: ${e.j==='A'?'A · Aprobado':e.j==='D'?'D · No aprobado: corrijan y reenvíen el código':'En revisión'}\n${CRIT.map(([k,l])=>`${e.cr&&e.cr[k]?'✅':'⬜'} ${l}`).join('\n')}\n\nObservaciones: ${e.obs||'—'}\n\nCarlos Barrios · Instructor SENA`};
+  document.getElementById('iFbCopy').onclick=()=>copy(fb(),'Retroalimentación copiada');
+  document.getElementById('iFbWa').onclick=e=>{e.currentTarget.href='https://wa.me/?text='+encodeURIComponent(fb())};
+  document.getElementById('iNext').onclick=()=>nextPending(sid);
+  document.getElementById('iDel').onclick=()=>{if(!confirm('¿Eliminar esta entrega y su evaluación?'))return;delete I.subs[sid];delete I.ev[sid];isel=null;isave();det.hidden=true;renderBoard()};
+  const vs=document.getElementById('iVer');if(vs)vs.onchange=()=>openSub(vs.value);
+  det.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function exportCsv(){const rows=[['Equipo','Integrantes','Empresa','Entrega','Evidencia','Enviado','Oportunidad','Formato lleno %','Versiones','Juicio','Criterios cumplidos','Observaciones']];
+  teams().forEach(t=>KINDS.forEach(k=>{const a=t.by[k];if(!a)return;const s=a[0];const tt=T.find(x=>x.id===k);const e=I.ev[s.sid]||{};const li=lateInfo(k,s.ts);
+    rows.push([teamShort(s.q),s.q,s.e,kindName(k),tt?tt.ev:'3.3.5 · 3.4',fdate(s.ts),li?li.txt:'',subComp(s),a.length,e.j||'Pendiente',CRIT.filter(([c])=>e.cr&&e.cr[c]).length+'/'+CRIT.length,e.obs||''])}));
+  if(rows.length<2){toast('Aún no hay entregas para exportar');return}
+  download(rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""').replace(/\r?\n/g,' ')+'"').join(';')).join('\r\n'),'evaluacion-plan-estrategico.csv','text/csv')}
+
 /* ======== UTILIDADES ======== */
-function copy(s){if(navigator.clipboard)navigator.clipboard.writeText(s).then(()=>toast('Texto copiado'),()=>fb(s));else fb(s)}
-function fb(s){const ta=document.createElement('textarea');ta.value=s;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Seleccione y copie el texto manualmente')}setTimeout(()=>ta.remove(),100)}
+function copy(s,m){m=m||'Texto copiado';if(navigator.clipboard)navigator.clipboard.writeText(s).then(()=>toast(m),()=>fb(s,m));else fb(s,m)}
+function fb(s,m){const ta=document.createElement('textarea');ta.value=s;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast(m||'Texto copiado')}catch(e){toast('Seleccione y copie el texto manualmente')}setTimeout(()=>ta.remove(),100)}
 function download(content,name,type){try{const b=new Blob([(type==='application/json'?'':'\ufeff')+content],{type:type+';charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('Descarga iniciada')}catch(e){toast('No se pudo descargar: use Copiar texto')}}
 
-refreshTop();
+/* ======== ARRANQUE: taller del equipo o zona instructor (#instructor) ======== */
+const isInstr=()=>/^#(instructor|c=)/.test(location.hash);
+const MODE=isInstr();
+window.addEventListener('hashchange',()=>{if(isInstr()!==MODE){location.reload();return}if(MODE)instrHash()});
+if(MODE)instructorApp();
+else{refreshTop();
 let start='INICIO';try{start=localStorage.getItem(KEY+'-cur')||'INICIO'}catch(e){}
 if(!(start==='INICIO'||start==='PLAN'||T.some(t=>t.id===start)))start='INICIO';
-go(start);
+go(start);}
 })();
 </script>
 </body></html>
