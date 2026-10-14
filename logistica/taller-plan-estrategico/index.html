@@ -634,9 +634,30 @@ function teams(){const m={};Object.values(I.subs).forEach(s=>{const t=m[s.team]=
 function cellState(a){if(!a||!a.length)return {c:'',t:'·'};const ev=I.ev[a[0].sid];if(ev&&ev.j)return {c:ev.j,t:ev.j};if(a.slice(1).some(s=>(I.ev[s.sid]||{}).j))return {c:'r',t:'↻'};return {c:'p',t:'●'}}
 function pendingList(){const out=[];teams().forEach(t=>KINDS.forEach(k=>{const a=t.by[k];const s=cellState(a);if(s.c==='p'||s.c==='r')out.push(a[0])}));return out.sort((a,b)=>a.ts-b.ts)}
 function nextPending(cur){const p=pendingList().filter(s=>s.sid!==cur);if(!p.length){toast('No hay más entregas por evaluar');return}openSub(p[0].sid)}
+/* PIN de la zona instructor: solo se guarda su huella SHA-256, nunca el PIN */
+const PIN_H='ac9c2c34c9f7ad52528c3422af40a66e2e24aaf2a727831255413c9470158984';
+async function sha256(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+function unlocked(){try{return localStorage.getItem('pel-instr-ok')===PIN_H||sessionStorage.getItem('pel-instr-ok')===PIN_H}catch(e){return false}}
+function pinGate(){
+  document.title='Zona instructor · LogiLab SENA';
+  document.querySelector('.top').innerHTML=`<div class="brand"><i>LL</i>LogiLab SENA</div><div class="co"><span class="eyebrow">Zona instructor</span><b>Acceso con PIN</b></div><button class="btn" id="iBack">← Volver al taller</button>`;
+  route.hidden=true;document.querySelector('.wrap').style.gridTemplateColumns='1fr';const lk=document.getElementById('lnkInstr');if(lk)lk.hidden=true;
+  document.getElementById('main').innerHTML=`<section class="card hero" style="--c:var(--violet);max-width:440px;margin:40px auto;width:100%"><span class="eyebrow">Solo para el instructor</span><h1>Zona instructor</h1>
+  <form id="pinF" class="field" style="gap:10px"><label class="field"><span class="lbl">PIN</span><input type="password" id="pinI" autocomplete="current-password" autofocus></label>
+  <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="pinR" checked style="width:20px;height:20px;accent-color:var(--sena)"> Recordar en este dispositivo</label>
+  <button class="btn pri" type="submit">Entrar</button><span class="note" id="pinM"></span></form></section>`;
+  document.getElementById('iBack').onclick=()=>{location.hash=''};
+  document.getElementById('pinF').onsubmit=async e=>{e.preventDefault();const m=document.getElementById('pinM');
+    let h='';try{h=await sha256(document.getElementById('pinI').value.trim())}catch(err){m.innerHTML='<span class="warn">Este navegador no permite verificar el PIN. Abra la página con https.</span>';return}
+    if(h!==PIN_H){m.innerHTML='<span class="warn">PIN incorrecto</span>';document.getElementById('pinI').select();return}
+    try{(document.getElementById('pinR').checked?localStorage:sessionStorage).setItem('pel-instr-ok',PIN_H)}catch(err){}
+    instructorApp()};
+}
+function lockInstr(){try{localStorage.removeItem('pel-instr-ok');sessionStorage.removeItem('pel-instr-ok')}catch(e){}location.hash=''}
 function instructorApp(){
+  if(!unlocked())return pinGate();
   iload();document.title='Zona instructor · Plan Estratégico Logístico';
-  document.querySelector('.top').innerHTML=`<div class="brand"><i>LL</i>LogiLab SENA</div><div class="co"><span class="eyebrow">Zona instructor</span><b>Plan Estratégico Logístico · entregas por código</b></div><button class="btn" id="iBack">← Volver al taller</button>`;
+  document.querySelector('.top').innerHTML=`<div class="brand"><i>LL</i>LogiLab SENA</div><div class="co"><span class="eyebrow">Zona instructor</span><b>Plan Estratégico Logístico · entregas por código</b></div><button class="btn" id="iLock">🔒 Cerrar sesión</button><button class="btn" id="iBack">← Volver al taller</button>`;
   route.hidden=true;document.querySelector('.wrap').style.gridTemplateColumns='1fr';const lk=document.getElementById('lnkInstr');if(lk)lk.hidden=true;
   const m=document.getElementById('main');
   m.innerHTML=`<section class="card hero" style="--c:var(--violet)"><span class="eyebrow">Zona instructor · Taller Plan Estratégico Logístico</span><h1>Recibir y evaluar entregas</h1>
@@ -655,6 +676,7 @@ function instructorApp(){
   document.getElementById('iOpen').onclick=()=>{const ta=document.getElementById('iPaste');const r=importText(ta.value);if(r.n&&!r.bad)ta.value='';report(r)};
   document.getElementById('iFile').onchange=ev=>{const fs=[...ev.target.files];if(!fs.length)return;let all='',k=0;fs.forEach(f=>{const rd=new FileReader();rd.onload=()=>{all+='\n'+rd.result;if(++k===fs.length)report(importText(all))};rd.readAsText(f)});ev.target.value=''};
   document.getElementById('iBack').onclick=()=>{location.hash=''};
+  document.getElementById('iLock').onclick=lockInstr;
   document.getElementById('iNextTop').onclick=()=>nextPending(null);
   document.getElementById('iCsv').onclick=exportCsv;
   document.getElementById('iExp').onclick=()=>download(JSON.stringify(I),'respaldo-instructor-plan-estrategico.json','application/json');
@@ -716,7 +738,7 @@ function download(content,name,type){try{const b=new Blob([(type==='application/
 /* ======== ARRANQUE: taller del equipo o zona instructor (#instructor) ======== */
 const isInstr=()=>/^#(instructor|c=)/.test(location.hash);
 const MODE=isInstr();
-window.addEventListener('hashchange',()=>{if(isInstr()!==MODE){location.reload();return}if(MODE)instrHash()});
+window.addEventListener('hashchange',()=>{if(isInstr()!==MODE){location.reload();return}if(MODE&&unlocked())instrHash()});
 if(MODE)instructorApp();
 else{refreshTop();
 let start='INICIO';try{start=localStorage.getItem(KEY+'-cur')||'INICIO'}catch(e){}
