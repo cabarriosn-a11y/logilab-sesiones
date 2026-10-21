@@ -309,6 +309,19 @@ const num=v=>{const n=parseFloat(String(v??'').replace(/\./g,'').replace(',','.'
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2300)}
 function empresa(){return (val('T1','empresa')||'').trim()}
 
+/* ======== BUZÓN EN LA NUBE (Netlify /api/plan) ======== */
+const API='https://logilab-sena.netlify.app/api/plan';
+function bindSend(btnId,msgId,kind,getCode){const b=document.getElementById(btnId),m=document.getElementById(msgId);if(!b)return;
+  b.onclick=async()=>{const code=getCode();b.disabled=true;const old=b.textContent;b.textContent='Enviando…';m.textContent='';
+    try{const r=await fetch(API,{method:'POST',headers:{'content-type':'text/plain;charset=utf-8'},body:JSON.stringify({codigo:code,taller:kind,equipo:(val('T1','equipo')||'').trim(),empresa:empresa()})});
+      let j={};try{j=await r.json()}catch(e){}
+      if(!r.ok)throw new Error(j.error||('Error '+r.status));
+      S.cloud=S.cloud||{};S.cloud[kind]=Date.now();S.sent[kind]=Date.now();save();
+      m.innerHTML=`<span class="sent">✅ Recibido por el instructor: ${fdate(S.cloud[kind])}</span>`;toast('¡Entregado al instructor!')}
+    catch(e){m.innerHTML=`<span class="warn">No se pudo enviar (${esc(e.message==='Failed to fetch'?'sin conexión':e.message)}). Usen Copiar código, WhatsApp o correo.</span>`}
+    finally{b.disabled=false;b.textContent=old}};
+}
+
 /* ======== RUTA ======== */
 const route=document.getElementById('route');
 let cur=null;
@@ -359,13 +372,14 @@ function taller(t){
   <section class="card"><h2>Paso a paso</h2><ol class="steps">${t.pasos.map(p=>`<li><span>${p}</span></li>`).join('')}</ol><div class="tip">💡 ${t.tip}</div></section>
   <section class="card"><h2>Formato del taller</h2>${t.campos.map(c=>campo(t.id,c)).join('')}</section>
   <section class="card noprint"><h2>Entregar el taller</h2>
-  <p class="muted">Al entregar, la app convierte todo el taller en un <b>código de entrega</b>. Envíen solo ese código: el instructor lo abre en su zona y ve el taller completo, con tablas y cálculos.</p>
+  <p class="muted">Toquen <b>📤 Enviar al instructor</b>: el taller le llega directo a su zona de calificación. Si no hay internet o falla, usen los botones de respaldo (copiar, WhatsApp, correo o archivo) con el <b>código de entrega</b>.</p>
   <div class="codebox"><div class="codehead"><b>Código de entrega · Clase ${i+1}</b><span class="note" id="codeMeta"></span></div>
   <textarea id="codeOut" readonly aria-label="Código de entrega"></textarea>
   <span class="note">Copien el código completo, desde <b>LLPE</b> hasta la <b>~</b> final. Si le cambian una sola letra, no abre.</span></div>
   <div class="duo"><label class="field"><span class="lbl">WhatsApp del instructor (con indicativo, sin +)</span><input type="text" id="wa" inputmode="numeric" placeholder="57300XXXXXXX" value="${esc(S.wa)}"></label>
   <label class="field"><span class="lbl">Correo del instructor</span><input type="text" id="mailTo" inputmode="email" placeholder="correo@sena.edu.co" value="${esc(S.mail||'')}"></label></div>
-  <div class="acts"><button class="btn pri" id="bCopy">📋 Copiar código</button><a class="btn wa" id="bWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn mail" id="bMail">✉ Correo</button><button class="btn dl" id="bDl">⬇ Descargar .txt</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button></div>
+  <div class="acts"><button class="btn pri" id="bSend">📤 Enviar al instructor</button><span class="note" id="sendMsg">${S.cloud&&S.cloud[t.id]?`<span class="sent">✅ Recibido por el instructor: ${fdate(S.cloud[t.id])}</span>`:''}</span></div>
+  <div class="acts"><button class="btn" id="bCopy">📋 Copiar código</button><a class="btn wa" id="bWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn mail" id="bMail">✉ Correo</button><button class="btn dl" id="bDl">⬇ Descargar .txt</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button></div>
   <p class="note">Si un botón no funciona en su dispositivo, use "Copiar código" y péguelo en un chat de WhatsApp o en un correo al instructor.${S.sent&&S.sent[t.id]?` <span class="sent">Último envío: ${fdate(S.sent[t.id])}</span>`:''}</p>
   <label style="display:flex;gap:10px;align-items:center;font-weight:700"><input type="checkbox" id="doneChk" ${S.done[t.id]?'checked':''} style="width:22px;height:22px;accent-color:var(--sena)"> Terminamos este taller</label>
   <div class="acts">${i>0?`<button class="btn" data-go="${T[i-1].id}">← Clase ${i}</button>`:''}${i<T.length-1?`<button class="btn pri" data-go="${T[i+1].id}">Clase ${i+2} →</button>`:`<button class="btn pri" data-go="PLAN">Ver mi plan completo →</button>`}</div></section>`;
@@ -448,6 +462,7 @@ function bindTaller(tid){
   const mark=()=>{S.sent[t.id]=Date.now();save()};
   document.getElementById('codeOut').onfocus=e=>e.target.select();
   document.getElementById('bCopy').onclick=()=>{refresh();copy(last,'Código copiado');mark()};
+  bindSend('bSend','sendMsg',t.id,()=>{refresh();return last});
   document.getElementById('bWa').onclick=e=>{refresh();e.currentTarget.href='https://wa.me/'+(S.wa||'')+'?text='+encodeURIComponent(msg(last));mark()};
   document.getElementById('bMail').onclick=()=>{refresh();const subj=`Entrega clase ${i+1} · ${t.t} · ${empresa()||'Mi empresa'}`;let body=msg(last);
     if(body.length>1700){copy(last,'Código copiado');body=msg('(El código ya quedó copiado: péguelo aquí con Ctrl+V o mantenga presionado y Pegar)')}
@@ -493,7 +508,8 @@ function plan(){
   <div class="acts"><button class="btn pri" id="bWord">⬇ Descargar en Word (.doc)</button><button class="btn" id="bPrint">🖨 Imprimir o guardar PDF</button><button class="btn" id="bCopyAll">📋 Copiar todo</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button><label class="btn" for="fImp">⬆ Cargar respaldo</label><input type="file" id="fImp" accept=".json,application/json" hidden></div></section>
   <section class="card noprint"><h2>Entregar el plan completo</h2><p class="muted">Para el portafolio final (evidencias 3.3.5 y 3.4): un solo código con los 12 talleres.</p>
   <div class="codebox"><div class="codehead"><b>Código del plan completo</b><span class="note" id="pCodeMeta"></span></div><textarea id="pCodeOut" readonly aria-label="Código del plan completo"></textarea></div>
-  <div class="acts"><button class="btn pri" id="pCopy">📋 Copiar código</button><a class="btn wa" id="pWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn dl" id="pDl">⬇ Descargar .txt</button></div>
+  <div class="acts"><button class="btn pri" id="pSend">📤 Enviar al instructor</button><span class="note" id="pSendMsg">${S.cloud&&S.cloud.PLAN?`<span class="sent">✅ Recibido por el instructor: ${fdate(S.cloud.PLAN)}</span>`:''}</span></div>
+  <div class="acts"><button class="btn" id="pCopy">📋 Copiar código</button><a class="btn wa" id="pWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn dl" id="pDl">⬇ Descargar .txt</button></div>
   <p class="note">El código del plan es largo. Si WhatsApp no lo abre completo, use "Copiar código" y péguelo en el chat, o envíe el .txt.</p></section>
   <section class="card">${planBody()}</section>`;
 }
@@ -507,6 +523,7 @@ function bindPlan(){
   const pmsg=c=>`📦 ENTREGA LogiLab · PLAN COMPLETO\nEmpresa: ${empresa()||'—'}\nEquipo: ${(val('T1','equipo')||'—').trim()}\nTalleres terminados: ${T.filter(t=>S.done[t.id]).length}/${T.length}\n\nCódigo de entrega:\n${c}`;
   document.getElementById('pCodeOut').onfocus=e=>e.target.select();
   document.getElementById('pCopy').onclick=()=>{lp=pc();copy(lp,'Código copiado');S.sent.PLAN=Date.now();save()};
+  bindSend('pSend','pSendMsg','PLAN',()=>{lp=pc();return lp});
   document.getElementById('pWa').onclick=e=>{lp=pc();if(lp.length>6000){e.preventDefault();copy(lp,'Código copiado: péguelo en el chat');window.open('https://wa.me/'+(S.wa||''),'_blank','noopener')}else e.currentTarget.href='https://wa.me/'+(S.wa||'')+'?text='+encodeURIComponent(pmsg(lp));S.sent.PLAN=Date.now();save()};
   document.getElementById('pDl').onclick=()=>{lp=pc();download(pmsg(lp),`entrega-PLAN-${slug()}.txt`,'text/plain');S.sent.PLAN=Date.now();save()};
   bindBackup();
@@ -634,6 +651,29 @@ function teams(){const m={};Object.values(I.subs).forEach(s=>{const t=m[s.team]=
 function cellState(a){if(!a||!a.length)return {c:'',t:'·'};const ev=I.ev[a[0].sid];if(ev&&ev.j)return {c:ev.j,t:ev.j};if(a.slice(1).some(s=>(I.ev[s.sid]||{}).j))return {c:'r',t:'↻'};return {c:'p',t:'●'}}
 function pendingList(){const out=[];teams().forEach(t=>KINDS.forEach(k=>{const a=t.by[k];const s=cellState(a);if(s.c==='p'||s.c==='r')out.push(a[0])}));return out.sort((a,b)=>a.ts-b.ts)}
 function nextPending(cur){const p=pendingList().filter(s=>s.sid!==cur);if(!p.length){toast('No hay más entregas por evaluar');return}openSub(p[0].sid)}
+/* nube del instructor: trae entregas y guarda evaluaciones (clave = ADMIN_KEY de Netlify) */
+const CKEY='pel-cloud-key';
+function ckey(){try{return localStorage.getItem(CKEY)||''}catch(e){return ''}}
+function setCloud(h){const e=document.getElementById('iCloud');if(e)e.innerHTML=h}
+async function cloud(method,body,ask){let k=ckey();
+  if(!k){if(!ask)throw new Error('sin clave');k=(prompt('Clave de docente (la misma del panel docente de LogiLab en Netlify):')||'').trim();if(!k)throw new Error('sin clave')}
+  const r=await fetch(API,{method,headers:Object.assign({'x-clave-instructor':k},body?{'content-type':'text/plain;charset=utf-8'}:{}),body:body?JSON.stringify(body):undefined});
+  let j={};try{j=await r.json()}catch(e){}
+  if(r.status===403){try{localStorage.removeItem(CKEY)}catch(e){}throw new Error('clave incorrecta')}
+  if(!r.ok)throw new Error(j.error||('error '+r.status));
+  try{localStorage.setItem(CKEY,k)}catch(e){}return j}
+const hhmm=()=>new Date().toLocaleTimeString('es-CO',{hour:'numeric',minute:'2-digit'});
+async function cloudPull(ask){setCloud('☁ Trayendo entregas…');
+  try{const j=await cloud('GET',null,ask);let ne=0;
+    Object.entries(j.ev||{}).forEach(([sid,e])=>{const l=I.ev[sid];if(!l||(l.at||0)<(e.at||0)){I.ev[sid]=e;ne++}});
+    const had=new Set(Object.keys(I.subs)),before=had.size;const r=importText((j.entregas||[]).map(x=>x.codigo).join('\n'));
+    Object.keys(I.subs).forEach(sid=>{if(!had.has(sid)&&I.ev[sid]&&I.ev[sid].del)delete I.subs[sid]});isave();
+    const nu=Math.max(0,Object.keys(I.subs).length-before);renderBoard();
+    setCloud(`☁ Al día ${hhmm()} · <b>${nu} entrega${nu===1?'':'s'} nueva${nu===1?'':'s'}</b>`+(ne?` · ${ne} evaluación${ne===1?'':'es'} de otro dispositivo`:'')+(r.bad?` · <span class="warn">${r.bad} dañada${r.bad===1?'':'s'}</span>`:''));
+    cloudPush(true)}
+  catch(e){setCloud(e.message==='clave incorrecta'?'<span class="warn">☁ Clave incorrecta: toque <b>Traer entregas</b> y escríbala de nuevo</span>':e.message==='sin clave'?'☁ Toque <b>Traer entregas</b> y escriba su clave de docente':`<span class="warn">☁ No se pudo conectar (${esc(e.message==='Failed to fetch'?'sin internet':e.message)})</span>`)}}
+let pushT=null;
+function cloudPush(now){if(!ckey())return;clearTimeout(pushT);pushT=setTimeout(async()=>{try{await cloud('PUT',{ev:I.ev});if(!now)setCloud(`☁ Evaluaciones guardadas en la nube · ${hhmm()}`)}catch(e){setCloud(`<span class="warn">☁ No se guardó en la nube (${esc(e.message)}). Queda en este dispositivo.</span>`)}},now?10:1500)}
 /* PIN de la zona instructor: solo se guarda su huella SHA-256, nunca el PIN */
 const PIN_H='ac9c2c34c9f7ad52528c3422af40a66e2e24aaf2a727831255413c9470158984';
 async function sha256(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
@@ -661,7 +701,8 @@ function instructorApp(){
   route.hidden=true;document.querySelector('.wrap').style.gridTemplateColumns='1fr';const lk=document.getElementById('lnkInstr');if(lk)lk.hidden=true;
   const m=document.getElementById('main');
   m.innerHTML=`<section class="card hero" style="--c:var(--violet)"><span class="eyebrow">Zona instructor · Taller Plan Estratégico Logístico</span><h1>Recibir y evaluar entregas</h1>
-  <p class="muted" style="max-width:76ch">Pegue los códigos que le llegan por WhatsApp o correo. Puede pegar varios a la vez, o el chat completo: la app encuentra todos los códigos y los ordena por equipo y por clase. Las entregas y sus evaluaciones se guardan solo en este dispositivo; descargue el respaldo de vez en cuando.</p>
+  <div class="acts"><button class="btn pri" id="iPull">☁ Traer entregas</button><span class="note" id="iCloud"></span></div>
+  <p class="muted" style="max-width:76ch">Lo que los equipos envían con <b>📤 Enviar al instructor</b> llega a la nube: toque <b>Traer entregas</b>. Sus evaluaciones también se guardan en la nube, así puede calificar desde el computador o el celular. Si alguien le manda el código por WhatsApp o correo, péguelo aquí (varios a la vez o el chat completo).</p>
   <textarea id="iPaste" style="min-height:110px;font-family:var(--mono);font-size:.8rem" placeholder="Pegue aquí uno o varios códigos: LLPE.T2.Z…~"></textarea>
   <div class="acts"><button class="btn pri" id="iOpen">Abrir códigos</button><label class="btn" for="iFile">⬆ Cargar chat exportado de WhatsApp (.txt)</label><input type="file" id="iFile" accept=".txt,text/plain" multiple hidden><span class="note" id="iMsg"></span></div></section>
   <section class="card"><div class="ihead"><div><h2>Tablero de entregas</h2><p class="note" id="iSum"></p></div>
@@ -673,6 +714,7 @@ function instructorApp(){
   const report=r=>{if(!r.n){msg.innerHTML='<span class="warn">No encontré códigos LLPE en ese texto.</span>';return}
     msg.innerHTML=`<b>${r.nu} nueva${r.nu===1?'':'s'}</b> · ${r.dup} repetida${r.dup===1?'':'s'}`+(r.bad?` · <span class="warn">${r.bad} dañada${r.bad===1?'':'s'}: pida al equipo reenviar con "Copiar código"</span>`:'');
     renderBoard();if(r.last&&(r.n===1||r.nu===1))openSub(r.last)};
+  document.getElementById('iPull').onclick=()=>cloudPull(true);
   document.getElementById('iOpen').onclick=()=>{const ta=document.getElementById('iPaste');const r=importText(ta.value);if(r.n&&!r.bad)ta.value='';report(r)};
   document.getElementById('iFile').onchange=ev=>{const fs=[...ev.target.files];if(!fs.length)return;let all='',k=0;fs.forEach(f=>{const rd=new FileReader();rd.onload=()=>{all+='\n'+rd.result;if(++k===fs.length)report(importText(all))};rd.readAsText(f)});ev.target.value=''};
   document.getElementById('iBack').onclick=()=>{location.hash=''};
@@ -682,7 +724,7 @@ function instructorApp(){
   document.getElementById('iExp').onclick=()=>download(JSON.stringify(I),'respaldo-instructor-plan-estrategico.json','application/json');
   document.getElementById('iImp').onchange=ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o||!o.subs)throw 0;Object.assign(I.subs,o.subs);Object.assign(I.ev,o.ev||{});isave();renderBoard();toast('Respaldo cargado')}catch(e){toast('Ese archivo no es un respaldo de la zona instructor')}};rd.readAsText(f);ev.target.value=''};
   document.getElementById('iClear').onclick=()=>{if(!confirm('¿Borrar todas las entregas y evaluaciones de este dispositivo? Descargue antes el respaldo.'))return;I={subs:{},ev:{}};isel=null;isave();document.getElementById('iDetail').hidden=true;renderBoard()};
-  renderBoard();instrHash();
+  renderBoard();instrHash();if(ckey())cloudPull(false);else setCloud('☁ Toque <b>Traer entregas</b> y escriba su clave de docente');
 }
 function instrHash(){if(!location.hash.startsWith('#c='))return;let c=location.hash.slice(3);try{c=decodeURIComponent(c)}catch(e){}const r=importText(c);try{history.replaceState(null,'','#instructor')}catch(e){}renderBoard();if(r.last)openSub(r.last);else toast('El código del enlace está dañado')}
 function renderBoard(){const box=document.getElementById('iBoard');if(!box)return;const ts=teams();
@@ -709,18 +751,18 @@ function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();
   <label class="field"><span class="lbl">Observaciones para el equipo</span><textarea id="iObs" placeholder="Qué está bien, qué deben corregir y para cuándo">${esc(ev.obs||'')}</textarea></label>
   <div class="acts"><button class="btn" id="iFbCopy">📋 Copiar retroalimentación</button><a class="btn wa" id="iFbWa" href="#" target="_blank" rel="noopener">WhatsApp</a></div>
   <div class="acts"><button class="btn pri" id="iNext">Siguiente por evaluar →</button><button class="btn" id="iDel">Eliminar entrega</button></div>
-  <p class="note">Todo se guarda solo, en este dispositivo.</p></aside></div>`;
+  <p class="note">Se guarda solo en este dispositivo y en la nube.</p></aside></div>`;
   const E=()=>I.ev[sid]=I.ev[sid]||{j:'',cr:{},obs:''};
-  const upd=()=>{E().at=Date.now();isave();renderBoard()};
+  const upd=()=>{E().at=Date.now();isave();renderBoard();cloudPush()};
   det.querySelectorAll('[data-cr]').forEach(c=>c.onchange=()=>{const e=E();e.cr=e.cr||{};e.cr[c.dataset.cr]=c.checked;upd()});
   const jb=det.querySelectorAll('.jz button');const markJ=j=>jb.forEach(b=>b.classList.toggle('sel',b.dataset.j===j));markJ(ev.j||'');
   jb.forEach(b=>b.onclick=()=>{E().j=b.dataset.j;markJ(b.dataset.j);upd()});
-  const ob=document.getElementById('iObs');ob.oninput=()=>{const e=E();e.obs=ob.value;e.at=Date.now();isave()};
+  const ob=document.getElementById('iObs');ob.oninput=()=>{const e=E();e.obs=ob.value;e.at=Date.now();isave();cloudPush()};
   const fb=()=>{const e=I.ev[sid]||{};return `Retroalimentación LogiLab · ${kindName(s.kind)}\nEmpresa: ${s.e||'—'}\nEquipo: ${teamShort(s.q)||'—'}\nEntrega del ${fdate(s.ts)}\n\nJuicio: ${e.j==='A'?'A · Aprobado':e.j==='D'?'D · No aprobado: corrijan y reenvíen el código':'En revisión'}\n${CRIT.map(([k,l])=>`${e.cr&&e.cr[k]?'✅':'⬜'} ${l}`).join('\n')}\n\nObservaciones: ${e.obs||'—'}\n\nCarlos Barrios · Instructor SENA`};
   document.getElementById('iFbCopy').onclick=()=>copy(fb(),'Retroalimentación copiada');
   document.getElementById('iFbWa').onclick=e=>{e.currentTarget.href='https://wa.me/?text='+encodeURIComponent(fb())};
   document.getElementById('iNext').onclick=()=>nextPending(sid);
-  document.getElementById('iDel').onclick=()=>{if(!confirm('¿Eliminar esta entrega y su evaluación?'))return;delete I.subs[sid];delete I.ev[sid];isel=null;isave();det.hidden=true;renderBoard()};
+  document.getElementById('iDel').onclick=()=>{if(!confirm('¿Eliminar esta entrega y su evaluación?'))return;delete I.subs[sid];I.ev[sid]={del:true,at:Date.now()};isel=null;isave();det.hidden=true;renderBoard();cloudPush()};
   const vs=document.getElementById('iVer');if(vs)vs.onchange=()=>openSub(vs.value);
   det.scrollIntoView({behavior:'smooth',block:'start'});
 }

@@ -10,4 +10,5 @@ Creado porque el plan gratuito de Netlify (logilab-sena) se queda sin créditos 
 - Marca: verde SENA `#39A900`, pie "By Carlos Barrios · Instructor", tema claro/oscuro con tokens.
   - Excepción: sesiones de la Universidad de La Guajira (curso 732235) usan azul marino `#0B2545` con dorado y pie "By Carlos Barrios · Docente". Sin API: el producto del equipo se escoge a mano y las entregas van por WhatsApp, correo, copiar o descargar.
 - Entregas de aprendices con respaldo: WhatsApp, correo, copiar y descargar.
+- Excepción de backend: el Taller Plan Estratégico (`logistica/taller-plan-estrategico/`) envía al buzón `https://logilab-sena.netlify.app/api/plan` (función del repo `logilab-sena`, CORS para este sitio). La zona instructor trae entregas y guarda evaluaciones allí con la clave `ADMIN_KEY` (se pide una vez por dispositivo, nunca va en el código). Copiar código, WhatsApp, correo y archivo siguen como respaldo.
 - NUNCA publicar solucionarios ni material docente aquí: el repositorio y el sitio son públicos.
