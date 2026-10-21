@@ -236,6 +236,38 @@ main{flex:1;min-height:0;position:relative;overflow:hidden}
 .where span{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.85rem;color:var(--muted)}
 .where span.on{background:var(--sena);border-color:var(--sena);color:#fff;font-weight:700}
 @media (max-width:640px){.nav .dots{display:none}}
+/* empresa guía y demostración */
+.casehead{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.casehead .logo{width:54px;height:54px;border-radius:12px;background:var(--sun);color:#1b1b1b;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.6rem}
+.fict{font-size:.78rem;font-weight:700;padding:2px 10px;border-radius:999px;border:1px dashed var(--muted);color:var(--muted)}
+.ficha2{width:100%;border-collapse:collapse;font-size:.85em}
+.ficha2 td{border:1px solid var(--line);padding:4px 8px;vertical-align:top}
+.ficha2 td:first-child{font-weight:700;width:38%;background:var(--sand)}
+.prob{display:grid;gap:8px}
+.prob div{padding:6px 10px;font-size:.92em;border-radius:10px;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--alert)}
+.prob b{color:var(--alert)}
+.steps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);gap:18px}
+@media (max-width:800px){.steps{grid-template-columns:1fr}}
+.steplist{display:grid;gap:6px;align-content:start}
+.st{display:flex;gap:10px;align-items:center;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);text-align:left}
+.st b{font-family:var(--display);font-size:1.3rem;min-width:1.4ch;color:var(--line)}
+.st.done{color:var(--fg)}.st.done b{color:var(--sena)}
+.st.cur{border-color:var(--sena);box-shadow:inset 5px 0 0 var(--sena);color:var(--fg)}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:clamp(12px,1.4vw,20px);display:flex;flex-direction:column;gap:10px;min-width:0;font-size:.93em}
+.stage .ftable th,.stage .ftable td{padding:5px 8px}
+.fld{display:grid;gap:4px}
+.fld>label{font-weight:700;font-size:.85rem;color:var(--muted)}
+.fld>div{padding:10px 12px;border-radius:8px;border:1.5px dashed var(--sena);background:var(--sena-soft);font-size:1.05em;line-height:1.5}
+.how{padding:8px 12px;border-radius:8px;background:var(--sand);font-size:.9em}
+.how b{color:var(--sena-deep)}
+.demo-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.applike{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--sena-deep)}
+.ag{padding:6px 14px;grid-template-columns:11ch 1fr auto}
+.ag time{white-space:nowrap}
+.slide[data-title="Retoma"] .lead{font-size:1em}
+.qi{padding:8px 14px}
+.ficha2{font-size:.8em}
+.slide[data-title="Empresa guía"]{gap:12px}
 .where span.done{background:var(--sena-soft);color:var(--sena-deep)}
 </style>
 </head>
@@ -301,6 +333,27 @@ main{flex:1;min-height:0;position:relative;overflow:hidden}
       <div class="box" style="background:var(--sena-soft)"><b>Regla de la clase:</b> cada objetivo logístico nace de uno de los 3 problemas que escribieron en la conclusión del taller 4, y le aporta a un objetivo del dueño.</div>
     </div>
   </div>
+</section>
+
+<section class="slide" data-s="5" data-title="Empresa guía">
+  <div class="eyebrow">Empresa guía de las clases 5 y 6 · el instructor llena los talleres con ella; ustedes, con la suya</div>
+  <div class="casehead"><span class="logo" aria-hidden="true">LE</span><h2>Panadería La Esperanza</h2><span class="fict">Empresa ficticia · datos de ejemplo</span></div>
+  <div class="grid g2">
+    <div class="box"><h3 style="margin-bottom:8px">Ficha técnica (taller 1)</h3><table class="ficha2"><tr><td>Sector y actividad</td><td>Panificación: produce y vende pan y repostería</td></tr><tr><td>Ubicación</td><td>Barrio residencial del sur de Riohacha</td></tr><tr><td>Años de funcionamiento</td><td>6 años</td></tr><tr><td>Empleados</td><td>7, con un repartidor en moto</td></tr><tr><td>Productos principales</td><td>Pan de sal, pan dulce, mantecadas, tortas por encargo</td></tr><tr><td>Clientes principales</td><td>Hogares del barrio (mostrador) y 12 tiendas que reciben pan cada mañana</td></tr><tr><td>Proveedores principales</td><td>Harina (Barranquilla), azúcar y margarina (Riohacha), bolsas y empaques, gas propano</td></tr></table></div>
+    <div class="grid" style="align-content:start">
+      <div class="box"><h3 style="margin-bottom:8px">Lo que encontró el diagnóstico (talleres 2 a 4)</h3>
+        <ul style="margin:0;padding-left:1.1em;display:grid;gap:2px;font-size:.92em">
+          <li>El pan de la tarde se agotó <b>3 de 5 días</b> observados (60 %).</li>
+          <li>Se bota el <b>8 %</b> del pan producido cada día.</li>
+          <li>Un <b>solo proveedor de harina</b>: llegó tarde 5 de los últimos 10 pedidos por cierres de la Troncal.</li>
+          <li>Las tiendas reciben el pan entre 6:00 y 9:00 a. m.: solo el <b>40 %</b> llega antes de las 7:00.</li>
+          <li>El inventario se lleva en un cuaderno, sin conteos.</li>
+        </ul></div>
+      <div class="box"><h3 style="margin-bottom:8px">Conclusión del taller 4: los 3 problemas</h3>
+        <div class="prob"><div><b>1. Inventario:</b> agotados en la tarde y pan sobrante que se bota.</div><div><b>2. Abastecimiento:</b> dependencia de un solo proveedor de harina.</div><div><b>3. Distribución:</b> entregas a tiendas sin ruta ni hora fija.</div></div></div>
+    </div>
+  </div>
+  
 </section>
 
 <section class="slide" data-s="5" data-title="Misión logística">
@@ -376,15 +429,22 @@ main{flex:1;min-height:0;position:relative;overflow:hidden}
 <section class="slide" data-s="5" data-title="Alineación">
   <div class="eyebrow">Paso 5 del taller</div>
   <h2>Cada objetivo tiene papá y mamá</h2>
-  <p class="lead">Un problema del diagnóstico lo origina y un objetivo del dueño lo justifica. Ejemplo de la panadería:</p>
+  <p class="lead">Un problema del diagnóstico lo origina y un objetivo del dueño lo justifica. Así quedó en La Esperanza:</p>
   <div class="tw"><table class="ftable">
     <tr><th>Problema (taller 4)</th><th>Objetivo logístico SMART</th><th>Objetivo de la empresa</th><th>Plazo</th></tr>
-    <tr><td>Inventario: se agota el pan de la tarde 3 de cada 5 días</td><td>Reducir los días con agotado de pan de la tarde del 60 % al 10 %</td><td>Aumentar las ventas</td><td>6 meses</td></tr>
+    <tr><td>Inventario: se agota el pan de la tarde 3 de cada 5 días</td><td>Reducir los días con agotado de pan de la tarde del 60 % al 10 %</td><td>Crecer las ventas 20 % en 3 años</td><td>6 meses</td></tr>
     <tr><td>Abastecimiento: un solo proveedor de harina que llega tarde</td><td>Pasar de 1 a 2 proveedores de harina aprobados</td><td>Bajar costos</td><td>4 meses</td></tr>
-    <tr><td>Distribución: las tiendas reciben el pan sin hora fija</td><td>Entregar el 95 % de los pedidos a tiendas antes de las 7:00 a. m.</td><td>Fidelizar a las tiendas</td><td>4 meses</td></tr>
-    <tr><td>Costos: se bota pan del día anterior</td><td>Reducir la merma de pan del 8 % al 3 % de la producción diaria</td><td>Mejorar la utilidad</td><td>6 meses</td></tr>
+    <tr><td>Distribución: las tiendas reciben el pan sin hora fija</td><td>Aumentar del 40 % al 95 % los pedidos entregados a tiendas antes de las 7:00 a. m.</td><td>Pasar de 12 a 20 tiendas clientes</td><td>4 meses</td></tr>
+    <tr><td>Inventario: se bota el 8 % del pan producido</td><td>Reducir la merma de pan del 8 % al 3 % de la producción diaria</td><td>Bajar costos</td><td>6 meses</td></tr>
   </table></div>
   <p class="note">Los números de partida salen del diagnóstico. Si no los tienen, el primer paso es medirlos esta semana.</p>
+</section>
+
+<section class="slide" data-s="5" data-title="Así lo hizo La Esperanza">
+  <div class="eyebrow">Demostración · el taller 5 lleno con la empresa guía</div>
+  <h2>Así quedó el taller 5 de La Esperanza</h2>
+  <div class="steps" data-demo="d5"><div class="steplist"></div><div class="stage"></div></div>
+  <div class="demo-nav"><button class="navbtn ghost" data-dp="d5">← Paso</button><span class="foot" data-dn="d5"></span><button class="navbtn" data-dx="d5">Paso →</button><span class="note">Así se ve cada campo del taller 5 en la app, ya lleno.</span></div>
 </section>
 
 <section class="slide" data-s="5" data-title="Taller 5">
@@ -459,6 +519,19 @@ main{flex:1;min-height:0;position:relative;overflow:hidden}
   <div class="box" style="background:var(--sena-soft)"><b>¿Dónde falla su empresa?</b> En el taller 2 anotaron cómo se compra hoy. Ubiquen en qué paso del ciclo está el problema: ahí deben ir las reglas de la política.</div>
 </section>
 
+<section class="slide" data-s="6" data-title="Empresa guía">
+  <div class="eyebrow">Empresa guía · la tarea que trajo La Esperanza</div>
+  <div class="casehead"><span class="logo" aria-hidden="true">LE</span><h2>Los 4 proveedores de La Esperanza</h2><span class="fict">Empresa ficticia · datos de ejemplo</span></div>
+  <div class="tw"><table class="ftable sea">
+    <tr><th>Proveedor</th><th>Qué vende</th><th>Precio</th><th>Entregas</th><th>Calidad</th><th>Pago</th></tr>
+    <tr><td><b>Distribuidor de harina</b> (Barranquilla)</td><td>Harina de trigo en bultos</td><td>El más bajo de 2 cotizaciones</td><td>A tiempo 5 de 10 pedidos (cierres de la Troncal)</td><td>1 bulto húmedo en 3 meses</td><td>8 días</td></tr>
+    <tr><td><b>Mayorista de azúcar y margarina</b> (Riohacha)</td><td>Azúcar, margarina, sal</td><td>En el promedio</td><td>A tiempo 8 de 10</td><td>1 caja de margarina blanda en 3 meses</td><td>20 días</td></tr>
+    <tr><td><b>Bolsas y empaques</b></td><td>Bolsas de papel y cajas de torta</td><td>El más bajo, con descuento por volumen</td><td>Siempre a tiempo</td><td>Algunas bolsas rotas</td><td>Solo de contado</td></tr>
+    <tr><td><b>Gas propano</b></td><td>Cilindros para el horno</td><td>Un poco por debajo del promedio</td><td>Nunca ha faltado</td><td>Sin fallas</td><td>20 días</td></tr>
+  </table></div>
+  <div class="box" style="background:var(--sena-soft)"><b>Fíjense:</b> cada dato salió de una factura, del cuaderno de pedidos o de la entrevista con la administradora. Con esto la calificación de 1 a 5 no es "a ojo".</div>
+</section>
+
 <section class="slide" data-s="6" data-title="Criterios">
   <div class="eyebrow">Paso 2 del taller</div>
   <h2>Cómo calificar a un proveedor de 1 a 5</h2>
@@ -473,7 +546,7 @@ main{flex:1;min-height:0;position:relative;overflow:hidden}
 </section>
 
 <section class="slide" data-s="6" data-title="Evaluador">
-  <div class="eyebrow">Demostración · ejemplo de la panadería</div>
+  <div class="eyebrow">Demostración · proveedores de La Esperanza</div>
   <h2>Evaluación de proveedores</h2>
   <div class="tw"><table class="ftable" id="evT">
     <thead><tr><th>Proveedor</th><th>Precio</th><th>Cumplimiento</th><th>Calidad</th><th>Crédito</th><th>Total /20</th><th>Decisión</th></tr></thead><tbody></tbody>
@@ -505,12 +578,12 @@ main{flex:1;min-height:0;position:relative;overflow:hidden}
   <div class="rules">
     <div><span>Todo insumo crítico (harina, azúcar y margarina) tendrá mínimo 2 proveedores aprobados.</span><span class="tag">Cuántos proveedores</span></div>
     <div><span>Los pedidos se hacen los lunes y jueves antes de las 10:00 a. m., según el punto de pedido.</span><span class="tag">Frecuencia</span></div>
-    <div><span>Las compras de más de $500.000 las autoriza el administrador; las menores, el encargado de producción.</span><span class="tag">Autorización</span></div>
+    <div><span>Las compras de más de $500.000 las autoriza la administradora; las menores, el panadero jefe.</span><span class="tag">Autorización</span></div>
     <div><span>Toda mercancía se recibe contra la orden de compra: se cuenta, se revisa vencimiento y estado, y lo que no cumple se devuelve el mismo día.</span><span class="tag">Recepción</span></div>
     <div><span>Se negocia pago a 15 días o más; el pago de contado solo se acepta con descuento.</span><span class="tag">Pago</span></div>
-    <div><span>Cada 3 meses se evalúa a cada proveedor con la matriz; quien saque menos de 12 entra en plan de mejora.</span><span class="tag">Evaluación</span></div>
+    <div><span>Cada 3 meses se evalúa a cada proveedor con la matriz; quien saque 11 o menos, o un 1 en algún criterio, entra en plan de mejora o se reemplaza.</span><span class="tag">Evaluación</span></div>
   </div>
-  <p class="note">Ejemplo de la panadería. Los montos y días los decide su empresa. Palabras que delatan una política: siempre, todo, cada, mínimo, máximo, solo.</p>
+  <p class="note">Política de La Esperanza. Los montos y días los decide su empresa. Palabras que delatan una política: siempre, todo, cada, mínimo, máximo, solo.</p>
 </section>
 
 <section class="slide" data-s="6" data-title="Conexión con el rumbo">
@@ -521,6 +594,13 @@ main{flex:1;min-height:0;position:relative;overflow:hidden}
     <div class="box" style="border-top:6px solid var(--sea)"><div class="eyebrow">Regla de hoy que lo hace posible</div><p style="font-size:1.15em">Todo insumo crítico tendrá mínimo 2 proveedores aprobados.</p></div>
   </div>
   <div class="box" style="background:var(--sena-soft)"><b>Pregunta para cada equipo:</b> ¿cuál de sus 4 objetivos SMART se apoya en la política de compras? Si ninguno, revisen: o falta una regla o falta un objetivo.</div>
+</section>
+
+<section class="slide" data-s="6" data-title="Así lo hizo La Esperanza">
+  <div class="eyebrow">Demostración · el taller 6 lleno con la empresa guía</div>
+  <h2>Así quedó el taller 6 de La Esperanza</h2>
+  <div class="steps" data-demo="d6"><div class="steplist"></div><div class="stage"></div></div>
+  <div class="demo-nav"><button class="navbtn ghost" data-dp="d6">← Paso</button><span class="foot" data-dn="d6"></span><button class="navbtn" data-dx="d6">Paso →</button><span class="note">Así se ve cada campo del taller 6 en la app, ya lleno.</span></div>
 </section>
 
 <section class="slide" data-s="6" data-title="Taller 6">
@@ -659,7 +739,7 @@ document.getElementById('bClear').onclick=()=>{['bQ','bD','bH','bT','bR'].forEac
 build();
 
 /* evaluador de proveedores */
-const EX=[['Distribuidor de harina (Barranquilla)',4,2,4,3],['Proveedor de azúcar y margarina',3,4,4,4],['Bolsas y empaques',5,5,4,1],['Gas propano',4,5,5,4]];
+const EX=[['Distribuidor de harina (Barranquilla)',4,2,4,3],['Mayorista de azúcar y margarina',3,4,4,4],['Bolsas y empaques',5,5,4,1],['Gas propano',4,5,5,4]];
 let EV;try{EV=JSON.parse(get('ev')||'null')}catch(e){EV=null}if(!EV)EV=JSON.parse(JSON.stringify(EX));
 const tb=document.querySelector('#evT tbody');
 function dec(r){const t=r[1]+r[2]+r[3]+r[4];const one=[r[1],r[2],r[3],r[4]].includes(1);if(t<=11||one)return ['r',one&&t>11?'Buscar otro (un criterio en 1)':'Buscar otro'];if(t<=16)return ['y','Negociar'];return ['g','Seguir']}
@@ -667,6 +747,45 @@ function drawEv(){tb.innerHTML=EV.map((r,i)=>{const t=r[1]+r[2]+r[3]+r[4];const 
  tb.querySelectorAll('input,select').forEach(e=>e.addEventListener(e.tagName==='INPUT'?'input':'change',()=>{const r=+e.dataset.r,c=+e.dataset.c;EV[r][c]=c?+e.value:e.value;set('ev',JSON.stringify(EV));if(c)drawEv()}))}
 document.getElementById('evReset').onclick=()=>{EV=JSON.parse(JSON.stringify(EX));set('ev','');drawEv()};
 drawEv();
+
+
+/* demostraciones con la empresa guía */
+function fld(l,v){return `<div class="fld"><label>${l}</label><div>${v}</div></div>`}
+function tbl(h,rows){return `<div class="tw"><table class="ftable"><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`}
+const APP=t=>`<div class="applike">En la app · ${t}</div>`;
+const DM={
+ d5:[
+  ['Objetivos de la empresa',APP('Objetivos corporativos de la empresa')+fld('Objetivos corporativos (lo que dijo la dueña)','1. Crecer las ventas 20 % en 3 años.<br>2. Pasar de 12 a 20 tiendas clientes.<br>3. Bajar costos para mejorar la utilidad.<br>4. Abrir un segundo punto de venta en 2029.')+`<div class="how"><b>Cómo se hizo:</b> llamada de 10 minutos a la dueña con una sola pregunta: "¿Qué quiere lograr la panadería en los próximos 3 años?". Se anotó tal como lo dijo.</div>`],
+  ['Misión logística',APP('Misión logística')+fld('Misión logística','La logística de Panadería La Esperanza garantiza que los clientes del barrio y las tiendas encuentren pan fresco todo el día, comprando insumos a tiempo, controlando el inventario y entregando en horario fijo, al menor costo posible.')+`<div class="how"><b>Revisión:</b> qué hace → garantiza pan fresco · para quién → barrio y tiendas · cómo → compras a tiempo, inventario controlado, entrega en horario fijo.</div>`],
+  ['Visión logística',APP('Visión logística a 3 años')+fld('Visión logística a 3 años','En 2029, Panadería La Esperanza no tendrá agotados en hora pico, contará con dos proveedores por cada insumo crítico y entregará a 20 tiendas con ruta y horario fijo, controlando pedidos e inventario desde el celular.')+`<div class="how"><b>Revisión:</b> tiene fecha (2029), se puede verificar (0 agotados, 2 proveedores, 20 tiendas) y apunta a los objetivos de la dueña.</div>`],
+  ['4 objetivos SMART',APP('Objetivos logísticos SMART')+tbl(['Objetivo logístico SMART','Problema que resuelve','Objetivo corporativo','Plazo'],[
+    ['Reducir los días con agotado de pan de la tarde del 60 % al 10 %','1. Inventario','Crecer las ventas 20 %','6 meses'],
+    ['Reducir la merma de pan del 8 % al 3 % de la producción diaria','1. Inventario','Bajar costos','6 meses'],
+    ['Pasar de 1 a 2 proveedores de harina aprobados','2. Abastecimiento','Bajar costos','4 meses'],
+    ['Aumentar del 40 % al 95 % los pedidos entregados a tiendas antes de las 7:00 a. m.','3. Distribución','Pasar de 12 a 20 tiendas','4 meses']])+`<div class="how"><b>Fíjense:</b> todos los "de" (60 %, 8 %, 1, 40 %) salen del diagnóstico. Ningún número se inventó.</div>`],
+  ['Revisión final',`<h3>Lista de chequeo aplicada a La Esperanza</h3>`+tbl(['Criterio','¿Cumple?','Evidencia'],[
+    ['Objetivos de la empresa vienen de la dueña','✓','Llamada del 27 oct'],
+    ['Misión: qué, para quién y cómo','✓','Las tres partes están'],
+    ['Visión a 3 años y verificable','✓','2029 · 0 agotados · 20 tiendas'],
+    ['4 objetivos con verbo, de–a y plazo','✓','Tabla de objetivos'],
+    ['Cada objetivo viene de un problema del taller 4','✓','Columna "Problema que resuelve"'],
+    ['Cada objetivo aporta a la empresa','✓','Columna "Objetivo corporativo"']])+`<div class="how"><b>Listo para entregar:</b> en la app se envía el código del taller 5 y se descarga el respaldo.</div>`]],
+ d6:[
+  ['Evaluar proveedores',APP('Evaluación de proveedores (1 a 5)')+tbl(['Proveedor','Precio','Cumpl.','Calidad','Crédito','Total'],[
+    ['Distribuidor de harina','4','2','4','3','<b>13</b>'],
+    ['Azúcar y margarina','3','4','4','4','<b>15</b>'],
+    ['Bolsas y empaques','5','5','4','1','<b>15</b>'],
+    ['Gas propano','4','5','5','4','<b>18</b>']])+`<div class="how"><b>Por qué ese puntaje:</b> la harina saca 2 en cumplimiento porque llegó a tiempo 5 de 10 pedidos. Las bolsas sacan 1 en crédito porque solo venden de contado.</div>`],
+  ['Decidir',APP('Decisión sobre proveedores')+fld('Decisión sobre proveedores','<b>Harina (13 · negociar):</b> pedir que despache 2 días antes de lo acordado y <b>buscar un segundo proveedor</b>, porque es insumo estratégico.<br><b>Azúcar y margarina (15 · negociar):</b> pedir descuento por compra mensual.<br><b>Bolsas (15, crédito en 1):</b> pedir pago a 8 días; si no acepta, cotizar con otro (es rutinario, fácil de cambiar).<br><b>Gas (18 · seguir):</b> mantener y acordar precio fijo por semestre.')],
+  ['Política',APP('Política de aprovisionamiento (mínimo 5 reglas)')+fld('Política de aprovisionamiento','1. Todo insumo crítico (harina, azúcar y margarina) tendrá mínimo 2 proveedores aprobados.<br>2. Los pedidos se hacen los lunes y jueves antes de las 10:00 a. m., según el punto de pedido.<br>3. Las compras de más de $500.000 las autoriza la administradora; las menores, el panadero jefe.<br>4. Toda mercancía se recibe contra la orden de compra: se cuenta, se revisa vencimiento y estado, y lo que no cumple se devuelve el mismo día.<br>5. Se negocia pago a 15 días o más; el pago de contado solo se acepta con descuento.<br>6. Cada 3 meses se evalúa a cada proveedor; quien saque 11 o menos, o un 1 en algún criterio, entra en plan de mejora o se reemplaza.')],
+  ['Amarre con el taller 5',tbl(['Regla de la política','Objetivo SMART al que ayuda'],[
+    ['1. Mínimo 2 proveedores por insumo crítico','Pasar de 1 a 2 proveedores de harina en 4 meses'],
+    ['2. Pedidos lunes y jueves según punto de pedido','Reducir agotados de la tarde del 60 % al 10 %'],
+    ['4. Recepción contra orden y revisión de vencimiento','Reducir la merma del 8 % al 3 %']])+`<div class="how"><b>Listo para entregar:</b> en la app se envía el código del taller 6 y se descarga el respaldo.</div>`]]};
+document.querySelectorAll('[data-demo]').forEach(el=>{const k=el.dataset.demo,D=DM[k],sl=el.querySelector('.steplist'),stg=el.querySelector('.stage');let di=0;
+ D.forEach((d,i)=>{const b=document.createElement('button');b.className='st';b.innerHTML=`<b>${i+1}</b>${d[0]}`;b.onclick=()=>show(i);sl.appendChild(b)});
+ function show(i){di=Math.max(0,Math.min(D.length-1,i));stg.innerHTML=D[di][1];[...sl.children].forEach((b,j)=>{b.classList.toggle('done',j<=di);b.classList.toggle('cur',j===di)});document.querySelector(`[data-dn="${k}"]`).textContent='Paso '+(di+1)+' de '+D.length}
+ document.querySelector(`[data-dp="${k}"]`).onclick=()=>show(di-1);document.querySelector(`[data-dx="${k}"]`).onclick=()=>show(di+1);show(0)});
 
 /* listas de chequeo */
 const CK={
