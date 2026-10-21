@@ -146,6 +146,8 @@ footer.f{color:var(--muted);font-size:.85rem;padding:16px;text-align:center;bord
 .ok{color:var(--sena-deep);font-weight:700}.late{color:var(--alert);font-weight:700}
 .prevev{padding:8px 10px;border-radius:8px;background:var(--sand);font-size:.85rem}
 @media print{.top,nav.route,.noprint,footer.f{display:none!important}.wrap{display:block;padding:0}.card{border:0;padding:0}body{background:#fff;color:#000}}
+.ident{display:grid;gap:8px;padding:12px 14px;border-radius:12px;border:2px solid var(--sena);background:var(--sena-soft);margin-bottom:12px}
+.join{display:grid;gap:6px;padding:10px 12px;border-radius:10px;border:1px dashed var(--sun);margin:8px 0}
 </style>
 </head>
 <body>
@@ -312,8 +314,8 @@ function empresa(){return (val('T1','empresa')||'').trim()}
 
 /* ======== BUZÓN EN LA NUBE (Netlify /api/plan) ======== */
 const API='https://logilab-sena.netlify.app/api/plan';
-function bindSend(btnId,msgId,kind,getCode){const b=document.getElementById(btnId),m=document.getElementById(msgId);if(!b)return;
-  b.onclick=async()=>{const code=getCode();b.disabled=true;const old=b.textContent;b.textContent='Enviando…';m.textContent='';
+function bindSend(btnId,msgId,kind,getCode,check){const b=document.getElementById(btnId),m=document.getElementById(msgId);if(!b)return;
+  b.onclick=async()=>{if(check&&!check())return;const code=getCode();b.disabled=true;const old=b.textContent;b.textContent='Enviando…';m.textContent='';
     try{const r=await fetch(API,{method:'POST',headers:{'content-type':'text/plain;charset=utf-8'},body:JSON.stringify({codigo:code,taller:kind,equipo:(val('T1','equipo')||'').trim(),empresa:empresa()})});
       let j={};try{j=await r.json()}catch(e){}
       if(!r.ok)throw new Error(j.error||('Error '+r.status));
@@ -380,6 +382,9 @@ function taller(t){
   <section class="card"><h2>Formato del taller</h2>${t.campos.map(c=>campo(t.id,c)).join('')}</section>
   <section class="card noprint"><h2>Entregar el taller</h2>
   <p class="muted">Toquen <b>📤 Enviar al instructor</b>: el taller le llega directo a su zona de calificación. Si no hay internet o falla, usen los botones de respaldo (copiar, WhatsApp, correo o archivo) con el <b>código de entrega</b>.</p>
+  ${t.id==='T1'?'':`<div class="ident" id="identBox"><b>¿Quién entrega?</b> <span class="note">Escriban siempre el mismo número de equipo y la misma empresa: así el instructor junta todas sus entregas.</span>
+  <div class="duo"><label class="field"><span class="lbl">Equipo e integrantes</span><input type="text" id="idEq" value="${esc(val('T1','equipo')||'')}" placeholder="Equipo 2: Ana Pérez, Luis Gómez, Daniela Ríos"></label>
+  <label class="field"><span class="lbl">Empresa</span><input type="text" id="idEm" value="${esc(val('T1','empresa')||'')}" placeholder="Nombre de su empresa"></label></div></div>`}
   <div class="codebox"><div class="codehead"><b>Código de entrega · Clase ${i+1}</b><span class="note" id="codeMeta"></span></div>
   <textarea id="codeOut" readonly aria-label="Código de entrega"></textarea>
   <span class="note">Copien el código completo, desde <b>LLPE</b> hasta la <b>~</b> final. Si le cambian una sola letra, no abre.</span></div>
@@ -467,14 +472,19 @@ function bindTaller(tid){
   refresh();
   const msg=c=>`📦 ENTREGA LogiLab · Plan Estratégico Logístico\nClase ${i+1}: ${t.t} (Ev. ${t.ev})\nEmpresa: ${empresa()||'—'}\nEquipo: ${(val('T1','equipo')||'—').trim()}\nFormato lleno: ${completeness(t,S.d[t.id]||{})} %\n\nCódigo de entrega:\n${c}`;
   const mark=()=>{S.sent[t.id]=Date.now();save()};
+  const idEq=document.getElementById('idEq'),idEm=document.getElementById('idEm');
+  if(idEq){idEq.oninput=()=>{setv('T1','equipo',idEq.value);refresh()};idEm.oninput=()=>{setv('T1','empresa',idEm.value);refreshTop();refresh()}}
+  const okId=()=>{const q=(val('T1','equipo')||'').trim(),e=empresa();if(q&&/\d/.test(q)&&e)return true;
+    const bad=!q||!/\d/.test(q)?idEq:idEm;toast(!q||!/\d/.test(q)?'Escriban el número de equipo e integrantes antes de entregar':'Escriban el nombre de la empresa antes de entregar');
+    if(bad){bad.focus();bad.style.outline='3px solid var(--alert)';setTimeout(()=>bad.style.outline='',2500)}else go('T1');return false};
   document.getElementById('codeOut').onfocus=e=>e.target.select();
-  document.getElementById('bCopy').onclick=()=>{refresh();copy(last,'Código copiado');mark()};
-  bindSend('bSend','sendMsg',t.id,()=>{refresh();return last});
-  document.getElementById('bWa').onclick=e=>{refresh();e.currentTarget.href='https://wa.me/'+(S.wa||'')+'?text='+encodeURIComponent(msg(last));mark()};
-  document.getElementById('bMail').onclick=()=>{refresh();const subj=`Entrega clase ${i+1} · ${t.t} · ${empresa()||'Mi empresa'}`;let body=msg(last);
+  document.getElementById('bCopy').onclick=()=>{if(!okId())return;refresh();copy(last,'Código copiado');mark()};
+  bindSend('bSend','sendMsg',t.id,()=>{refresh();return last},okId);
+  document.getElementById('bWa').onclick=e=>{if(!okId()){e.preventDefault();return}refresh();e.currentTarget.href='https://wa.me/'+(S.wa||'')+'?text='+encodeURIComponent(msg(last));mark()};
+  document.getElementById('bMail').onclick=()=>{if(!okId())return;refresh();const subj=`Entrega clase ${i+1} · ${t.t} · ${empresa()||'Mi empresa'}`;let body=msg(last);
     if(body.length>1700){copy(last,'Código copiado');body=msg('(El código ya quedó copiado: péguelo aquí con Ctrl+V o mantenga presionado y Pegar)')}
     location.href='mailto:'+encodeURIComponent(S.mail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);mark();toast('Si no se abre el correo, use Copiar código')};
-  document.getElementById('bDl').onclick=()=>{refresh();download(msg(last)+'\n\n----- Contenido legible del taller -----\n'+tallerText(t),`entrega-${t.id}-${slug()}.txt`,'text/plain');mark()};
+  document.getElementById('bDl').onclick=()=>{if(!okId())return;refresh();download(msg(last)+'\n\n----- Contenido legible del taller -----\n'+tallerText(t),`entrega-${t.id}-${slug()}.txt`,'text/plain');mark()};
   /* diagrama de la cadena */
   const cb=document.getElementById('chainBox');
   if(cb){document.getElementById('bPng').onclick=()=>svgToPng(cb.querySelector('svg'),`cadena-${slug()}.png`);document.getElementById('bSvg').onclick=()=>download(new XMLSerializer().serializeToString(cb.querySelector('svg')),`cadena-${slug()}.svg`,'image/svg+xml')}
@@ -530,7 +540,7 @@ function bindPlan(){
   const pmsg=c=>`📦 ENTREGA LogiLab · PLAN COMPLETO\nEmpresa: ${empresa()||'—'}\nEquipo: ${(val('T1','equipo')||'—').trim()}\nTalleres terminados: ${T.filter(t=>S.done[t.id]).length}/${T.length}\n\nCódigo de entrega:\n${c}`;
   document.getElementById('pCodeOut').onfocus=e=>e.target.select();
   document.getElementById('pCopy').onclick=()=>{lp=pc();copy(lp,'Código copiado');S.sent.PLAN=Date.now();save()};
-  bindSend('pSend','pSendMsg','PLAN',()=>{lp=pc();return lp});
+  bindSend('pSend','pSendMsg','PLAN',()=>{lp=pc();return lp},()=>{if((val('T1','equipo')||'').trim()&&empresa())return true;toast('Primero escriban equipo y empresa en la clase 1');go('T1');return false});
   document.getElementById('pWa').onclick=e=>{lp=pc();if(lp.length>6000){e.preventDefault();copy(lp,'Código copiado: péguelo en el chat');window.open('https://wa.me/'+(S.wa||''),'_blank','noopener')}else e.currentTarget.href='https://wa.me/'+(S.wa||'')+'?text='+encodeURIComponent(pmsg(lp));S.sent.PLAN=Date.now();save()};
   document.getElementById('pDl').onclick=()=>{lp=pc();download(pmsg(lp),`entrega-PLAN-${slug()}.txt`,'text/plain');S.sent.PLAN=Date.now();save()};
   bindBackup();
@@ -638,8 +648,8 @@ function svgToPng(svg,name){const fail=()=>toast('No se pudo crear la imagen: de
 const IKEY='pel-instr-v1';
 const CRIT=[['c1','Formato completo: llenó todas las tablas y campos'],['c2','Datos reales con fuente (observación, entrevista o fuente oficial)'],['c3','Coherencia técnica con la empresa y con los talleres anteriores'],['c4','Redacción clara, sin nombres ni teléfonos de terceros']];
 const KINDS=[...T.map(t=>t.id),'PLAN'];
-let I={subs:{},ev:{}},isel=null;
-function iload(){try{const r=localStorage.getItem(IKEY);if(r)I=Object.assign({subs:{},ev:{}},JSON.parse(r))}catch(e){}}
+let I={subs:{},ev:{},alias:{}},isel=null;
+function iload(){try{const r=localStorage.getItem(IKEY);if(r)I=Object.assign({subs:{},ev:{},alias:{}},JSON.parse(r));I.alias=I.alias||{}}catch(e){}}
 function isave(){try{localStorage.setItem(IKEY,JSON.stringify(I))}catch(e){toast('No se pudo guardar: descargue el respaldo')}}
 function kindName(k){if(k==='PLAN')return 'Plan completo';const i=T.findIndex(t=>t.id===k);return `Clase ${i+1} · ${T[i].t}`}
 function slugOf(s){return noacc(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'sin-equipo'}
@@ -652,7 +662,10 @@ function importText(text){const found=extractCodes(text);const r={n:found.length
     if(I.subs[sid]){r.dup++;r.last=sid;return}
     I.subs[sid]={sid,kind:x.kind,team,e:p.e||'',q:p.q||'',ts:p.ts||Date.now(),done:p.done,d:p.d,recv:Date.now()};r.nu++;r.last=sid});
   isave();return r}
-function teams(){const m={};Object.values(I.subs).forEach(s=>{const t=m[s.team]=m[s.team]||{key:s.team,e:'',q:'',ts:0,by:{}};if(s.ts>=t.ts){t.ts=s.ts;if(s.e)t.e=s.e;if(s.q)t.q=s.q}(t.by[s.kind]=t.by[s.kind]||[]).push(s)});
+/* grupo de una entrega: unión hecha por el instructor > número de equipo escrito > dispositivo */
+function natKey(s){const m=/equipo\s*(?:n[°º.o]*\s*)?0*(\d{1,3})/i.exec(s.q||'');return m?'eq'+m[1]:s.team}
+function gk(s){const a=(I.alias||{})[s.team];return a&&a.to?a.to:natKey(s)}
+function teams(){const m={};Object.values(I.subs).forEach(s=>{const k=gk(s);const t=m[k]=m[k]||{key:k,e:'',q:'',ts:0,by:{}};if(s.ts>=t.ts){t.ts=s.ts;if(s.e)t.e=s.e;if(s.q)t.q=s.q}else{if(!t.e&&s.e)t.e=s.e;if(!t.q&&s.q)t.q=s.q}(t.by[s.kind]=t.by[s.kind]||[]).push(s)});
   Object.values(m).forEach(t=>Object.values(t.by).forEach(a=>a.sort((x,y)=>y.ts-x.ts)));
   return Object.values(m).sort((a,b)=>(a.q||a.e).localeCompare(b.q||b.e,'es',{numeric:true}))}
 function cellState(a){if(!a||!a.length)return {c:'',t:'·'};const ev=I.ev[a[0].sid];if(ev&&ev.j)return {c:ev.j,t:ev.j};if(a.slice(1).some(s=>(I.ev[s.sid]||{}).j))return {c:'r',t:'↻'};return {c:'p',t:'●'}}
@@ -674,6 +687,7 @@ const hhmm=()=>new Date().toLocaleTimeString('es-CO',{hour:'numeric',minute:'2-d
 async function cloudPull(ask){setCloud('☁ Trayendo entregas…');
   try{const j=await cloud('GET',null,ask);let ne=0;
     Object.entries(j.ev||{}).forEach(([sid,e])=>{const l=I.ev[sid];if(!l||(l.at||0)<(e.at||0)){I.ev[sid]=e;ne++}});
+    I.alias=I.alias||{};Object.entries(j.alias||{}).forEach(([k,a])=>{const l=I.alias[k];if(!l||(l.at||0)<(a.at||0))I.alias[k]=a});
     const had=new Set(Object.keys(I.subs)),before=had.size;const r=importText((j.entregas||[]).map(x=>x.codigo).join('\n'));
     Object.keys(I.subs).forEach(sid=>{if(!had.has(sid)&&I.ev[sid]&&I.ev[sid].del)delete I.subs[sid]});isave();
     const nu=Math.max(0,Object.keys(I.subs).length-before);renderBoard();
@@ -681,7 +695,7 @@ async function cloudPull(ask){setCloud('☁ Trayendo entregas…');
     cloudPush(true)}
   catch(e){setCloud(e.message==='clave incorrecta'?'<span class="warn">☁ Clave incorrecta: escríbala de nuevo (toque 👁 Ver para revisarla)</span>':e.message==='sin clave'?'☁ Escriba su clave de docente y toque <b>Traer entregas</b>':`<span class="warn">☁ No se pudo conectar (${esc(e.message==='Failed to fetch'?'sin internet':e.message)})</span>`)}}
 let pushT=null;
-function cloudPush(now){if(!ckey())return;clearTimeout(pushT);pushT=setTimeout(async()=>{try{await cloud('PUT',{ev:I.ev});if(!now)setCloud(`☁ Evaluaciones guardadas en la nube · ${hhmm()}`)}catch(e){setCloud(`<span class="warn">☁ No se guardó en la nube (${esc(e.message)}). Queda en este dispositivo.</span>`)}},now?10:1500)}
+function cloudPush(now){if(!ckey())return;clearTimeout(pushT);pushT=setTimeout(async()=>{try{await cloud('PUT',{ev:I.ev,alias:I.alias||{}});if(!now)setCloud(`☁ Evaluaciones guardadas en la nube · ${hhmm()}`)}catch(e){setCloud(`<span class="warn">☁ No se guardó en la nube (${esc(e.message)}). Queda en este dispositivo.</span>`)}},now?10:1500)}
 /* PIN de la zona instructor: solo se guarda su huella SHA-256, nunca el PIN */
 const PIN_H='ac9c2c34c9f7ad52528c3422af40a66e2e24aaf2a727831255413c9470158984';
 async function sha256(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
@@ -734,8 +748,8 @@ function instructorApp(){
   document.getElementById('iNextTop').onclick=()=>nextPending(null);
   document.getElementById('iCsv').onclick=exportCsv;
   document.getElementById('iExp').onclick=()=>download(JSON.stringify(I),'respaldo-instructor-plan-estrategico.json','application/json');
-  document.getElementById('iImp').onchange=ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o||!o.subs)throw 0;Object.assign(I.subs,o.subs);Object.assign(I.ev,o.ev||{});isave();renderBoard();toast('Respaldo cargado')}catch(e){toast('Ese archivo no es un respaldo de la zona instructor')}};rd.readAsText(f);ev.target.value=''};
-  document.getElementById('iClear').onclick=()=>{if(!confirm('¿Borrar todas las entregas y evaluaciones de este dispositivo? Descargue antes el respaldo.'))return;I={subs:{},ev:{}};isel=null;isave();document.getElementById('iDetail').hidden=true;renderBoard()};
+  document.getElementById('iImp').onchange=ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o||!o.subs)throw 0;Object.assign(I.subs,o.subs);Object.assign(I.ev,o.ev||{});I.alias=Object.assign(I.alias||{},o.alias||{});isave();renderBoard();toast('Respaldo cargado')}catch(e){toast('Ese archivo no es un respaldo de la zona instructor')}};rd.readAsText(f);ev.target.value=''};
+  document.getElementById('iClear').onclick=()=>{if(!confirm('¿Borrar todas las entregas y evaluaciones de este dispositivo? Descargue antes el respaldo.'))return;I={subs:{},ev:{},alias:{}};isel=null;isave();document.getElementById('iDetail').hidden=true;renderBoard()};
   renderBoard();instrHash();if(ckey())cloudPull(false);else setCloud('☁ Escriba su clave de docente y toque <b>Traer entregas</b>');
 }
 function instrHash(){if(!location.hash.startsWith('#c='))return;let c=location.hash.slice(3);try{c=decodeURIComponent(c)}catch(e){}const r=importText(c);try{history.replaceState(null,'','#instructor')}catch(e){}renderBoard();if(r.last)openSub(r.last);else toast('El código del enlace está dañado')}
@@ -744,14 +758,17 @@ function renderBoard(){const box=document.getElementById('iBoard');if(!box)retur
   if(!ts.length){box.innerHTML='<p class="note" style="padding:14px">Aún no hay entregas. Pegue arriba los códigos que le enviaron.</p>';return}
   box.innerHTML=`<table class="mx"><thead><tr><th>Equipo · Empresa</th>${T.map((t,i)=>`<th title="${esc(t.t)}">${i+1}</th>`).join('')}<th>Plan</th></tr></thead><tbody>${ts.map(t=>`<tr><td class="tm" title="${esc(t.q)}"><b>${esc(teamShort(t.q)||'Equipo sin nombre')}</b><small>${esc(t.e||'Empresa sin definir')}</small></td>${KINDS.map(k=>{const a=t.by[k];if(!a)return `<td><span class="cell" style="display:grid;place-items:center">·</span></td>`;const s=cellState(a);return `<td><button class="cell ${s.c}${a.some(x=>x.sid===isel)?' on':''}" data-sid="${esc(a[0].sid)}" title="${esc(kindName(k))}${a.length>1?' · '+a.length+' versiones':''}">${s.t}</button></td>`}).join('')}</tr>`).join('')}</tbody></table>`;
   box.querySelectorAll('[data-sid]').forEach(b=>b.onclick=()=>openSub(b.dataset.sid))}
-function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();
-  const vers=Object.values(I.subs).filter(x=>x.team===s.team&&x.kind===s.kind).sort((a,b)=>b.ts-a.ts);
+function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();const grp=teams().find(t=>t.key===gk(s))||{q:'',e:''};
+  const vers=Object.values(I.subs).filter(x=>gk(x)===gk(s)&&x.kind===s.kind).sort((a,b)=>b.ts-a.ts);
   const prev=vers.filter(x=>x.sid!==sid&&x.ts<s.ts).map(x=>({x,ev:I.ev[x.sid]})).find(o=>o.ev&&(o.ev.j||o.ev.obs));
   const t=T.find(x=>x.id===s.kind);const ev=I.ev[sid]||{j:'',cr:{},obs:''};const li=lateInfo(s.kind,s.ts);
   const content=s.kind==='PLAN'?planBody(s.d||{}):`<div class="doc">${t.campos.map(c=>fieldHtml(t.id,c,s.d||{},s.e)).join('')}</div>`;
   const det=document.getElementById('iDetail');det.hidden=false;
   det.innerHTML=`<div class="chips"><span class="chip">${esc(kindName(s.kind))}</span>${t?`<span class="chip alt">Evidencia ${t.ev}</span>`:''}<span class="chip alt">Formato lleno: ${subComp(s)} %</span><span class="chip alt">${s.kind==='PLAN'?'':(s.done?'El equipo lo marcó terminado':'No lo marcaron terminado')}</span></div>
-  <h2>${esc(teamShort(s.q)||'Equipo sin nombre')} · ${esc(s.e||'Empresa sin definir')}</h2>${s.q?`<p class="muted">${esc(s.q)}</p>`:''}
+  <h2>${esc(teamShort(s.q)||teamShort(grp.q)||'Equipo sin nombre')} · ${esc(s.e||grp.e||'Empresa sin definir')}</h2>${s.q?`<p class="muted">${esc(s.q)}</p>`:''}
+  <div class="join"><label class="field"><span class="lbl">${s.q&&s.e?'Esta entrega pertenece a':'⚠ Esta entrega llegó sin equipo o sin empresa. ¿De qué equipo es?'}</span>
+  <select id="iJoin"><option value="">${esc(natKey(s)===s.team?'Equipo propio (como llegó)':'Según el número de equipo escrito')}</option>${teams().filter(t=>t.key!==natKey(s)).map(t=>`<option value="${esc(t.key)}"${(I.alias[s.team]||{}).to===t.key?' selected':''}>${esc(teamShort(t.q)||'Sin nombre')} · ${esc(t.e||'sin empresa')}</option>`).join('')}</select></label>
+  <span class="note">Une todas las entregas enviadas desde ese mismo dispositivo con el equipo que escoja.</span></div>
   <p>Enviado: <b>${fdate(s.ts)}</b>${li?` · <span class="${li.late?'late':'ok'}">${li.txt}</span>`:''}</p>
   ${vers.length>1?`<label class="field" style="max-width:440px"><span class="lbl">Versiones recibidas (${vers.length})</span><select id="iVer">${vers.map((v,k)=>`<option value="${esc(v.sid)}"${v.sid===sid?' selected':''}>${k===0?'Más reciente · ':''}${fdate(v.ts)}${(I.ev[v.sid]||{}).j?' · juicio '+I.ev[v.sid].j:''}</option>`).join('')}</select></label>`:''}
   <div class="isplit"><div class="card" style="padding:14px">${content}</div>
@@ -764,6 +781,7 @@ function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();
   <div class="acts"><button class="btn" id="iFbCopy">📋 Copiar retroalimentación</button><a class="btn wa" id="iFbWa" href="#" target="_blank" rel="noopener">WhatsApp</a></div>
   <div class="acts"><button class="btn pri" id="iNext">Siguiente por evaluar →</button><button class="btn" id="iDel">Eliminar entrega</button></div>
   <p class="note">Se guarda solo en este dispositivo y en la nube.</p></aside></div>`;
+  document.getElementById('iJoin').onchange=e=>{I.alias[s.team]={to:e.target.value,at:Date.now()};isave();renderBoard();openSub(sid);cloudPush();toast(e.target.value?'Entregas unidas al equipo':'Unión quitada')};
   const E=()=>I.ev[sid]=I.ev[sid]||{j:'',cr:{},obs:''};
   const upd=()=>{E().at=Date.now();isave();renderBoard();cloudPush()};
   det.querySelectorAll('[data-cr]').forEach(c=>c.onchange=()=>{const e=E();e.cr=e.cr||{};e.cr[c.dataset.cr]=c.checked;upd()});
