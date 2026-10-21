@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inventarios y Distribución · Clases 7 y 8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: proyector 16:9 — barra de control arriba, una diapositiva a la vez, navegación abajo */
+:root{
+  --sena:#39A900; --sena-deep:#2a7d00; --sena-soft:#e9f6df;
+  --sand:#f3efe6; --bg:#f7f8f4; --card:#ffffff; --fg:#17201a; --muted:#56635a; --line:#d9dfd3;
+  --sea:#0f6e8c; --sun:#e39b1b; --alert:#c2412d; --violet:#6b4fa3;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"JetBrains Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --sena:#5cc91f; --sena-deep:#7ad94a; --sena-soft:#1d2b16; --sand:#22261f; --bg:#121612; --card:#1a1f1a; --fg:#eef2ea; --muted:#a6b2a3; --line:#2f382d;
+  --sea:#4fb3d3; --sun:#f0b44a; --alert:#ef7a63; --violet:#a98ee0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --sena:#5cc91f; --sena-deep:#7ad94a; --sena-soft:#1d2b16; --sand:#22261f; --bg:#121612; --card:#1a1f1a; --fg:#eef2ea; --muted:#a6b2a3; --line:#2f382d;
+  --sea:#4fb3d3; --sun:#f0b44a; --alert:#ef7a63; --violet:#a98ee0; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:clamp(15px,1.25vw,20px);line-height:1.5;display:flex;flex-direction:column}
+h1,h2,h3{font-family:var(--display);line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.4rem,5.6vw,5rem);font-weight:800}
+h2{font-size:clamp(1.8rem,3.4vw,3rem);font-weight:700}
+h3{font-size:clamp(1.15rem,1.7vw,1.6rem);font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sena-deep)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+
+/* barra superior */
+.top{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:1.25rem}
+.brand i{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--sena);color:#fff;font-style:normal;font-size:1rem}
+.now{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);flex:1;min-width:200px}
+.now b{color:var(--fg)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--sena-soft);color:var(--sena-deep);font-weight:700;font-size:.8rem}
+.timer{display:flex;gap:6px;align-items:center}
+.timer .clock{font-family:var(--mono);font-size:1.35rem;min-width:5.2ch;text-align:center;font-variant-numeric:tabular-nums}
+.timer .clock.low{color:var(--alert)}
+.tbtn{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:4px 9px;font-size:.85rem}
+.tbtn.go{background:var(--sena);border-color:var(--sena);color:#fff}
+
+/* diapositivas */
+main{flex:1;min-height:0;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;overflow:auto;padding:clamp(18px,3.2vw,48px) clamp(16px,4vw,64px);display:none;flex-direction:column;gap:clamp(14px,2vw,26px)}
+.slide.on{display:flex;animation:in .35s ease}
+@keyframes in{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.on{animation:none}}
+.grid{display:grid;gap:clamp(12px,1.6vw,20px)}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:clamp(14px,1.6vw,22px);min-width:0}
+.lead{font-size:1.15em;color:var(--muted);max-width:62ch}
+
+/* bottom nav */
+.nav{display:flex;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid var(--line);background:var(--card);flex-wrap:wrap}
+.nav .dots{display:flex;gap:5px;flex:1;flex-wrap:wrap}
+.dot{width:26px;height:8px;border-radius:4px;border:0;background:var(--line);padding:0}
+.dot.on{background:var(--sena)}
+.navbtn{border:0;border-radius:8px;padding:6px 14px;background:var(--sena);color:#fff;font-weight:700}
+.navbtn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.foot{font-size:.78rem;color:var(--muted)}
+
+/* portada */
+.cover{justify-content:center;background:
+  radial-gradient(1200px 500px at 85% 110%, color-mix(in srgb,var(--sena) 22%,transparent), transparent 60%),
+  radial-gradient(700px 400px at 0% 0%, color-mix(in srgb,var(--sea) 14%,transparent), transparent 60%)}
+.cover .meta{display:flex;flex-wrap:wrap;gap:8px}
+.cover .meta span{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:.85rem}
+.kanas{display:flex;gap:6px;margin-top:6px}
+.kanas span{height:10px;flex:1;max-width:60px;border-radius:2px}
+
+/* agenda */
+.agenda{display:grid;gap:8px}
+.ag{display:grid;grid-template-columns:8.5ch 1fr auto;gap:14px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.ag time{font-family:var(--mono);font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ag.live{border-color:var(--sena);box-shadow:inset 5px 0 0 var(--sena)}
+.ag .tag{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sand);color:var(--muted);white-space:nowrap}
+
+/* temas */
+.topic{display:flex;gap:14px;align-items:flex-start}
+.topic .n{font-family:var(--display);font-weight:800;font-size:2.2rem;color:var(--sena);line-height:.9;min-width:1.4ch}
+
+/* fábula */
+.fable{max-width:72ch;font-size:1.08em;line-height:1.65}
+.fable p+p{margin-top:.8em}
+.fable .drop::first-letter{font-family:var(--display);font-size:3.4em;float:left;line-height:.85;padding-right:8px;color:var(--sena)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.who{border-top:6px solid var(--sena)}
+.who.bad{border-top-color:var(--alert)}
+.q{counter-increment:q;display:flex;gap:12px;align-items:flex-start}
+.q::before{content:counter(q);font-family:var(--display);font-weight:800;font-size:1.6rem;color:#fff;background:var(--sena);border-radius:8px;min-width:42px;height:42px;display:grid;place-items:center}
+
+/* cadena */
+.chain{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.link{flex:1 1 140px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;position:relative;min-width:0}
+.link b{display:block;font-family:var(--display);font-size:1.2rem}
+.link small{color:var(--muted)}
+.flows{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
+.flow{border-radius:10px;padding:12px 14px;color:var(--fg);background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c)}
+.flow b{font-family:var(--display);font-size:1.25rem}
+
+/* documental */
+.doc{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px}
+@media (max-width:800px){.doc{grid-template-columns:1fr}}
+.scene{background:linear-gradient(160deg,color-mix(in srgb,var(--sea) 18%,var(--card)),var(--card));border:1px solid var(--line);border-radius:14px;padding:clamp(16px,2.2vw,30px);display:flex;flex-direction:column;gap:12px;min-height:300px}
+.scene .hora{font-family:var(--mono);font-size:1.6rem;color:var(--sea)}
+.scene .txt{font-size:1.18em;line-height:1.6}
+.scene .guide{margin-top:auto;padding:10px 14px;border-radius:10px;background:var(--sena-soft);color:var(--fg)}
+.scene-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ficha{width:100%;border-collapse:collapse;font-size:.95em}
+.ficha th,.ficha td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.ficha th{background:var(--sena);color:#fff;font-family:var(--display);font-size:1.1rem;letter-spacing:.02em}
+.ficha td.ex{color:var(--muted);font-style:italic}
+
+/* canvas */
+.canvas{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.cb{border-radius:12px;padding:14px;background:var(--card);border:1px solid var(--line);border-top:8px solid var(--c);min-width:0;display:flex;flex-direction:column;gap:6px}
+.cb ul{margin:0;padding-left:1.1em;color:var(--muted);font-size:.93em}
+.cb .rap{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.c1{grid-column:span 2}.c2{grid-column:span 2}.c3{grid-column:span 2}.c4{grid-column:span 3}.c5{grid-column:span 3}
+@media (max-width:800px){.canvas{grid-template-columns:1fr}.c1,.c2,.c3,.c4,.c5{grid-column:auto}}
+.sectors{display:flex;flex-wrap:wrap;gap:8px}
+.sector{padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.sector b{color:var(--sena-deep)}
+
+/* evento */
+.deck{display:grid;place-items:center;gap:16px}
+.card-ev{width:min(760px,100%);border-radius:18px;padding:clamp(20px,3vw,40px);background:var(--card);border:2px solid var(--alert);display:flex;flex-direction:column;gap:14px;min-height:260px}
+.card-ev .k{font-family:var(--mono);color:var(--alert);letter-spacing:.1em;font-size:.8rem;text-transform:uppercase}
+.card-ev h3{font-size:clamp(1.5rem,2.6vw,2.4rem)}
+.card-ev .ask{padding:10px 14px;border-radius:10px;background:var(--sand)}
+.big{border:0;border-radius:12px;padding:12px 22px;background:var(--alert);color:#fff;font-weight:700;font-size:1.05rem}
+
+/* ruta */
+.route{display:grid;gap:8px}
+.rt{display:grid;grid-template-columns:6ch 1fr 7ch;gap:12px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.rt .code{font-family:var(--mono);font-weight:500;color:var(--sena-deep)}
+.rt .h{font-family:var(--mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.rt.today{background:var(--sena-soft);border-color:var(--sena)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px}
+.bar span{display:block;height:100%;background:var(--sena)}
+
+/* entrega */
+.form{display:grid;gap:10px}
+.form label{font-weight:700;font-size:.9rem}
+.form input,.form textarea,.form select{width:100%;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.form textarea{min-height:64px;resize:vertical}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.act{border:0;border-radius:10px;padding:9px 14px;font-weight:700;color:#fff;background:var(--sena);text-decoration:none;display:inline-block}
+.act.wa{background:#1f9d55}.act.mail{background:var(--sea)}.act.dl{background:var(--violet)}
+.toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-weight:700}
+.note{font-size:.85rem;color:var(--muted)}
+</style>
+<style>
+/* Extras clases 5 y 6 */
+.ses{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ses button{border:0;background:var(--bg);color:var(--fg);padding:5px 12px;font-weight:700;font-size:.9rem}
+.ses button.on{background:var(--sena);color:#fff}
+.quiz{display:grid;gap:10px}
+.qi{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.qi .opts{display:flex;gap:6px;flex-wrap:wrap}
+.opt{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:6px 12px;font-weight:700}
+.opt.ok{background:var(--sena);border-color:var(--sena);color:#fff}
+.opt.bad{background:var(--alert);border-color:var(--alert);color:#fff}
+.fb{grid-column:1/-1;font-size:.9rem;color:var(--muted)}
+@media (max-width:640px){.qi{grid-template-columns:1fr}}
+.pyr{display:grid;gap:6px;justify-items:center}
+.pyr div{padding:10px 16px;border-radius:10px;text-align:center;color:#fff;font-weight:700;min-width:0}
+.pyr small{display:block;font-weight:400;opacity:.92}
+.formula{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:1.05em}
+.formula span{padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.formula span b{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--sena-deep)}
+.formula i{font-style:normal;font-weight:800;color:var(--muted)}
+.vs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.vs .box{border-top:6px solid var(--c)}
+.vs .box .k{font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.smart{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:800px){.smart{grid-template-columns:1fr 1fr}}
+.sm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.sm .L{font-family:var(--display);font-weight:800;font-size:2.6rem;line-height:1;color:var(--sena)}
+.sm h3{font-size:1.15rem;margin:4px 0}
+.sm p{font-size:.9em;color:var(--muted)}
+.builder{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:800px){.builder{grid-template-columns:1fr}}
+.out{font-size:1.25em;line-height:1.45;padding:16px;border-radius:12px;background:var(--sena-soft);border:1px solid var(--sena);min-height:90px}
+.letters{display:flex;gap:8px}
+.letters span{width:46px;height:46px;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.6rem;background:var(--line);color:var(--muted);transition:.2s}
+.letters span.on{background:var(--sena);color:#fff}
+.tw{overflow-x:auto}
+.ftable{width:100%;border-collapse:collapse;font-size:.95em}
+.ftable th,.ftable td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.ftable th{background:var(--sena);color:#fff;font-family:var(--display);font-size:1.08rem}
+.ftable.sea th{background:var(--sea)}
+.ftable td.c{text-align:center}
+.ftable select,.ftable input{font:inherit;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);padding:4px 6px;width:100%}
+.ftable select{width:auto}
+.tot{font-family:var(--mono);font-weight:500;font-size:1.1rem}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.82rem;white-space:nowrap}
+.badge.g{background:var(--sena);color:#fff}.badge.y{background:var(--sun);color:#1b1b1b}.badge.r{background:var(--alert);color:#fff}
+.cycle{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:8px;counter-reset:cy}
+.cycle div{counter-increment:cy;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;position:relative;min-width:0}
+.cycle div::before{content:counter(cy);font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--sea);display:block;line-height:1}
+.cycle b{display:block}
+.cycle small{color:var(--muted)}
+.krj{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr) auto;gap:8px}
+.krj .ax{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;color:var(--muted);grid-row:1/3}
+.krj .axx{grid-column:2/4;text-align:center;font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;color:var(--muted)}
+.krj .q4{border-radius:12px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c);min-width:0}
+.krj .q4 h3{font-size:1.2rem}
+.krj .q4 p{font-size:.92em}
+.krj .q4 .note{margin-top:4px}
+.rules{counter-reset:r;display:grid;gap:8px}
+.rules div{counter-increment:r;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.rules div::before{content:counter(r);font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--sea);min-width:1.2ch}
+.rules .tag{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sand);color:var(--muted);white-space:nowrap}
+.steps5{display:grid;gap:8px;counter-reset:s}
+.steps5 li{counter-increment:s;list-style:none;display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.steps5 li::before{content:counter(s);font-family:var(--display);font-weight:800;font-size:1.4rem;color:#fff;background:var(--sena);border-radius:8px;min-width:38px;height:38px;display:grid;place-items:center}
+.steps5{padding:0;margin:0}
+.check{display:grid;gap:6px}
+.check label{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.check input{width:20px;height:20px;accent-color:var(--sena);flex:none;margin-top:2px}
+.meter{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.meter span{display:block;height:100%;background:var(--sena);transition:width .3s}
+.cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cta a{text-decoration:none}
+.bring{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.bring div{padding:12px 14px;border-radius:10px;background:var(--card);border:1px dashed var(--sena)}
+.where{display:flex;flex-wrap:wrap;gap:6px}
+.where span{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.85rem;color:var(--muted)}
+.where span.on{background:var(--sena);border-color:var(--sena);color:#fff;font-weight:700}
+@media (max-width:640px){.nav .dots{display:none}}
+/* empresa guía y demostración */
+.casehead{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.casehead .logo{width:54px;height:54px;border-radius:12px;background:var(--sun);color:#1b1b1b;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.6rem}
+.fict{font-size:.78rem;font-weight:700;padding:2px 10px;border-radius:999px;border:1px dashed var(--muted);color:var(--muted)}
+.ficha2{width:100%;border-collapse:collapse;font-size:.85em}
+.ficha2 td{border:1px solid var(--line);padding:4px 8px;vertical-align:top}
+.ficha2 td:first-child{font-weight:700;width:38%;background:var(--sand)}
+.prob{display:grid;gap:8px}
+.prob div{padding:6px 10px;font-size:.92em;border-radius:10px;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--alert)}
+.prob b{color:var(--alert)}
+.steps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);gap:18px}
+@media (max-width:800px){.steps{grid-template-columns:1fr}}
+.steplist{display:grid;gap:6px;align-content:start}
+.st{display:flex;gap:10px;align-items:center;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);text-align:left}
+.st b{font-family:var(--display);font-size:1.3rem;min-width:1.4ch;color:var(--line)}
+.st.done{color:var(--fg)}.st.done b{color:var(--sena)}
+.st.cur{border-color:var(--sena);box-shadow:inset 5px 0 0 var(--sena);color:var(--fg)}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:clamp(12px,1.4vw,20px);display:flex;flex-direction:column;gap:10px;min-width:0;font-size:.93em}
+.stage .ftable th,.stage .ftable td{padding:5px 8px}
+.fld{display:grid;gap:4px}
+.fld>label{font-weight:700;font-size:.85rem;color:var(--muted)}
+.fld>div{padding:10px 12px;border-radius:8px;border:1.5px dashed var(--sena);background:var(--sena-soft);font-size:1.05em;line-height:1.5}
+.how{padding:8px 12px;border-radius:8px;background:var(--sand);font-size:.9em}
+.how b{color:var(--sena-deep)}
+.demo-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.applike{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--sena-deep)}
+.ag{padding:6px 14px;grid-template-columns:11ch 1fr auto}
+.ag time{white-space:nowrap}
+.slide[data-title="Retoma"] .lead{font-size:1em}
+.qi{padding:8px 14px}
+.ficha2{font-size:.8em}
+.slide[data-title="Empresa guía"]{gap:12px}
+.where span.done{background:var(--sena-soft);color:var(--sena-deep)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><i>LL</i>LogiLab SENA</div>
+  <div class="ses" role="group" aria-label="Clase">
+    <button data-ses="7">Clase 7</button><button data-ses="8">Clase 8</button>
+  </div>
+  <div class="now"><span id="clockNow">--:--</span> · <span>Ahora:</span> <b id="nowBlock">—</b> <span class="pill" id="nowLeft"></span></div>
+  <div class="timer" aria-label="Cronómetro de actividad">
+    <button class="tbtn" data-min="5">5'</button>
+    <button class="tbtn" data-min="10">10'</button>
+    <button class="tbtn" data-min="20">20'</button>
+    <button class="tbtn" data-min="30">30'</button>
+    <span class="clock" id="clk">00:00</span>
+    <button class="tbtn go" id="tPlay">Iniciar</button>
+    <button class="tbtn" id="tReset">Reiniciar</button>
+  </div>
+</header>
+
+<main id="deck">
+<style>
+/* extras clases 7 y 8 */
+.vs2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.cost{border-radius:12px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-top:6px solid var(--c)}
+.cost h3{margin-bottom:6px}
+.cost ul{margin:0;padding-left:1.1em;display:grid;gap:3px}
+.types{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+.types div{padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.types b{display:block;font-family:var(--display);font-size:1.15rem}
+.types small{color:var(--muted)}
+.abcwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:14px}
+@media (max-width:900px){.abcwrap{grid-template-columns:1fr}}
+.mini{width:100%;border-collapse:collapse;font-size:.86em}
+.mini th,.mini td{border:1px solid var(--line);padding:3px 6px;text-align:left}
+.mini th{background:var(--sena);color:#fff;font-family:var(--display);font-size:.98rem}
+.mini input{width:100%;font:inherit;border:1px solid var(--line);border-radius:5px;background:var(--bg);color:var(--fg);padding:2px 5px}
+.mini td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cls{display:inline-grid;place-items:center;width:26px;height:22px;border-radius:6px;font-weight:800;color:#fff}
+.cls.A{background:var(--alert)}.cls.B{background:var(--sun);color:#1b1b1b}.cls.C{background:var(--sea)}
+.pbar{height:9px;border-radius:5px;background:var(--line);overflow:hidden;min-width:60px}
+.pbar span{display:block;height:100%}
+.rule3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:800px){.rule3{grid-template-columns:1fr}}
+.rule3 div{padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--line);border-top:6px solid var(--c)}
+.rule3 .big3{font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:1;color:var(--c)}
+.shelf{display:flex;gap:6px;align-items:flex-end}
+.shelf span{flex:1;min-width:0;border-radius:6px;padding:8px 4px;text-align:center;font-size:.8rem;font-weight:700;background:var(--card);border:1px solid var(--line)}
+.ropg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:16px}
+@media (max-width:800px){.ropg{grid-template-columns:1fr}}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi div{padding:10px;border-radius:10px;background:var(--sena-soft);border:1px solid var(--sena)}
+.kpi span{display:block;font-size:.8rem;color:var(--muted)}
+.kpi b{font-family:var(--display);font-size:1.6rem}
+.chart svg{width:100%;height:auto;display:block;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.tabs2{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tabs2 button{border:0;background:var(--bg);color:var(--fg);padding:6px 14px;font-weight:700}
+.tabs2 button.on{background:var(--sena);color:#fff}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cmp div{padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.cmp span{display:block;font-size:.8rem;color:var(--muted)}
+.cmp b{font-family:var(--display);font-size:1.5rem}
+.tl{display:grid;gap:8px}
+.tlrow{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center}
+.tltrack{position:relative;height:30px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+.tlbar{position:absolute;top:3px;bottom:3px;border-radius:6px;color:#fff;font-size:.75rem;font-weight:700;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.tl7{position:absolute;top:-6px;bottom:-6px;width:0;border-left:3px dashed var(--alert)}
+.tlaxis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-left:160px}
+.veh{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
+.veh div{padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+.veh b{font-family:var(--display);font-size:1.2rem;display:block}
+.veh .e{font-size:1.8rem}
+.icsec{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px;counter-reset:ic}
+.icsec div{counter-increment:ic;padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.icsec div::before{content:counter(ic);font-family:var(--display);font-weight:800;color:var(--sena);font-size:1.4rem;display:block;line-height:1}
+.icsec small{color:var(--muted)}
+.stage .ftable{font-size:.86em}
+.stage .ftable th,.stage .ftable td{padding:3px 8px}
+.slide[data-title="Rotación"]{gap:12px}
+.slide[data-title="Rotación"] .qi{padding:6px 12px}
+</style>
+
+<!-- ================= CLASE 7 ================= -->
+
+<section class="slide cover" data-s="7" data-title="Portada">
+  <div class="eyebrow">Competencia 210101007 · Taller Plan Estratégico Logístico · Clase 7 de 12 · Evidencia 3.3.2</div>
+  <h1>Política de<br>inventarios</h1>
+  <p class="lead">Ni plata quieta en la bodega ni clientes sin producto. Hoy clasificamos los productos con el método ABC, calculamos cuándo pedir y escribimos las reglas del inventario.</p>
+  <div class="meta"><span>Miércoles 4 nov · 1:00 – 4:00 pm</span><span>Fase: Políticas</span><span>Entregable: ABC, punto de reorden y política de inventarios</span></div>
+  <div class="where" aria-label="Ruta del taller">
+    <span class="done">1–4 Diagnóstico</span><span class="done">5 Rumbo</span><span class="done">6 Compras</span><span class="on">7 Inventarios</span><span>8 Distribución</span><span>9–12 Estrategias, plan e indicadores</span>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+<section class="slide" data-s="7" data-title="Agenda">
+  <div class="eyebrow">Ruta de la tarde</div>
+  <h2>Agenda de hoy</h2>
+  <div class="agenda" data-ag="7"></div>
+  <p class="note">El bloque en curso se resalta solo, según la hora del computador, el día de la clase.</p>
+</section>
+
+<section class="slide" data-s="7" data-title="Retoma">
+  <div class="eyebrow">Retoma de la clase 6 · 10 minutos</div>
+  <h2>¿Qué hacemos con este proveedor?</h2>
+  <p class="lead">Calificación de 1 a 5 en precio, cumplimiento, calidad y crédito.</p>
+  <div class="quiz" data-quiz="prov"></div>
+</section>
+
+<section class="slide" data-s="7" data-title="¿Por qué el inventario?">
+  <div class="eyebrow">Fundamento</div>
+  <h2>El inventario es plata en forma de producto</h2>
+  <div class="vs2">
+    <div class="cost" style="--c:var(--sun)"><h3>Si hay demasiado</h3><ul><li>Plata quieta que no está en la caja.</li><li>Productos que se vencen o se dañan.</li><li>Bodega llena y desordenada.</li><li>Más robo y más merma.</li></ul></div>
+    <div class="cost" style="--c:var(--alert)"><h3>Si hay muy poco</h3><ul><li>Agotados: ventas perdidas.</li><li>Clientes que se van con la competencia.</li><li>Compras de urgencia, más caras.</li><li>Producción parada.</li></ul></div>
+  </div>
+  <div class="types">
+    <div><b>Materias primas</b><small>Harina, azúcar, margarina</small></div>
+    <div><b>Producto en proceso</b><small>Masa en reposo, pan en el horno</small></div>
+    <div><b>Producto terminado</b><small>Pan listo para vender</small></div>
+    <div><b>Empaques e insumos</b><small>Bolsas, cajas, gas</small></div>
+  </div>
+  <div class="box" style="background:var(--sena-soft)"><b>Una política de inventarios responde:</b> qué se controla más, cada cuánto se cuenta, cuándo y cuánto se pide, cuánto stock de seguridad se guarda y cómo se rota.</div>
+</section>
+
+<section class="slide" data-s="7" data-title="Empresa guía">
+  <div class="eyebrow">Empresa guía · lo que vimos en el inventario de La Esperanza</div>
+  <div class="casehead"><span class="logo" aria-hidden="true">LE</span><h2>El inventario de La Esperanza</h2><span class="fict">Empresa ficticia · datos de ejemplo</span></div>
+  <div class="grid g2">
+    <div class="box"><h3 style="margin-bottom:8px">Cómo se maneja hoy</h3>
+      <ul style="margin:0;padding-left:1.1em;display:grid;gap:4px">
+        <li>Se anota en un cuaderno lo que llega; <b>nunca se cuenta</b> lo que queda.</li>
+        <li>La harina se pide "cuando se ve poquita": el mes pasado se acabó <b>2 veces</b>.</li>
+        <li>Se botó 1 kg de levadura vencida que estaba detrás de la nueva.</li>
+        <li>Los bultos se apilan en el piso, junto a la pared.</li>
+        <li>Se bota el <b>8 %</b> del pan producido cada día.</li>
+      </ul></div>
+    <div class="grid" style="align-content:start">
+      <div class="box"><h3 style="margin-bottom:8px">Objetivos SMART que toca este taller</h3>
+        <div class="prob"><div style="border-left-color:var(--sena)"><b style="color:var(--sena-deep)">Agotados:</b> reducir los días con agotado de pan de la tarde del 60 % al 10 % en 6 meses.</div><div style="border-left-color:var(--sena)"><b style="color:var(--sena-deep)">Merma:</b> reducir la merma de pan del 8 % al 3 % de la producción diaria en 6 meses.</div></div></div>
+      <div class="box" style="background:var(--sena-soft)"><b>Datos que trajo el equipo:</b> consumo de cada insumo en un mes (facturas y cuaderno) y su costo de compra.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-s="7" data-title="Método ABC">
+  <div class="eyebrow">Paso 2 del taller</div>
+  <h2>Método ABC: pocos productos mueven casi toda la plata</h2>
+  <div class="formula"><span><b>1</b>Valor al mes = unidades × costo</span><i>→</i><span><b>2</b>Ordenar de mayor a menor</span><i>→</i><span><b>3</b>% del valor y % acumulado</span><i>→</i><span><b>4</b>Asignar A, B o C</span></div>
+  <div class="rule3">
+    <div style="--c:var(--alert)"><span class="big3">A</span><p><b>Hasta el 80 % acumulado.</b> Pocos productos, mucha plata.</p><p class="note">Control diario, stock de seguridad, punto de reorden calculado.</p></div>
+    <div style="--c:var(--sun)"><span class="big3">B</span><p><b>Del 80 % al 95 % acumulado.</b> Importancia media.</p><p class="note">Conteo semanal y reglas simples de pedido.</p></div>
+    <div style="--c:var(--sea)"><span class="big3">C</span><p><b>El último 5 %.</b> Muchos productos, poca plata.</p><p class="note">Conteo mensual; se compran sin complicarse.</p></div>
+  </div>
+  <p class="note">Es la misma regla que usa la app en el taller 7: el primer producto de la lista siempre queda en A.</p>
+</section>
+
+<section class="slide" data-s="7" data-title="Calculadora ABC">
+  <div class="eyebrow">Demostración · insumos de La Esperanza en un mes</div>
+  <h2>Calculadora ABC</h2>
+  <div class="abcwrap">
+    <div class="tw"><table class="mini" id="abcIn"><thead><tr><th>Insumo</th><th>Unid./mes</th><th>Costo unit. ($)</th></tr></thead><tbody></tbody></table>
+      <div class="acts" style="margin-top:8px"><button class="tbtn" id="abcReset">Volver al ejemplo</button><span class="note">Cambien los datos y miren cómo cambian las clases.</span></div></div>
+    <div class="tw"><table class="mini" id="abcOut"></table></div>
+  </div>
+</section>
+
+<section class="slide" data-s="7" data-title="Rotación">
+  <div class="eyebrow">Cómo sale la mercancía</div>
+  <h2>PEPS y PVPS: qué se usa primero</h2>
+  <div class="grid g2">
+    <div class="box" style="border-top:6px solid var(--sea)"><h3>PEPS · primero en entrar, primero en salir</h3><p>Lo que llegó primero se usa primero. Para productos que no se dañan rápido: harina, azúcar, bolsas.</p>
+      <div class="shelf" style="margin-top:10px"><span style="border-color:var(--sea)">Llegó lunes<br>⬅ sale</span><span>Llegó jueves</span><span>Llegó lunes sig.</span></div></div>
+    <div class="box" style="border-top:6px solid var(--alert)"><h3>PVPS · primero en vencer, primero en salir</h3><p>Sale primero lo que vence primero, aunque haya llegado después. Para perecederos: leche, huevos, levadura, margarina.</p>
+      <div class="shelf" style="margin-top:10px"><span style="border-color:var(--alert)">Vence 6 nov<br>⬅ sale</span><span>Vence 9 nov</span><span>Vence 15 nov</span></div></div>
+  </div>
+  <div class="quiz" data-quiz="rot"></div>
+  <p class="note">Truco de bodega: lo nuevo se pone atrás y lo viejo adelante, y cada bulto lleva escrita su fecha de llegada.</p>
+</section>
+
+<section class="slide" data-s="7" data-title="Punto de reorden">
+  <div class="eyebrow">Paso 3 del taller · ¿cuándo pedir?</div>
+  <h2>Stock de seguridad y punto de reorden</h2>
+  <div class="ropg">
+    <div class="grid" style="align-content:start;gap:10px">
+      <div class="formula" style="font-size:.92em"><span><b>Stock de seguridad</b>demanda diaria × días de protección</span><span><b>Punto de reorden</b>demanda diaria × tiempo de entrega + stock de seguridad</span></div>
+      <div class="form" style="grid-template-columns:1fr 1fr;display:grid;gap:8px">
+        <label class="form"><span style="font-weight:700;font-size:.85rem">Demanda diaria</span><input id="rDd" inputmode="decimal" value="2"></label>
+        <label class="form"><span style="font-weight:700;font-size:.85rem">Tiempo de entrega (días)</span><input id="rLt" inputmode="decimal" value="3"></label>
+        <label class="form"><span style="font-weight:700;font-size:.85rem">Días de protección</span><input id="rDs" inputmode="decimal" value="2"></label>
+        <label class="form"><span style="font-weight:700;font-size:.85rem">Cantidad por pedido</span><input id="rQ" inputmode="decimal" value="12"></label>
+      </div>
+      <div class="kpi"><div><span>Stock de seguridad</span><b id="rSs">—</b></div><div><span>Punto de reorden</span><b id="rRop">—</b></div></div>
+      <p class="note" id="rTxt">Ejemplo: harina de La Esperanza, en bultos.</p>
+    </div>
+    <div class="chart"><svg id="rChart" viewBox="0 0 640 300" role="img" aria-label="Inventario día a día durante 30 días"></svg>
+      <p class="note" style="margin-top:6px">Línea verde: inventario día a día. Naranja: punto de reorden (ahí se hace el pedido ▲). Roja: stock de seguridad.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-s="7" data-title="Así lo hizo La Esperanza">
+  <div class="eyebrow">Demostración · el taller 7 lleno con la empresa guía</div>
+  <h2>Así quedó el taller 7 de La Esperanza</h2>
+  <div class="steps" data-demo="d7"><div class="steplist"></div><div class="stage"></div></div>
+  <div class="demo-nav"><button class="navbtn ghost" data-dp="d7">← Paso</button><span class="foot" data-dn="d7"></span><button class="navbtn" data-dx="d7">Paso →</button><span class="note">Así se ve cada campo del taller 7 en la app, ya lleno.</span></div>
+</section>
+
+<section class="slide" data-s="7" data-title="Taller 7">
+  <div class="eyebrow">Trabajo en equipo · 1 h 30 min</div>
+  <h2>Taller 7 paso a paso</h2>
+  <ol class="steps5">
+    <li><span><b>Listen 10 productos</b> de su empresa con las unidades que se venden o se gastan al mes y su costo unitario (facturas, cuaderno o entrevista).</span></li>
+    <li><span><b>Lean la clasificación</b> que calcula la app: ¿cuáles son A? ¿Coincide con lo que dice el dueño?</span></li>
+    <li><span><b>Calculen el punto de reorden</b> de un producto A: demanda diaria, tiempo de entrega del proveedor y días de protección.</span></li>
+    <li><span><b>Escriban la política</b> con mínimo 5 reglas: conteo por clase, rotación (PEPS o PVPS), stock de seguridad, punto de reorden y almacenamiento.</span></li>
+  </ol>
+  <div class="cta"><a class="act" href="../taller-plan-estrategico/" target="_blank" rel="noopener">Abrir el taller en la app →</a><span class="note">Taller 7 · Política de inventarios.</span></div>
+</section>
+
+<section class="slide" data-s="7" data-title="Socialización">
+  <div class="eyebrow">Socialización · 30 minutos</div>
+  <h2>Lista de chequeo antes de entregar</h2>
+  <div class="check" data-check="7"></div>
+  <div class="meter"><span data-bar="7"></span></div><p class="note" data-txt="7"></p>
+</section>
+
+<section class="slide" data-s="7" data-title="Cierre">
+  <div class="eyebrow">Cierre · 10 minutos</div>
+  <h2>Entrega y tarea para mañana</h2>
+  <div class="grid g2">
+    <div class="box"><h3>Entreguen hoy</h3><ol class="steps5" style="margin-top:10px"><li><span>En la app, al final del taller 7, revisen <b>¿Quién entrega?</b> y toquen <b>📤 Enviar al instructor</b>.</span></li><li><span>Descarguen el <b>respaldo .json</b> antes de cerrar.</span></li></ol></div>
+    <div class="box"><h3>Traigan mañana (clase 8 · distribución)</h3><div class="bring" style="margin-top:10px"><div>A qué zonas o clientes entrega la empresa (o si el cliente recoge)</div><div>Cada cuánto entrega a cada zona</div><div>En qué vehículo y cuánto cuesta cada viaje</div><div>Qué problemas hay con las entregas y las devoluciones</div></div></div>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+<!-- ================= CLASE 8 ================= -->
+
+<section class="slide cover" data-s="8" data-title="Portada">
+  <div class="eyebrow">Competencia 210101007 · Taller Plan Estratégico Logístico · Clase 8 de 12 · Evidencia 3.3.2</div>
+  <h1>Política de distribución<br>y transporte</h1>
+  <p class="lead">El producto no sirve si no llega. Hoy organizamos cómo llega al cliente: zonas, frecuencias, vehículos, costos y qué pasa con las devoluciones. Con esto se cierra la fase de políticas.</p>
+  <div class="meta"><span>Jueves 5 nov · 1:00 – 4:00 pm</span><span>Fase: Políticas</span><span>Entregable: plan y política de distribución · informe técnico 3.3.2</span></div>
+  <div class="where" aria-label="Ruta del taller">
+    <span class="done">1–4 Diagnóstico</span><span class="done">5 Rumbo</span><span class="done">6 Compras</span><span class="done">7 Inventarios</span><span class="on">8 Distribución</span><span>9–12 Estrategias, plan e indicadores</span>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+<section class="slide" data-s="8" data-title="Agenda">
+  <div class="eyebrow">Ruta de la tarde</div>
+  <h2>Agenda de hoy</h2>
+  <div class="agenda" data-ag="8"></div>
+  <p class="note">El bloque en curso se resalta solo, según la hora del computador, el día de la clase.</p>
+</section>
+
+<section class="slide" data-s="8" data-title="Retoma">
+  <div class="eyebrow">Retoma de la clase 7 · 10 minutos</div>
+  <h2>¿A, B o C?</h2>
+  <p class="lead">Recuerden: hasta el 80 % acumulado es A, hasta el 95 % es B y el resto es C.</p>
+  <div class="quiz" data-quiz="abc"></div>
+</section>
+
+<section class="slide" data-s="8" data-title="¿Qué es distribuir?">
+  <div class="eyebrow">Fundamento</div>
+  <h2>Distribución: el último tramo de la cadena</h2>
+  <div class="grid g3">
+    <div class="box" style="border-top:6px solid var(--sena)"><h3>La empresa entrega</h3><p>Con vehículo propio o contratado: rutas a tiendas, domicilios.</p></div>
+    <div class="box" style="border-top:6px solid var(--sea)"><h3>El cliente recoge</h3><p>Mostrador, bodega o punto de venta. También es distribución: horarios, filas, empaque.</p></div>
+    <div class="box" style="border-top:6px solid var(--violet)"><h3>Un tercero entrega</h3><p>Transportadora, mensajería o aplicación de domicilios.</p></div>
+  </div>
+  <div class="box"><h3 style="margin-bottom:6px">Las 5 decisiones de la política</h3>
+    <div class="formula"><span><b>Zonas</b>a quién y dónde</span><span><b>Frecuencia</b>cada cuánto</span><span><b>Vehículo</b>en qué</span><span><b>Horario</b>a qué hora</span><span><b>Costo</b>cuánto cuesta cada entrega</span></div></div>
+  <p class="note">Y una sexta que casi nadie escribe: qué pasa cuando el producto se devuelve (logística inversa).</p>
+</section>
+
+<section class="slide" data-s="8" data-title="Vehículos">
+  <div class="eyebrow">En la ciudad</div>
+  <h2>¿En qué se reparte?</h2>
+  <div class="veh">
+    <div><span class="e" aria-hidden="true">🏍️</span><b>Moto con canasta o baúl</b><p class="note">Pocas unidades, muchas paradas cortas. Rápida en calles estrechas; poca capacidad y carga expuesta.</p></div>
+    <div><span class="e" aria-hidden="true">🛺</span><b>Motocarro</b><p class="note">Más volumen que la moto, costo bajo por viaje. Bueno para rutas de barrio con varias tiendas.</p></div>
+    <div><span class="e" aria-hidden="true">🚐</span><b>Furgón o camioneta</b><p class="note">Carga protegida y más volumen; cuesta más por viaje y le cuesta parquear en el centro.</p></div>
+    <div><span class="e" aria-hidden="true">🚚</span><b>Camión sencillo o turbo</b><p class="note">Para mayoristas y distribuidoras con pedidos grandes; necesita sitio de cargue y descargue.</p></div>
+  </div>
+  <div class="box" style="background:var(--sena-soft)"><b>La pregunta clave no es "¿cuánto cuesta el viaje?"</b> sino <b>"¿cuánto cuesta entregar cada unidad?"</b>: costo del mes ÷ unidades entregadas.</div>
+</section>
+
+<section class="slide" data-s="8" data-title="Empresa guía">
+  <div class="eyebrow">Empresa guía · la tarea que trajo La Esperanza</div>
+  <div class="casehead"><span class="logo" aria-hidden="true">LE</span><h2>Cómo reparte La Esperanza</h2><span class="fict">Empresa ficticia · datos de ejemplo</span></div>
+  <div class="tw"><table class="ftable sea">
+    <tr><th>Zona o cliente</th><th>Frecuencia</th><th>Vehículo</th><th>Costo por viaje</th><th>Problema</th></tr>
+    <tr><td><b>Tiendas zona sur</b> (7)</td><td>Diaria, 2 viajes</td><td>Moto del repartidor</td><td>$10.000</td><td>Las canastas no caben en un viaje: las últimas tiendas reciben después de las 7:30</td></tr>
+    <tr><td><b>Tiendas zona norte</b> (5)</td><td>Diaria</td><td>Moto del repartidor</td><td>$12.000</td><td>Sale cuando termina el sur: llega entre 8:00 y 9:00</td></tr>
+    <tr><td><b>Tortas por encargo</b></td><td>3 por semana</td><td>Moto</td><td>$8.000</td><td>Se entregan sin confirmar hora; 2 devueltas este mes</td></tr>
+    <tr><td><b>Mostrador del barrio</b></td><td>Todos los días</td><td>El cliente recoge</td><td>$0</td><td>Fila larga a las 6:00 p. m.</td></tr>
+  </table></div>
+  <div class="grid g2">
+    <div class="box"><b>Hallazgo del diagnóstico:</b> solo el <b>40 %</b> de los pedidos llega a las tiendas antes de las 7:00 a. m.</div>
+    <div class="box" style="background:var(--sena-soft)"><b>Objetivo SMART (clase 5):</b> aumentar del 40 % al 95 % los pedidos entregados antes de las 7:00 a. m. en 4 meses.</div>
+  </div>
+</section>
+
+<section class="slide" data-s="8" data-title="Costo por unidad">
+  <div class="eyebrow">Demostración · hoy frente a la propuesta</div>
+  <h2>¿Cuánto cuesta entregar cada pan?</h2>
+  <div class="acts"><div class="tabs2" role="group" aria-label="Escenario"><button data-sc="hoy">Hoy</button><button data-sc="prop">Propuesta</button></div><button class="tbtn" id="dReset">Volver al ejemplo</button></div>
+  <div class="tw"><table class="mini" id="dTab"></table></div>
+  <div class="cmp" id="dCmp"></div>
+  <p class="note">Costo del mes = viajes × costo por viaje. Costo por unidad = costo del mes ÷ unidades entregadas. Toquen "Propuesta" para ver la mejora.</p>
+</section>
+
+<section class="slide" data-s="8" data-title="Ruta y horario">
+  <div class="eyebrow">La mejora en el reloj</div>
+  <h2>De 3 salidas en fila a 2 rutas al mismo tiempo</h2>
+  <div class="tl">
+    <h3>Hoy</h3>
+    <div class="tlrow"><span>Moto · sur viaje 1</span><div class="tltrack"><div class="tlbar" style="left:12.5%;width:25%;background:var(--sun)">5:30–6:30</div><div class="tl7" style="left:50%"></div></div></div>
+    <div class="tlrow"><span>Moto · sur viaje 2</span><div class="tltrack"><div class="tlbar" style="left:43.75%;width:25%;background:var(--sun)">6:45–7:45</div><div class="tl7" style="left:50%"></div></div></div>
+    <div class="tlrow"><span>Moto · norte</span><div class="tltrack"><div class="tlbar" style="left:75%;width:25%;background:var(--alert)">8:00–9:00</div><div class="tl7" style="left:50%"></div></div></div>
+    <h3 style="margin-top:6px">Propuesta</h3>
+    <div class="tlrow"><span>Motocarro · sur</span><div class="tltrack"><div class="tlbar" style="left:0%;width:41.7%;background:var(--sena)">5:00–6:40 · 7 tiendas</div><div class="tl7" style="left:50%"></div></div></div>
+    <div class="tlrow"><span>Moto · norte</span><div class="tltrack"><div class="tlbar" style="left:6.25%;width:31.25%;background:var(--sena)">5:15–6:30 · 5 tiendas</div><div class="tl7" style="left:50%"></div></div></div>
+    <div class="tlaxis"><span>5:00</span><span>6:00</span><span>7:00</span><span>8:00</span><span>9:00</span></div>
+  </div>
+  <p class="note">Línea roja punteada: 7:00 a. m., la hora que pide el objetivo SMART. Con la propuesta, las 12 tiendas reciben antes de las 7:00.</p>
+</section>
+
+<section class="slide" data-s="8" data-title="Devoluciones">
+  <div class="eyebrow">Logística inversa</div>
+  <h2>Cuando el producto vuelve</h2>
+  <div class="grid g2">
+    <div class="box" style="border-top:6px solid var(--alert)"><h3>Por qué se devuelve</h3><ul style="margin:6px 0 0;padding-left:1.1em"><li>Llegó dañado, vencido o incompleto.</li><li>Se entregó a destiempo o al cliente equivocado.</li><li>No se vendió (consignación).</li></ul></div>
+    <div class="box" style="border-top:6px solid var(--sena)"><h3>Qué debe decir la política</h3><ul style="margin:6px 0 0;padding-left:1.1em"><li><b>Plazo:</b> hasta cuándo se acepta.</li><li><b>Evidencia:</b> foto, factura, remisión.</li><li><b>Respuesta:</b> se repone, se cambia o se abona.</li><li><b>Destino:</b> qué se hace con lo devuelto y dónde se registra.</li></ul></div>
+  </div>
+  <div class="box" style="background:var(--sena-soft)"><b>Conexión con la clase 7:</b> todo lo devuelto que no se puede vender va al registro de merma. Sin ese registro, el objetivo de bajar la merma no se puede medir.</div>
+</section>
+
+<section class="slide" data-s="8" data-title="Así lo hizo La Esperanza">
+  <div class="eyebrow">Demostración · el taller 8 lleno con la empresa guía</div>
+  <h2>Así quedó el taller 8 de La Esperanza</h2>
+  <div class="steps" data-demo="d8"><div class="steplist"></div><div class="stage"></div></div>
+  <div class="demo-nav"><button class="navbtn ghost" data-dp="d8">← Paso</button><span class="foot" data-dn="d8"></span><button class="navbtn" data-dx="d8">Paso →</button><span class="note">Así se ve cada campo del taller 8 en la app, ya lleno.</span></div>
+</section>
+
+<section class="slide" data-s="8" data-title="Taller 8">
+  <div class="eyebrow">Trabajo en equipo · 1 h 30 min</div>
+  <h2>Taller 8 paso a paso</h2>
+  <ol class="steps5">
+    <li><span><b>Identifiquen las zonas o clientes</b> a los que la empresa entrega, o cómo se lleva el cliente la mercancía.</span></li>
+    <li><span><b>Para cada zona</b> anoten frecuencia, vehículo y costo aproximado por viaje, y el problema principal.</span></li>
+    <li><span><b>Propongan mejoras:</b> agrupar por zona, horarios fijos, pedido mínimo, otro vehículo. Calculen el costo por unidad antes y después.</span></li>
+    <li><span><b>Escriban la política</b> de distribución y devoluciones con mínimo 5 reglas.</span></li>
+  </ol>
+  <div class="cta"><a class="act" href="../taller-plan-estrategico/" target="_blank" rel="noopener">Abrir el taller en la app →</a><span class="note">Taller 8 · Política de distribución y transporte.</span></div>
+</section>
+
+<section class="slide" data-s="8" data-title="Informe 3.3.2">
+  <div class="eyebrow">Tarea · evidencia 3.3.2</div>
+  <h2>Informe técnico de políticas</h2>
+  <p class="lead">Une los talleres 5 a 8 en un solo documento en PDF, con normas ICONTEC como el informe de diagnóstico.</p>
+  <div class="icsec">
+    <div><b>Portada e introducción</b><br><small>Empresa, equipo, para qué sirve el informe</small></div>
+    <div><b>Rumbo estratégico</b><br><small>Taller 5: misión, visión y objetivos SMART</small></div>
+    <div><b>Política de compras</b><br><small>Taller 6: evaluación, decisión y reglas</small></div>
+    <div><b>Política de inventarios</b><br><small>Taller 7: ABC, punto de reorden y reglas</small></div>
+    <div><b>Política de distribución</b><br><small>Taller 8: zonas, costos, reglas y devoluciones</small></div>
+    <div><b>Conclusiones y anexos</b><br><small>Cómo las políticas apoyan cada objetivo SMART</small></div>
+  </div>
+  <p class="note">Truco: en la app, "📄 Mi plan" arma el documento con todo lo que llenaron; descárguenlo en Word, ajusten la redacción y guárdenlo como PDF.</p>
+</section>
+
+<section class="slide" data-s="8" data-title="Socialización">
+  <div class="eyebrow">Socialización · 30 minutos</div>
+  <h2>Lista de chequeo antes de entregar</h2>
+  <div class="check" data-check="8"></div>
+  <div class="meter"><span data-bar="8"></span></div><p class="note" data-txt="8"></p>
+</section>
+
+<section class="slide" data-s="8" data-title="Cierre">
+  <div class="eyebrow">Cierre · 10 minutos</div>
+  <h2>Entrega y tarea para la clase 9</h2>
+  <div class="grid g2">
+    <div class="box"><h3>Entreguen hoy</h3><ol class="steps5" style="margin-top:10px"><li><span>En la app, al final del taller 8, revisen <b>¿Quién entrega?</b> y toquen <b>📤 Enviar al instructor</b>.</span></li><li><span>Descarguen el <b>respaldo .json</b> actualizado.</span></li><li><span>Empiecen el <b>informe técnico de políticas</b> (talleres 5 a 8) en PDF.</span></li></ol></div>
+    <div class="box"><h3>Traigan el miércoles 11 nov (clase 9 · Balanced Scorecard)</h3><div class="bring" style="margin-top:10px"><div>Sus 4 objetivos SMART del taller 5, revisados</div><div>Una idea de cómo medir cada objetivo (qué número mirarían)</div><div>Qué capacitación o herramienta necesita el personal</div><div>Papelógrafo y marcadores para el mapa causa-efecto</div></div></div>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+</main>
+
+
+<nav class="nav">
+  <button class="navbtn ghost" id="prev" aria-label="Anterior">←</button>
+  <div class="dots" id="dots"></div>
+  <span class="foot" id="slideName"></span>
+  <button class="navbtn" id="next" aria-label="Siguiente">→</button>
+  <button class="tbtn" id="fs">Pantalla completa</button>
+  <a class="tbtn" href="../../" style="text-decoration:none">← Portal</a>
+  <span class="foot">LogiLab SENA · By Carlos Barrios · Instructor</span>
+</nav>
+
+<script>
+(function(){
+const LS='pe78-';
+function get(k){try{return localStorage.getItem(LS+k)}catch(e){return null}}
+function set(k,v){try{localStorage.setItem(LS+k,v)}catch(e){}}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>isFinite(n)?Math.round(n).toLocaleString('es-CO'):'—';
+const d1=n=>isFinite(n)?n.toLocaleString('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1}):'—';
+const num=v=>{const n=parseFloat(String(v??'').replace(/\./g,'').replace(',','.'));return isFinite(n)?n:NaN};
+const dec=v=>{const n=parseFloat(String(v??'').replace(',','.'));return isFinite(n)?n:NaN};
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+
+/* clase activa y navegación */
+const all=[...document.querySelectorAll('.slide')];
+let ses='7',slides=[],cur=0;const dots=document.getElementById('dots');
+function setSes(s,start){ses=s;set('ses',s);slides=all.filter(x=>x.dataset.s===s);
+ document.querySelectorAll('[data-ses]').forEach(b=>b.classList.toggle('on',b.dataset.ses===s));
+ dots.innerHTML='';slides.forEach((sl,i)=>{const b=document.createElement('button');b.className='dot';b.title=sl.dataset.title;b.setAttribute('aria-label',sl.dataset.title);b.onclick=()=>go(i);dots.appendChild(b)});
+ go(start||0);tick()}
+function go(i){cur=Math.max(0,Math.min(slides.length-1,i));all.forEach(x=>x.classList.remove('on'));slides[cur].classList.add('on');[...dots.children].forEach((d,k)=>d.classList.toggle('on',k===cur));document.getElementById('slideName').textContent='Clase '+ses+' · '+(cur+1)+'/'+slides.length+' · '+slides[cur].dataset.title;set('slide'+ses,cur);slides[cur].scrollTop=0}
+document.querySelectorAll('[data-ses]').forEach(b=>b.onclick=()=>setSes(b.dataset.ses,+get('slide'+b.dataset.ses)||0));
+document.getElementById('prev').onclick=()=>go(cur-1);document.getElementById('next').onclick=()=>go(cur+1);
+document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1)});
+document.getElementById('fs').onclick=()=>{try{if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen()}catch(e){}};
+
+/* agendas */
+const AG={
+ '7':{d:'2026-11-04',b:[
+  ['13:00','13:10','Retoma: ¿qué hacemos con este proveedor?','Inicio'],
+  ['13:10','13:30','Inventarios: ABC, PEPS/PVPS y punto de reorden','Teoría'],
+  ['13:30','14:30','Taller: 10 productos y clasificación ABC','Taller'],
+  ['14:30','14:45','Receso','—'],
+  ['14:45','15:20','Taller: punto de reorden y política de inventarios','Taller'],
+  ['15:20','15:50','Socialización con lista de chequeo','3.3.2'],
+  ['15:50','16:00','Envío al instructor, respaldo y tarea','Cierre']]},
+ '8':{d:'2026-11-05',b:[
+  ['13:00','13:10','Retoma: ¿A, B o C?','Inicio'],
+  ['13:10','13:30','Distribución: zonas, vehículos, costos y devoluciones','Teoría'],
+  ['13:30','14:30','Taller: zonas, frecuencias y costo por unidad','Taller'],
+  ['14:30','14:45','Receso','—'],
+  ['14:45','15:20','Taller: mejoras y política de distribución','Taller'],
+  ['15:20','15:50','Socialización con lista de chequeo','3.3.2'],
+  ['15:50','16:00','Envío, respaldo e informe técnico de políticas','Cierre']]}};
+function fmt(t){let[h,m]=t.split(':').map(Number);h=h>12?h-12:h;return h+':'+String(m).padStart(2,'0')}
+function mins(t){const[h,m]=t.split(':').map(Number);return h*60+m}
+document.querySelectorAll('[data-ag]').forEach(el=>{AG[el.dataset.ag].b.forEach(a=>{const d=document.createElement('div');d.className='ag';d.innerHTML=`<time>${fmt(a[0])}–${fmt(a[1])}</time><span>${a[2]}</span><span class="tag">${a[3]}</span>`;el.appendChild(d)})});
+function today(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
+function tick(){const n=new Date(),nm=n.getHours()*60+n.getMinutes();document.getElementById('clockNow').textContent=n.toLocaleTimeString('es-CO',{hour:'numeric',minute:'2-digit'});
+ const A=AG[ses];let f=-1;if(today()===A.d)A.b.forEach((a,i)=>{if(nm>=mins(a[0])&&nm<mins(a[1]))f=i});
+ const el=document.querySelector(`[data-ag="${ses}"]`);[...el.children].forEach((c,i)=>c.classList.toggle('live',i===f));
+ document.getElementById('nowBlock').textContent=f>=0?A.b[f][2]:'Fuera del horario de clase';document.getElementById('nowLeft').textContent=f>=0?(mins(A.b[f][1])-nm)+' min':''}
+setInterval(tick,15000);
+
+/* cronómetro */
+let left=0,run=false,iv=null;const clk=document.getElementById('clk'),play=document.getElementById('tPlay');
+function show(){clk.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');clk.classList.toggle('low',left>0&&left<=60)}
+function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();[0,.35,.7].forEach(t=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.2,c.currentTime+t);o.start(c.currentTime+t);o.stop(c.currentTime+t+.2)})}catch(e){}}
+document.querySelectorAll('[data-min]').forEach(b=>b.onclick=()=>{left=+b.dataset.min*60;show()});
+play.onclick=()=>{if(run){clearInterval(iv);run=false;play.textContent='Iniciar';return}if(left<=0)return;run=true;play.textContent='Pausar';iv=setInterval(()=>{left--;show();if(left<=0){clearInterval(iv);run=false;play.textContent='Iniciar';beep()}},1000)};
+document.getElementById('tReset').onclick=()=>{clearInterval(iv);run=false;left=0;play.textContent='Iniciar';show()};
+
+/* quizzes */
+const QZ={
+ prov:{o:[['S','Seguir'],['N','Negociar'],['B','Buscar otro']],q:[
+  ['Proveedor de huevos: 4, 5, 4, 5 = 18','S','17 a 20: seguir con él y buscar un acuerdo de precio.'],
+  ['Proveedor de leche: 3, 3, 4, 3 = 13','N','12 a 16: negociar, empezando por el criterio más bajo.'],
+  ['Distribuidor de levadura: 2, 2, 3, 3 = 10','B','11 o menos: conseguir otro proveedor.'],
+  ['Proveedor de cajas: 5, 5, 5, 1 = 16','B','El total da para negociar, pero un 1 en crédito es alerta: buscar alterno o exigir mejora.']]},
+ rot:{o:[['P','PEPS'],['V','PVPS']],q:[
+  ['Bultos de azúcar de tres pedidos distintos.','P','No se dañan rápido: sale primero el que llegó primero.'],
+  ['Bolsas de leche con fechas de vencimiento distintas.','V','Sale primero la que vence primero, aunque haya llegado después.'],
+  ['Paquetes de levadura fresca.','V','Es perecedera: se rota por fecha de vencimiento.']]},
+ abc:{o:[['A','A'],['B','B'],['C','C']],q:[
+  ['Harina: es el primer producto de la lista, con el 48 % del valor.','A','El primero siempre es A: es el que más plata mueve.'],
+  ['Margarina: con ella el acumulado llega al 69,7 %.','A','Hasta el 80 % acumulado es A.'],
+  ['Huevos: con ellos el acumulado llega al 90,6 %.','B','Entre el 80 % y el 95 % es B.'],
+  ['Sal: con ella el acumulado llega al 100 %.','C','Pasa del 95 %: es C, se revisa una vez al mes.']]}};
+document.querySelectorAll('[data-quiz]').forEach(el=>{const Z=QZ[el.dataset.quiz];Z.q.forEach((q,i)=>{const d=document.createElement('div');d.className='qi';d.innerHTML=`<span>${i+1}. ${esc(q[0])}</span><span class="opts">${Z.o.map(o=>`<button class="opt" data-v="${o[0]}">${o[1]}</button>`).join('')}</span><span class="fb" hidden></span>`;
+ d.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{d.querySelectorAll('.opt').forEach(x=>x.classList.remove('ok','bad'));const ok=b.dataset.v===q[1];b.classList.add(ok?'ok':'bad');if(!ok)d.querySelector(`.opt[data-v="${q[1]}"]`).classList.add('ok');const fb=d.querySelector('.fb');fb.hidden=false;fb.textContent=(ok?'✓ ':'✗ ')+q[2]});el.appendChild(d)})});
+
+/* calculadora ABC (misma regla que la app del taller) */
+const ABC0=[['Harina de trigo (bulto 50 kg)',52,140000],['Margarina (caja 15 kg)',22,150000],['Azúcar (bulto 50 kg)',10,180000],['Gas propano (cilindro)',6,120000],['Huevos (cubeta de 30)',40,16000],['Leche (bolsa 1 L)',150,4000],['Levadura fresca (kg)',25,12000],['Bolsas de papel (paquete 100)',30,9000],['Cajas para torta (paquete 25)',8,25000],['Sal (bulto 25 kg)',2,30000]];
+function abcCalc(data){const items=data.map(r=>({p:r[0],u:num(r[1]),c:num(r[2])})).filter(x=>x.p&&!isNaN(x.u)&&!isNaN(x.c)).map(x=>({...x,v:x.u*x.c})).sort((a,b)=>b.v-a.v);
+ const tot=items.reduce((a,b)=>a+b.v,0);let acc=0;items.forEach(x=>{const pct=tot?x.v/tot*100:0;const before=acc;acc+=pct;x.pct=pct;x.acc=acc;x.cl=(acc<=80||before===0)?'A':acc<=95?'B':'C'});return {items,tot}}
+let AB;try{AB=JSON.parse(get('abc')||'null')}catch(e){AB=null}if(!AB)AB=JSON.parse(JSON.stringify(ABC0));
+const abIn=document.querySelector('#abcIn tbody'),abOut=document.getElementById('abcOut');
+const CLC={A:'var(--alert)',B:'var(--sun)',C:'var(--sea)'};
+function drawAbcOut(){const {items,tot}=abcCalc(AB);
+ abOut.innerHTML=`<thead><tr><th>Insumo</th><th>Valor/mes ($)</th><th>%</th><th>% acum.</th><th>Clase</th></tr></thead><tbody>${items.map(x=>`<tr><td>${esc(x.p)}<div class="pbar"><span style="width:${Math.max(1,x.pct/(items[0].pct||1)*100)}%;background:${CLC[x.cl]}"></span></div></td><td class="n">${money(x.v)}</td><td class="n">${d1(x.pct)}</td><td class="n">${d1(x.acc)}</td><td><span class="cls ${x.cl}">${x.cl}</span></td></tr>`).join('')}<tr><td><b>Total</b></td><td class="n"><b>${money(tot)}</b></td><td colspan="3"></td></tr></tbody>`}
+function drawAbcIn(){abIn.innerHTML=AB.map((r,i)=>`<tr><td><input data-r="${i}" data-c="0" value="${esc(r[0])}" aria-label="Insumo ${i+1}"></td><td><input data-r="${i}" data-c="1" inputmode="decimal" value="${esc(r[1])}" style="text-align:right" aria-label="Unidades ${i+1}"></td><td><input data-r="${i}" data-c="2" inputmode="decimal" value="${esc(r[2])}" style="text-align:right" aria-label="Costo ${i+1}"></td></tr>`).join('');
+ abIn.querySelectorAll('input').forEach(e=>e.oninput=()=>{AB[+e.dataset.r][+e.dataset.c]=e.value;set('abc',JSON.stringify(AB));drawAbcOut()})}
+document.getElementById('abcReset').onclick=()=>{AB=JSON.parse(JSON.stringify(ABC0));set('abc','');drawAbcIn();drawAbcOut()};
+drawAbcIn();drawAbcOut();
+
+/* punto de reorden con gráfica de inventario día a día */
+const RF=['rDd','rLt','rDs','rQ'];RF.forEach(id=>{const e=document.getElementById(id);const v=get(id);if(v!==null&&v!=='')e.value=v;e.oninput=()=>{set(id,e.value);drawRop()}});
+function drawRop(){const dd=dec(rDd.value),lt=dec(rLt.value),ds=dec(rDs.value),Q=dec(rQ.value);const svg=document.getElementById('rChart');
+ if([dd,lt,ds,Q].some(isNaN)||dd<=0||Q<=0||lt<0||ds<0){document.getElementById('rSs').textContent='—';document.getElementById('rRop').textContent='—';svg.innerHTML='<text x="320" y="150" text-anchor="middle" fill="currentColor" font-size="16">Llenen los cuatro datos</text>';return}
+ const ss=dd*ds,rop=dd*lt+ss;document.getElementById('rSs').textContent=money(ss);document.getElementById('rRop').textContent=money(rop);
+ document.getElementById('rTxt').innerHTML=`Regla: <b>pedir ${money(Q)} cuando queden ${money(rop)}</b>. El stock de seguridad (${money(ss)}) solo se usa si el pedido se demora.`+(Q<dd*lt?' <span style="color:var(--alert)">Ojo: el pedido es menor que lo que se gasta mientras llega.</span>':'');
+ const D=30;let st=ss+Q,pend=[],pts=[[0,st]],orders=[];
+ for(let d=1;d<=D;d++){pend.filter(p=>p.at===d).forEach(p=>{st+=Q});pend=pend.filter(p=>p.at!==d);st=Math.max(0,st-dd);pts.push([d,st]);if(st<=rop&&!pend.length){pend.push({at:d+Math.max(1,Math.round(lt))});orders.push([d,st])}}
+ const W=640,H=300,L=46,R=14,T=14,B=34;const ymax=Math.max(...pts.map(p=>p[1]),rop,ss)*1.12||1;
+ const x=d=>L+(W-L-R)*d/D,y=v=>T+(H-T-B)*(1-v/ymax);
+ const ticks=[];const step=ymax>40?10:ymax>16?4:ymax>8?2:1;for(let v=0;v<=ymax;v+=step)ticks.push(v);
+ svg.innerHTML=`${ticks.map(v=>`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${v}</text>`).join('')}
+ ${[0,5,10,15,20,25,30].map(d=>`<text x="${x(d)}" y="${H-12}" text-anchor="middle" font-size="11" fill="var(--muted)">día ${d}</text>`).join('')}
+ <line x1="${L}" x2="${W-R}" y1="${y(rop)}" y2="${y(rop)}" stroke="var(--sun)" stroke-width="2.5" stroke-dasharray="7 5"/><text x="${L+6}" y="${y(rop)-7}" font-size="12" font-weight="700" fill="var(--sun)" stroke="var(--card)" stroke-width="4" paint-order="stroke">Punto de reorden ${money(rop)}</text>
+ <line x1="${L}" x2="${W-R}" y1="${y(ss)}" y2="${y(ss)}" stroke="var(--alert)" stroke-width="2.5" stroke-dasharray="3 4"/><text x="${L+6}" y="${y(ss)+16}" font-size="12" font-weight="700" fill="var(--alert)" stroke="var(--card)" stroke-width="4" paint-order="stroke">Stock de seguridad ${money(ss)}</text>
+ <polyline fill="none" stroke="var(--sena)" stroke-width="3" points="${pts.map(p=>x(p[0])+','+y(p[1])).join(' ')}"/>
+ ${orders.map(o=>`<path d="M${x(o[0])-6},${y(o[1])+16} l6,-10 l6,10 z" fill="var(--sun)"/>`).join('')}`}
+const rDd=document.getElementById('rDd'),rLt=document.getElementById('rLt'),rDs=document.getElementById('rDs'),rQ=document.getElementById('rQ');drawRop();
+
+/* costo de distribución: hoy frente a propuesta */
+const DS0={hoy:[['Tiendas zona sur (7) · 2 viajes diarios','Moto',52,10000,10920],['Tiendas zona norte (5)','Moto',26,12000,7800],['Tortas por encargo','Moto',12,8000,12],['Mostrador del barrio','El cliente recoge',0,0,0]],
+ prop:[['Tiendas zona sur (7) · 1 viaje diario','Motocarro contratado',26,16000,10920],['Tiendas zona norte (5)','Moto',26,12000,7800],['Tortas (martes y sábado)','Moto',8,8000,12],['Mostrador del barrio','El cliente recoge',0,0,0]]};
+let DSx;try{DSx=JSON.parse(get('dist')||'null')}catch(e){DSx=null}if(!DSx)DSx=JSON.parse(JSON.stringify(DS0));let sc='hoy';
+const totOf=k=>DSx[k].reduce((a,r)=>a+(num(r[2])||0)*(num(r[3])||0),0);
+const unitsTiendas=k=>DSx[k].filter(r=>/tienda/i.test(r[0])).reduce((a,r)=>a+(num(r[4])||0),0);
+const costTiendas=k=>DSx[k].filter(r=>/tienda/i.test(r[0])).reduce((a,r)=>a+(num(r[2])||0)*(num(r[3])||0),0);
+function drawDist(){document.querySelectorAll('[data-sc]').forEach(b=>b.classList.toggle('on',b.dataset.sc===sc));
+ const t=document.getElementById('dTab');
+ t.innerHTML=`<thead><tr><th>Zona o cliente</th><th>Vehículo</th><th>Viajes/mes</th><th>Costo/viaje ($)</th><th>Unidades/mes</th><th>Costo/mes ($)</th><th>Costo por unidad ($)</th></tr></thead><tbody>${DSx[sc].map((r,i)=>{const cm=(num(r[2])||0)*(num(r[3])||0),u=num(r[4])||0;return `<tr><td><input data-r="${i}" data-c="0" value="${esc(r[0])}"></td><td><input data-r="${i}" data-c="1" value="${esc(r[1])}"></td>${[2,3,4].map(c=>`<td><input data-r="${i}" data-c="${c}" inputmode="decimal" value="${esc(r[c])}" style="text-align:right"></td>`).join('')}<td class="n"><b>${money(cm)}</b></td><td class="n">${u?d1(cm/u):'—'}</td></tr>`}).join('')}<tr><td colspan="5"><b>Total del mes</b></td><td class="n"><b>${money(totOf(sc))}</b></td><td></td></tr></tbody>`;
+ t.querySelectorAll('input').forEach(e=>e.onchange=e.oninput=()=>{const r=+e.dataset.r,c=+e.dataset.c;DSx[sc][r][c]=e.value;set('dist',JSON.stringify(DSx));updCmp();const tr=e.closest('tr'),row=DSx[sc][r];const cm=(num(row[2])||0)*(num(row[3])||0),u=num(row[4])||0;tr.children[5].innerHTML=`<b>${money(cm)}</b>`;tr.children[6].textContent=u?d1(cm/u):'—';t.querySelector('tbody tr:last-child td:nth-child(2) b').textContent=money(totOf(sc))});
+ updCmp()}
+function updCmp(){const h=totOf('hoy'),p=totOf('prop'),uh=unitsTiendas('hoy'),up=unitsTiendas('prop');const ch=uh?costTiendas('hoy')/uh:NaN,cp=up?costTiendas('prop')/up:NaN;
+ document.getElementById('dCmp').innerHTML=`<div><span>Costo del mes · hoy</span><b>$${money(h)}</b></div><div><span>Costo del mes · propuesta</span><b>$${money(p)}</b></div><div style="border-color:var(--sena);background:var(--sena-soft)"><span>${h>=p?'Ahorro al mes':'Costo extra al mes'}</span><b>$${money(Math.abs(h-p))}</b><span>Pan a tiendas: $${isNaN(ch)?'—':d1(ch)} → $${isNaN(cp)?'—':d1(cp)} por unidad</span></div>`}
+document.querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{sc=b.dataset.sc;drawDist()});
+document.getElementById('dReset').onclick=()=>{DSx=JSON.parse(JSON.stringify(DS0));set('dist','');drawDist()};
+drawDist();
+
+/* demostraciones con la empresa guía */
+function fld(l,v){return `<div class="fld"><label>${l}</label><div>${v}</div></div>`}
+function tbl(h,rows){return `<div class="tw"><table class="ftable"><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`}
+const APP=t=>`<div class="applike">En la app · ${t}</div>`;
+const tbl2=(h,rows)=>`<div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">${tbl(h,rows.slice(0,Math.ceil(rows.length/2)))}${tbl(h,rows.slice(Math.ceil(rows.length/2)))}</div>`;
+const abc0=abcCalc(ABC0).items;
+const DM={
+ d7:[
+  ['Listar 10 productos',APP('Clasificación ABC · datos')+tbl2(['Insumo','Unid./mes','Costo ($)'],ABC0.map(r=>[r[0],r[1],money(r[2])]))+`<div class="how"><b>De dónde salió:</b> unidades del cuaderno de pedidos de octubre; costos de las últimas facturas.</div>`],
+  ['Leer la clasificación',APP('Clasificación ABC · lo que calcula la app')+tbl2(['Insumo','% acumulado','Clase'],abc0.map(x=>[esc(x.p),d1(x.acc)+' %',`<span class="cls ${x.cl}">${x.cl}</span>`]))+`<div class="how"><b>Lectura:</b> harina y margarina (2 de 10 insumos) son casi el 70 % de la plata. Ahí va el control diario.</div>`],
+  ['Punto de reorden',APP('Punto de reorden de un producto clase A')+tbl(['Dato','Valor'],[['Producto','Harina de trigo (bulto 50 kg)'],['Demanda diaria','2 bultos'],['Tiempo de entrega del proveedor','3 días (Barranquilla)'],['Días de protección','2 días (cierres de la Troncal)'],['<b>Stock de seguridad</b>','<b>2 × 2 = 4 bultos</b>'],['<b>Punto de reorden</b>','<b>2 × 3 + 4 = 10 bultos</b>']])+`<div class="how"><b>Regla que sale:</b> pedir harina cuando queden 10 bultos. Los 2 días de protección vienen del diagnóstico: el proveedor llegó tarde 5 de 10 veces.</div>`],
+  ['Política',APP('Política de inventarios (mínimo 5 reglas)')+fld('Política de inventarios','1. Harina y margarina (clase A) se cuentan todos los días al cierre; los B, cada lunes; los C, el primer día de cada mes.<br>2. La harina se pide cuando queden 10 bultos; los 4 bultos de seguridad no se usan sin avisar a la administradora.<br>3. Stock de seguridad: clase A, 2 días de consumo; clase B, 1 día; clase C, sin stock de seguridad.<br>4. Leche, huevos, levadura y margarina salen por fecha de vencimiento (PVPS); lo demás, por orden de llegada (PEPS).<br>5. Todo bulto se marca con su fecha de llegada y se guarda sobre estibas, separado de la pared, nunca en el piso.<br>6. El pan que no se vende al cierre se anota cada día en la hoja de merma; con ese registro se ajusta la producción de la tarde cada lunes.')],
+  ['Amarre con el taller 5',tbl(['Regla de la política','Objetivo SMART al que ayuda'],[['2. Punto de reorden de la harina','Reducir los días con agotado de pan de la tarde del 60 % al 10 %'],['6. Hoja de merma y ajuste de producción','Reducir la merma de pan del 8 % al 3 %'],['4. Rotación PVPS','Reducir la merma (insumos que no se vencen)']])+`<div class="how"><b>Listo para entregar:</b> "¿Quién entrega?" lleno y <b>📤 Enviar al instructor</b>.</div>`]],
+ d8:[
+  ['Zonas y clientes',APP('Zonas o clientes de distribución')+tbl(['Zona o cliente','Frecuencia','Vehículo','Costo por viaje ($)','Problema'],[['Tiendas zona sur (7)','Diaria, 2 viajes','Moto','10.000','Últimas tiendas después de las 7:30'],['Tiendas zona norte (5)','Diaria','Moto','12.000','Llega entre 8:00 y 9:00'],['Tortas por encargo','3 por semana','Moto','8.000','Sin hora confirmada; 2 devueltas'],['Mostrador del barrio','Diaria','El cliente recoge','0','Fila a las 6:00 p. m.']])],
+  ['Mejoras',`<div class="applike">Para el informe técnico · propuesta del equipo</div>`+fld('Mejoras propuestas','<b>Sur:</b> un motocarro contratado hace la ruta en un solo viaje desde las 5:00 a. m.<br><b>Norte:</b> la moto sale a las 5:15 a. m., al mismo tiempo, y no espera al sur.<br><b>Tortas:</b> se agrupan en dos días (martes y sábado) con franja de 1 hora confirmada.<br><b>Pedido mínimo</b> de 30 panes por tienda.')+tbl(['','Hoy','Propuesta'],[['Costo del mes','$928.000','$792.000'],['Costo por pan a tiendas','$44,4','$38,9'],['Tiendas atendidas antes de las 7:00','40 %','100 % (planeado)']])+`<div class="how"><b>Fíjense:</b> el motocarro cuesta más por viaje, pero hace en uno lo que la moto hacía en dos.</div>`],
+  ['Política',APP('Política de distribución y devoluciones (mínimo 5 reglas)')+fld('Política de distribución y devoluciones','1. El motocarro sale a la zona sur a las 5:00 a. m. y la moto a la zona norte a las 5:15 a. m., con el orden de tiendas de la planilla.<br>2. Las tiendas hacen su pedido por WhatsApp hasta las 6:00 p. m. del día anterior.<br>3. Pedido mínimo de 30 panes por tienda; si piden menos, recogen en la panadería.<br>4. El pan viaja en canastas plásticas con tapa, lavadas cada día; nunca en bolsas sueltas.<br>5. Las tortas por encargo se entregan martes y sábado, en una franja de 1 hora confirmada el día anterior.<br>6. Devoluciones: la tienda reporta el pan dañado el mismo día con foto; se repone al día siguiente; el pan devuelto no se revende y se anota en la hoja de merma.')],
+  ['Amarre con el taller 5',tbl(['Regla de la política','Objetivo SMART al que ayuda'],[['1. Dos rutas al mismo tiempo desde las 5:00','Aumentar del 40 % al 95 % los pedidos entregados antes de las 7:00 a. m.'],['2. Pedidos hasta las 6:00 p. m.','Reducir los agotados (se hornea lo pedido)'],['6. Devoluciones a la hoja de merma','Reducir la merma del 8 % al 3 %']])+`<div class="how"><b>Listo para entregar:</b> taller 8 enviado y empezar el informe técnico con los talleres 5 a 8.</div>`]]};
+document.querySelectorAll('[data-demo]').forEach(el=>{const k=el.dataset.demo,D=DM[k],sl=el.querySelector('.steplist'),stg=el.querySelector('.stage');let di=0;
+ D.forEach((d,i)=>{const b=document.createElement('button');b.className='st';b.innerHTML=`<b>${i+1}</b>${d[0]}`;b.onclick=()=>show2(i);sl.appendChild(b)});
+ function show2(i){di=Math.max(0,Math.min(D.length-1,i));stg.innerHTML=D[di][1];[...sl.children].forEach((b,j)=>{b.classList.toggle('done',j<=di);b.classList.toggle('cur',j===di)});document.querySelector(`[data-dn="${k}"]`).textContent='Paso '+(di+1)+' de '+D.length}
+ document.querySelector(`[data-dp="${k}"]`).onclick=()=>show2(di-1);document.querySelector(`[data-dx="${k}"]`).onclick=()=>show2(di+1);show2(0)});
+
+/* listas de chequeo */
+const CK={
+ '7':['Hay 10 productos reales con unidades al mes y costo unitario, y se sabe de dónde salió cada dato.','El equipo explica cuáles son A y por qué.','El punto de reorden está calculado para un producto A con datos reales (demanda diaria y tiempo de entrega).','La política tiene mínimo 5 reglas verificables.','La política dice cada cuánto se cuenta cada clase y cómo se rota (PEPS o PVPS).','Al menos una regla apoya un objetivo SMART de la clase 5.'],
+ '8':['Están todas las zonas o tipos de cliente, incluido el que recoge en el local.','Cada zona tiene frecuencia, vehículo y costo por viaje, con su fuente.','Hay al menos 2 mejoras concretas (agrupar, horario fijo, pedido mínimo, otro vehículo).','La política de distribución tiene mínimo 5 reglas verificables.','Incluye reglas de devoluciones: plazo, evidencia y qué se hace con lo devuelto.','Al menos una regla apoya un objetivo SMART de la clase 5.']};
+document.querySelectorAll('[data-check]').forEach(el=>{const k=el.dataset.check;CK[k].forEach((c,i)=>{const l=document.createElement('label');l.innerHTML=`<input type="checkbox" id="ck${k}-${i}"> <span>${esc(c)}</span>`;el.appendChild(l)});
+ const up=()=>{const n=el.querySelectorAll('input:checked').length;document.querySelector(`[data-bar="${k}"]`).style.width=(n/CK[k].length*100)+'%';document.querySelector(`[data-txt="${k}"]`).textContent=n+' de '+CK[k].length+' criterios cumplidos'};
+ el.querySelectorAll('input').forEach(cb=>{cb.checked=get(cb.id)==='1';cb.onchange=()=>{set(cb.id,cb.checked?'1':'0');up()}});up()});
+
+/* arranque: #c7 / #c8, luego la fecha, luego lo último usado */
+let s0=get('ses')||'7';const h=location.hash;if(h==='#c8'||h==='#clase8')s0='8';else if(h==='#c7'||h==='#clase7')s0='7';else if(today()==='2026-11-05')s0='8';else if(today()==='2026-11-04')s0='7';
+setSes(s0,+get('slide'+s0)||0);
+})();
+</script>
+</body></html>
