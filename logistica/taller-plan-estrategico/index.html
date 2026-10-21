@@ -153,6 +153,7 @@ footer.f{color:var(--muted);font-size:.85rem;padding:16px;text-align:center;bord
   <div class="brand"><i>LL</i>LogiLab SENA</div>
   <div class="co"><span class="eyebrow">Plan Estratégico Logístico de</span><b id="coName">— escojan su empresa en la clase 1 —</b></div>
   <div class="prog"><div class="bar"><span id="progBar" style="width:0%"></span></div><span class="note" id="progTxt">0/12</span></div>
+  <label class="btn" for="fImpTop" title="Cargar un respaldo .json descargado antes">⬆ Cargar respaldo</label><input type="file" id="fImpTop" accept=".json,application/json" hidden>
   <button class="btn" id="goPlan">📄 Mi plan</button>
 </header>
 
@@ -334,6 +335,7 @@ function drawRoute(){
 }
 function refreshTop(){const n=T.filter(t=>S.done[t.id]).length;document.getElementById('progBar').style.width=(n/T.length*100)+'%';document.getElementById('progTxt').textContent=n+'/'+T.length+' talleres';document.getElementById('coName').textContent=empresa()||'— escojan su empresa en la clase 1 —'}
 document.getElementById('goPlan').onclick=()=>go('PLAN');
+document.getElementById('fImpTop').onchange=loadBackupInput;
 function go(id){cur=id;try{localStorage.setItem(KEY+'-cur',id)}catch(e){}drawRoute();const m=document.getElementById('main');m.oninput=null;if(id==='INICIO')m.innerHTML=inicio();else if(id==='PLAN')m.innerHTML=plan();else{m.innerHTML=taller(T.find(t=>t.id===id));bindTaller(id)}if(id==='INICIO')bindInicio();if(id==='PLAN')bindPlan();window.scrollTo({top:0,behavior:'smooth'})}
 
 /* ======== INICIO ======== */
@@ -360,8 +362,13 @@ function inicio(){
 function bindInicio(){document.querySelectorAll('#main [data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));bindBackup()}
 function bindBackup(){
   const e=document.getElementById('bExp');if(e)e.onclick=()=>download(JSON.stringify(S,null,1),'respaldo-plan-'+slug()+'.json','application/json');
-  const f=document.getElementById('fImp');if(f)f.onchange=ev=>{const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||!o.d)throw 0;S=Object.assign({v:1,d:{},done:{},wa:'',mail:'',sent:{},tid:''},o);ensureTid();save();drawRoute();toast('Respaldo cargado');go('INICIO')}catch(err){toast('Ese archivo no es un respaldo válido')}};r.readAsText(file)};
+  const f=document.getElementById('fImp');if(f)f.onchange=loadBackupInput;
 }
+function loadBackupInput(ev){const file=ev.target.files[0];ev.target.value='';if(!file)return;
+  const hay=Object.values(S.d||{}).some(x=>x&&Object.keys(x).length);
+  if(hay&&!confirm('Este dispositivo ya tiene trabajo guardado. Al cargar el respaldo se reemplaza por el del archivo. ¿Continuar?'))return;
+  const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||!o.d)throw 0;S=Object.assign({v:1,d:{},done:{},wa:'',mail:'',sent:{},tid:''},o);ensureTid();save();drawRoute();refreshTop();toast('Respaldo cargado: '+(empresa()||'su plan'));go('INICIO')}catch(err){toast(o_err(file))}};r.readAsText(file)}
+function o_err(file){return /instructor/i.test(file.name)?'Ese es el respaldo del instructor: se carga en la zona instructor':'Ese archivo no es un respaldo válido del taller'}
 function slug(){return (empresa()||'mi-empresa').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 
 /* ======== TALLER ======== */
@@ -379,7 +386,7 @@ function taller(t){
   <div class="duo"><label class="field"><span class="lbl">WhatsApp del instructor (con indicativo, sin +)</span><input type="text" id="wa" inputmode="numeric" placeholder="57300XXXXXXX" value="${esc(S.wa)}"></label>
   <label class="field"><span class="lbl">Correo del instructor</span><input type="text" id="mailTo" inputmode="email" placeholder="correo@sena.edu.co" value="${esc(S.mail||'')}"></label></div>
   <div class="acts"><button class="btn pri" id="bSend">📤 Enviar al instructor</button><span class="note" id="sendMsg">${S.cloud&&S.cloud[t.id]?`<span class="sent">✅ Recibido por el instructor: ${fdate(S.cloud[t.id])}</span>`:''}</span></div>
-  <div class="acts"><button class="btn" id="bCopy">📋 Copiar código</button><a class="btn wa" id="bWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn mail" id="bMail">✉ Correo</button><button class="btn dl" id="bDl">⬇ Descargar .txt</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button></div>
+  <div class="acts"><button class="btn" id="bCopy">📋 Copiar código</button><a class="btn wa" id="bWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn mail" id="bMail">✉ Correo</button><button class="btn dl" id="bDl">⬇ Descargar .txt</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button><label class="btn" for="fImp">⬆ Cargar respaldo</label><input type="file" id="fImp" accept=".json,application/json" hidden></div>
   <p class="note">Si un botón no funciona en su dispositivo, use "Copiar código" y péguelo en un chat de WhatsApp o en un correo al instructor.${S.sent&&S.sent[t.id]?` <span class="sent">Último envío: ${fdate(S.sent[t.id])}</span>`:''}</p>
   <label style="display:flex;gap:10px;align-items:center;font-weight:700"><input type="checkbox" id="doneChk" ${S.done[t.id]?'checked':''} style="width:22px;height:22px;accent-color:var(--sena)"> Terminamos este taller</label>
   <div class="acts">${i>0?`<button class="btn" data-go="${T[i-1].id}">← Clase ${i}</button>`:''}${i<T.length-1?`<button class="btn pri" data-go="${T[i+1].id}">Clase ${i+2} →</button>`:`<button class="btn pri" data-go="PLAN">Ver mi plan completo →</button>`}</div></section>`;
