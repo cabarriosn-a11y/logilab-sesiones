@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rumbo y Compras · Clases 5 y 6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: proyector 16:9 — barra de control arriba, una diapositiva a la vez, navegación abajo */
+:root{
+  --sena:#39A900; --sena-deep:#2a7d00; --sena-soft:#e9f6df;
+  --sand:#f3efe6; --bg:#f7f8f4; --card:#ffffff; --fg:#17201a; --muted:#56635a; --line:#d9dfd3;
+  --sea:#0f6e8c; --sun:#e39b1b; --alert:#c2412d; --violet:#6b4fa3;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"JetBrains Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --sena:#5cc91f; --sena-deep:#7ad94a; --sena-soft:#1d2b16; --sand:#22261f; --bg:#121612; --card:#1a1f1a; --fg:#eef2ea; --muted:#a6b2a3; --line:#2f382d;
+  --sea:#4fb3d3; --sun:#f0b44a; --alert:#ef7a63; --violet:#a98ee0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --sena:#5cc91f; --sena-deep:#7ad94a; --sena-soft:#1d2b16; --sand:#22261f; --bg:#121612; --card:#1a1f1a; --fg:#eef2ea; --muted:#a6b2a3; --line:#2f382d;
+  --sea:#4fb3d3; --sun:#f0b44a; --alert:#ef7a63; --violet:#a98ee0; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:clamp(15px,1.25vw,20px);line-height:1.5;display:flex;flex-direction:column}
+h1,h2,h3{font-family:var(--display);line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.4rem,5.6vw,5rem);font-weight:800}
+h2{font-size:clamp(1.8rem,3.4vw,3rem);font-weight:700}
+h3{font-size:clamp(1.15rem,1.7vw,1.6rem);font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sena-deep)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+
+/* barra superior */
+.top{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:1.25rem}
+.brand i{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--sena);color:#fff;font-style:normal;font-size:1rem}
+.now{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);flex:1;min-width:200px}
+.now b{color:var(--fg)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--sena-soft);color:var(--sena-deep);font-weight:700;font-size:.8rem}
+.timer{display:flex;gap:6px;align-items:center}
+.timer .clock{font-family:var(--mono);font-size:1.35rem;min-width:5.2ch;text-align:center;font-variant-numeric:tabular-nums}
+.timer .clock.low{color:var(--alert)}
+.tbtn{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:4px 9px;font-size:.85rem}
+.tbtn.go{background:var(--sena);border-color:var(--sena);color:#fff}
+
+/* diapositivas */
+main{flex:1;min-height:0;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;overflow:auto;padding:clamp(18px,3.2vw,48px) clamp(16px,4vw,64px);display:none;flex-direction:column;gap:clamp(14px,2vw,26px)}
+.slide.on{display:flex;animation:in .35s ease}
+@keyframes in{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.on{animation:none}}
+.grid{display:grid;gap:clamp(12px,1.6vw,20px)}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:clamp(14px,1.6vw,22px);min-width:0}
+.lead{font-size:1.15em;color:var(--muted);max-width:62ch}
+
+/* bottom nav */
+.nav{display:flex;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid var(--line);background:var(--card);flex-wrap:wrap}
+.nav .dots{display:flex;gap:5px;flex:1;flex-wrap:wrap}
+.dot{width:26px;height:8px;border-radius:4px;border:0;background:var(--line);padding:0}
+.dot.on{background:var(--sena)}
+.navbtn{border:0;border-radius:8px;padding:6px 14px;background:var(--sena);color:#fff;font-weight:700}
+.navbtn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.foot{font-size:.78rem;color:var(--muted)}
+
+/* portada */
+.cover{justify-content:center;background:
+  radial-gradient(1200px 500px at 85% 110%, color-mix(in srgb,var(--sena) 22%,transparent), transparent 60%),
+  radial-gradient(700px 400px at 0% 0%, color-mix(in srgb,var(--sea) 14%,transparent), transparent 60%)}
+.cover .meta{display:flex;flex-wrap:wrap;gap:8px}
+.cover .meta span{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:.85rem}
+.kanas{display:flex;gap:6px;margin-top:6px}
+.kanas span{height:10px;flex:1;max-width:60px;border-radius:2px}
+
+/* agenda */
+.agenda{display:grid;gap:8px}
+.ag{display:grid;grid-template-columns:8.5ch 1fr auto;gap:14px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.ag time{font-family:var(--mono);font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ag.live{border-color:var(--sena);box-shadow:inset 5px 0 0 var(--sena)}
+.ag .tag{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sand);color:var(--muted);white-space:nowrap}
+
+/* temas */
+.topic{display:flex;gap:14px;align-items:flex-start}
+.topic .n{font-family:var(--display);font-weight:800;font-size:2.2rem;color:var(--sena);line-height:.9;min-width:1.4ch}
+
+/* fábula */
+.fable{max-width:72ch;font-size:1.08em;line-height:1.65}
+.fable p+p{margin-top:.8em}
+.fable .drop::first-letter{font-family:var(--display);font-size:3.4em;float:left;line-height:.85;padding-right:8px;color:var(--sena)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.who{border-top:6px solid var(--sena)}
+.who.bad{border-top-color:var(--alert)}
+.q{counter-increment:q;display:flex;gap:12px;align-items:flex-start}
+.q::before{content:counter(q);font-family:var(--display);font-weight:800;font-size:1.6rem;color:#fff;background:var(--sena);border-radius:8px;min-width:42px;height:42px;display:grid;place-items:center}
+
+/* cadena */
+.chain{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.link{flex:1 1 140px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;position:relative;min-width:0}
+.link b{display:block;font-family:var(--display);font-size:1.2rem}
+.link small{color:var(--muted)}
+.flows{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
+.flow{border-radius:10px;padding:12px 14px;color:var(--fg);background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c)}
+.flow b{font-family:var(--display);font-size:1.25rem}
+
+/* documental */
+.doc{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px}
+@media (max-width:800px){.doc{grid-template-columns:1fr}}
+.scene{background:linear-gradient(160deg,color-mix(in srgb,var(--sea) 18%,var(--card)),var(--card));border:1px solid var(--line);border-radius:14px;padding:clamp(16px,2.2vw,30px);display:flex;flex-direction:column;gap:12px;min-height:300px}
+.scene .hora{font-family:var(--mono);font-size:1.6rem;color:var(--sea)}
+.scene .txt{font-size:1.18em;line-height:1.6}
+.scene .guide{margin-top:auto;padding:10px 14px;border-radius:10px;background:var(--sena-soft);color:var(--fg)}
+.scene-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ficha{width:100%;border-collapse:collapse;font-size:.95em}
+.ficha th,.ficha td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.ficha th{background:var(--sena);color:#fff;font-family:var(--display);font-size:1.1rem;letter-spacing:.02em}
+.ficha td.ex{color:var(--muted);font-style:italic}
+
+/* canvas */
+.canvas{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.cb{border-radius:12px;padding:14px;background:var(--card);border:1px solid var(--line);border-top:8px solid var(--c);min-width:0;display:flex;flex-direction:column;gap:6px}
+.cb ul{margin:0;padding-left:1.1em;color:var(--muted);font-size:.93em}
+.cb .rap{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.c1{grid-column:span 2}.c2{grid-column:span 2}.c3{grid-column:span 2}.c4{grid-column:span 3}.c5{grid-column:span 3}
+@media (max-width:800px){.canvas{grid-template-columns:1fr}.c1,.c2,.c3,.c4,.c5{grid-column:auto}}
+.sectors{display:flex;flex-wrap:wrap;gap:8px}
+.sector{padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.sector b{color:var(--sena-deep)}
+
+/* evento */
+.deck{display:grid;place-items:center;gap:16px}
+.card-ev{width:min(760px,100%);border-radius:18px;padding:clamp(20px,3vw,40px);background:var(--card);border:2px solid var(--alert);display:flex;flex-direction:column;gap:14px;min-height:260px}
+.card-ev .k{font-family:var(--mono);color:var(--alert);letter-spacing:.1em;font-size:.8rem;text-transform:uppercase}
+.card-ev h3{font-size:clamp(1.5rem,2.6vw,2.4rem)}
+.card-ev .ask{padding:10px 14px;border-radius:10px;background:var(--sand)}
+.big{border:0;border-radius:12px;padding:12px 22px;background:var(--alert);color:#fff;font-weight:700;font-size:1.05rem}
+
+/* ruta */
+.route{display:grid;gap:8px}
+.rt{display:grid;grid-template-columns:6ch 1fr 7ch;gap:12px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.rt .code{font-family:var(--mono);font-weight:500;color:var(--sena-deep)}
+.rt .h{font-family:var(--mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.rt.today{background:var(--sena-soft);border-color:var(--sena)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px}
+.bar span{display:block;height:100%;background:var(--sena)}
+
+/* entrega */
+.form{display:grid;gap:10px}
+.form label{font-weight:700;font-size:.9rem}
+.form input,.form textarea,.form select{width:100%;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.form textarea{min-height:64px;resize:vertical}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.act{border:0;border-radius:10px;padding:9px 14px;font-weight:700;color:#fff;background:var(--sena);text-decoration:none;display:inline-block}
+.act.wa{background:#1f9d55}.act.mail{background:var(--sea)}.act.dl{background:var(--violet)}
+.toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-weight:700}
+.note{font-size:.85rem;color:var(--muted)}
+</style>
+<style>
+/* Extras clases 5 y 6 */
+.ses{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ses button{border:0;background:var(--bg);color:var(--fg);padding:5px 12px;font-weight:700;font-size:.9rem}
+.ses button.on{background:var(--sena);color:#fff}
+.quiz{display:grid;gap:10px}
+.qi{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.qi .opts{display:flex;gap:6px;flex-wrap:wrap}
+.opt{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:6px 12px;font-weight:700}
+.opt.ok{background:var(--sena);border-color:var(--sena);color:#fff}
+.opt.bad{background:var(--alert);border-color:var(--alert);color:#fff}
+.fb{grid-column:1/-1;font-size:.9rem;color:var(--muted)}
+@media (max-width:640px){.qi{grid-template-columns:1fr}}
+.pyr{display:grid;gap:6px;justify-items:center}
+.pyr div{padding:10px 16px;border-radius:10px;text-align:center;color:#fff;font-weight:700;min-width:0}
+.pyr small{display:block;font-weight:400;opacity:.92}
+.formula{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:1.05em}
+.formula span{padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.formula span b{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--sena-deep)}
+.formula i{font-style:normal;font-weight:800;color:var(--muted)}
+.vs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.vs .box{border-top:6px solid var(--c)}
+.vs .box .k{font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.smart{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:800px){.smart{grid-template-columns:1fr 1fr}}
+.sm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.sm .L{font-family:var(--display);font-weight:800;font-size:2.6rem;line-height:1;color:var(--sena)}
+.sm h3{font-size:1.15rem;margin:4px 0}
+.sm p{font-size:.9em;color:var(--muted)}
+.builder{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:800px){.builder{grid-template-columns:1fr}}
+.out{font-size:1.25em;line-height:1.45;padding:16px;border-radius:12px;background:var(--sena-soft);border:1px solid var(--sena);min-height:90px}
+.letters{display:flex;gap:8px}
+.letters span{width:46px;height:46px;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.6rem;background:var(--line);color:var(--muted);transition:.2s}
+.letters span.on{background:var(--sena);color:#fff}
+.tw{overflow-x:auto}
+.ftable{width:100%;border-collapse:collapse;font-size:.95em}
+.ftable th,.ftable td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.ftable th{background:var(--sena);color:#fff;font-family:var(--display);font-size:1.08rem}
+.ftable.sea th{background:var(--sea)}
+.ftable td.c{text-align:center}
+.ftable select,.ftable input{font:inherit;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);padding:4px 6px;width:100%}
+.ftable select{width:auto}
+.tot{font-family:var(--mono);font-weight:500;font-size:1.1rem}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.82rem;white-space:nowrap}
+.badge.g{background:var(--sena);color:#fff}.badge.y{background:var(--sun);color:#1b1b1b}.badge.r{background:var(--alert);color:#fff}
+.cycle{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:8px;counter-reset:cy}
+.cycle div{counter-increment:cy;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;position:relative;min-width:0}
+.cycle div::before{content:counter(cy);font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--sea);display:block;line-height:1}
+.cycle b{display:block}
+.cycle small{color:var(--muted)}
+.krj{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr) auto;gap:8px}
+.krj .ax{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;color:var(--muted);grid-row:1/3}
+.krj .axx{grid-column:2/4;text-align:center;font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;color:var(--muted)}
+.krj .q4{border-radius:12px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c);min-width:0}
+.krj .q4 h3{font-size:1.2rem}
+.krj .q4 p{font-size:.92em}
+.krj .q4 .note{margin-top:4px}
+.rules{counter-reset:r;display:grid;gap:8px}
+.rules div{counter-increment:r;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.rules div::before{content:counter(r);font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--sea);min-width:1.2ch}
+.rules .tag{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sand);color:var(--muted);white-space:nowrap}
+.steps5{display:grid;gap:8px;counter-reset:s}
+.steps5 li{counter-increment:s;list-style:none;display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.steps5 li::before{content:counter(s);font-family:var(--display);font-weight:800;font-size:1.4rem;color:#fff;background:var(--sena);border-radius:8px;min-width:38px;height:38px;display:grid;place-items:center}
+.steps5{padding:0;margin:0}
+.check{display:grid;gap:6px}
+.check label{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.check input{width:20px;height:20px;accent-color:var(--sena);flex:none;margin-top:2px}
+.meter{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.meter span{display:block;height:100%;background:var(--sena);transition:width .3s}
+.cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cta a{text-decoration:none}
+.bring{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.bring div{padding:12px 14px;border-radius:10px;background:var(--card);border:1px dashed var(--sena)}
+.where{display:flex;flex-wrap:wrap;gap:6px}
+.where span{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.85rem;color:var(--muted)}
+.where span.on{background:var(--sena);border-color:var(--sena);color:#fff;font-weight:700}
+@media (max-width:640px){.nav .dots{display:none}}
+.where span.done{background:var(--sena-soft);color:var(--sena-deep)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><i>LL</i>LogiLab SENA</div>
+  <div class="ses" role="group" aria-label="Clase">
+    <button data-ses="5">Clase 5</button><button data-ses="6">Clase 6</button>
+  </div>
+  <div class="now"><span id="clockNow">--:--</span> · <span>Ahora:</span> <b id="nowBlock">—</b> <span class="pill" id="nowLeft"></span></div>
+  <div class="timer" aria-label="Cronómetro de actividad">
+    <button class="tbtn" data-min="5">5'</button>
+    <button class="tbtn" data-min="10">10'</button>
+    <button class="tbtn" data-min="20">20'</button>
+    <button class="tbtn" data-min="30">30'</button>
+    <span class="clock" id="clk">00:00</span>
+    <button class="tbtn go" id="tPlay">Iniciar</button>
+    <button class="tbtn" id="tReset">Reiniciar</button>
+  </div>
+</header>
+
+<main id="deck">
+
+<!-- ================= CLASE 5 ================= -->
+
+<section class="slide cover" data-s="5" data-title="Portada">
+  <div class="eyebrow">Competencia 210101007 · Taller Plan Estratégico Logístico · Clase 5 de 12 · Evidencia 3.3.2</div>
+  <h1>Rumbo estratégico<br>logístico</h1>
+  <p class="lead">El diagnóstico ya dijo dónde está la empresa. Hoy decidimos a dónde va su logística: misión, visión y cuatro objetivos SMART conectados con lo que quiere el dueño.</p>
+  <div class="meta"><span>Miércoles 28 oct · 1:00 – 4:00 pm</span><span>Fase: Políticas</span><span>Entregable: misión, visión y 4 objetivos SMART</span></div>
+  <div class="where" aria-label="Ruta del taller">
+    <span class="done">1–4 Diagnóstico</span><span class="on">5 Rumbo</span><span>6 Compras</span><span>7 Inventarios</span><span>8–12 Estrategias, plan e indicadores</span>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+<section class="slide" data-s="5" data-title="Agenda">
+  <div class="eyebrow">Ruta de la tarde</div>
+  <h2>Agenda de hoy</h2>
+  <div class="agenda" data-ag="5"></div>
+  <p class="note">El bloque en curso se resalta solo, según la hora del computador, el día de la clase.</p>
+</section>
+
+<section class="slide" data-s="5" data-title="Retoma DOFA">
+  <div class="eyebrow">Retoma de la clase 4 · 10 minutos</div>
+  <h2>¿Fortaleza, debilidad, oportunidad o amenaza?</h2>
+  <p class="lead">Recuerden: F y D son de adentro de la empresa; O y A vienen de afuera. Votemos con la mano antes de tocar el botón.</p>
+  <div class="quiz" data-quiz="dofa"></div>
+</section>
+
+<section class="slide" data-s="5" data-title="¿Qué es el rumbo?">
+  <div class="eyebrow">Fundamento</div>
+  <h2>Del diagnóstico al rumbo</h2>
+  <div class="grid g2">
+    <div class="pyr" aria-label="Pirámide del rumbo estratégico">
+      <div style="background:var(--violet);width:46%">Objetivos de la empresa<small>Lo que quiere el dueño en 3 años</small></div>
+      <div style="background:var(--sea);width:62%">Misión y visión logística<small>Para qué existe la logística y a dónde va</small></div>
+      <div style="background:var(--sena);width:78%">4 objetivos logísticos SMART<small>Resultados medibles con fecha</small></div>
+      <div style="background:var(--sun);color:#1b1b1b;width:94%">Políticas, estrategias e indicadores<small>Clases 6 a 12: cómo se cumplen y cómo se miden</small></div>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="box"><h3>¿Por qué empezar aquí?</h3><p>Una política de compras o de inventarios solo tiene sentido si apunta a una meta. Si no hay rumbo, cada área "mejora" en una dirección distinta.</p></div>
+      <div class="box" style="background:var(--sena-soft)"><b>Regla de la clase:</b> cada objetivo logístico nace de uno de los 3 problemas que escribieron en la conclusión del taller 4, y le aporta a un objetivo del dueño.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-s="5" data-title="Misión logística">
+  <div class="eyebrow">Paso 2 del taller</div>
+  <h2>Misión logística: lo que hace hoy la logística</h2>
+  <div class="formula">
+    <span><b>Quién</b>La logística de [empresa]</span><i>+</i><span><b>Qué hace</b>garantiza / abastece / entrega…</span><i>+</i><span><b>Para quién</b>clientes, tiendas, huéspedes…</span><i>+</i><span><b>Cómo</b>con qué procesos y valores</span>
+  </div>
+  <div class="vs">
+    <div class="box" style="--c:var(--alert)"><div class="k">Así no</div><p style="font-size:1.1em">"Ser los mejores en logística y dar un excelente servicio."</p><p class="note">No dice qué hace, para quién ni cómo. Sirve para cualquier empresa del mundo.</p></div>
+    <div class="box" style="--c:var(--sena)"><div class="k">Así sí · ejemplo Panadería La Esperanza</div><p style="font-size:1.1em">"La logística de Panadería La Esperanza garantiza que los clientes del barrio y las tiendas encuentren pan fresco todo el día, comprando insumos a tiempo, controlando el inventario y entregando en horario fijo, al menor costo posible."</p></div>
+  </div>
+  <p class="note">Escríbanla en presente, en una o dos frases, con palabras que el dueño entienda.</p>
+</section>
+
+<section class="slide" data-s="5" data-title="Visión logística">
+  <div class="eyebrow">Paso 3 del taller</div>
+  <h2>Visión logística: cómo se verá en 3 años</h2>
+  <div class="grid g3">
+    <div class="box" style="border-top:6px solid var(--sea)"><h3>Tiene fecha</h3><p>"En 2029…" Un horizonte de 3 años, igual al de los objetivos del dueño.</p></div>
+    <div class="box" style="border-top:6px solid var(--sena)"><h3>Se puede verificar</h3><p>Describe algo que en 2029 alguien pueda ir a mirar: cero agotados, dos proveedores, entregas con ruta.</p></div>
+    <div class="box" style="border-top:6px solid var(--sun)"><h3>Es realista</h3><p>Ambiciosa, pero posible para una empresa de Riohacha de ese tamaño.</p></div>
+  </div>
+  <div class="box" style="background:var(--sena-soft)"><div class="eyebrow">Ejemplo</div><p style="font-size:1.12em">"En 2029, Panadería La Esperanza no tendrá agotados en hora pico, contará con dos proveedores por cada insumo crítico y entregará a 20 tiendas con ruta y horario fijo, controlando pedidos e inventario desde el celular."</p></div>
+</section>
+
+<section class="slide" data-s="5" data-title="SMART">
+  <div class="eyebrow">Paso 4 del taller</div>
+  <h2>Objetivos SMART</h2>
+  <div class="smart">
+    <div class="sm"><div class="L">S</div><h3>Específico</h3><p>Dice exactamente qué se mejora: "agotados de pan de la tarde", no "el inventario".</p></div>
+    <div class="sm"><div class="L">M</div><h3>Medible</h3><p>Tiene un número de partida y uno de llegada: del 60 % al 10 %.</p></div>
+    <div class="sm"><div class="L">A</div><h3>Alcanzable</h3><p>La empresa tiene cómo lograrlo con su gente y su plata.</p></div>
+    <div class="sm"><div class="L">R</div><h3>Relevante</h3><p>Resuelve un problema del diagnóstico y le aporta al dueño.</p></div>
+    <div class="sm"><div class="L">T</div><h3>Con tiempo</h3><p>Tiene plazo: "en 6 meses", "antes de junio de 2027".</p></div>
+  </div>
+  <div class="formula" style="justify-content:center">
+    <span><b>Verbo</b>Reducir</span><i>+</i><span><b>Qué</b>los días con agotado de pan de la tarde</span><i>+</i><span><b>Cuánto</b>del 60 % al 10 %</span><i>+</i><span><b>Cuándo</b>en 6 meses</span>
+  </div>
+</section>
+
+<section class="slide" data-s="5" data-title="¿Es SMART?">
+  <div class="eyebrow">Práctica rápida</div>
+  <h2>¿Es SMART o le falta algo?</h2>
+  <div class="quiz" data-quiz="smart"></div>
+</section>
+
+<section class="slide" data-s="5" data-title="Fábrica de objetivos">
+  <div class="eyebrow">Herramienta para el equipo</div>
+  <h2>Fábrica de objetivos SMART</h2>
+  <div class="builder">
+    <div class="form">
+      <label for="bV">Verbo</label>
+      <select id="bV"><option>Reducir</option><option>Aumentar</option><option>Pasar</option><option>Lograr</option><option>Mantener</option></select>
+      <label for="bQ">¿Qué se mide?</label>
+      <input id="bQ" placeholder="los días con agotado de pan de la tarde">
+      <div class="grid" style="grid-template-columns:1fr 1fr"><div class="form"><label for="bD">De (hoy)</label><input id="bD" placeholder="60 %"></div><div class="form"><label for="bH">A (meta)</label><input id="bH" placeholder="10 %"></div></div>
+      <label for="bT">Plazo</label>
+      <input id="bT" placeholder="en 6 meses">
+      <label for="bR">¿Qué problema del taller 4 resuelve?</label>
+      <select id="bR"><option value="">— Escojan —</option><option>Abastecimiento</option><option>Inventario</option><option>Almacenamiento</option><option>Distribución</option><option>Costos</option><option>Servicio al cliente</option></select>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="bA" style="width:auto"> La empresa puede lograrlo con su gente y su presupuesto</label>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="letters" aria-label="Letras SMART cumplidas"><span id="lS">S</span><span id="lM">M</span><span id="lA">A</span><span id="lR">R</span><span id="lT">T</span></div>
+      <div class="out" id="bOut">Llenen los campos y aquí sale el objetivo.</div>
+      <div class="acts"><button class="act" id="bCopy">Copiar objetivo</button><button class="tbtn" id="bClear">Limpiar</button></div>
+      <p class="note">Cópienlo y péguenlo en la tabla de objetivos del taller 5 en la app.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-s="5" data-title="Alineación">
+  <div class="eyebrow">Paso 5 del taller</div>
+  <h2>Cada objetivo tiene papá y mamá</h2>
+  <p class="lead">Un problema del diagnóstico lo origina y un objetivo del dueño lo justifica. Ejemplo de la panadería:</p>
+  <div class="tw"><table class="ftable">
+    <tr><th>Problema (taller 4)</th><th>Objetivo logístico SMART</th><th>Objetivo de la empresa</th><th>Plazo</th></tr>
+    <tr><td>Inventario: se agota el pan de la tarde 3 de cada 5 días</td><td>Reducir los días con agotado de pan de la tarde del 60 % al 10 %</td><td>Aumentar las ventas</td><td>6 meses</td></tr>
+    <tr><td>Abastecimiento: un solo proveedor de harina que llega tarde</td><td>Pasar de 1 a 2 proveedores de harina aprobados</td><td>Bajar costos</td><td>4 meses</td></tr>
+    <tr><td>Distribución: las tiendas reciben el pan sin hora fija</td><td>Entregar el 95 % de los pedidos a tiendas antes de las 7:00 a. m.</td><td>Fidelizar a las tiendas</td><td>4 meses</td></tr>
+    <tr><td>Costos: se bota pan del día anterior</td><td>Reducir la merma de pan del 8 % al 3 % de la producción diaria</td><td>Mejorar la utilidad</td><td>6 meses</td></tr>
+  </table></div>
+  <p class="note">Los números de partida salen del diagnóstico. Si no los tienen, el primer paso es medirlos esta semana.</p>
+</section>
+
+<section class="slide" data-s="5" data-title="Taller 5">
+  <div class="eyebrow">Trabajo en equipo · 1 h 30 min</div>
+  <h2>Taller 5 paso a paso</h2>
+  <ol class="steps5">
+    <li><span><b>Llamen o visiten al dueño:</b> ¿qué quiere lograr la empresa en los próximos 3 años? Escriban sus respuestas tal como las dijo.</span></li>
+    <li><span><b>Misión logística:</b> qué hace la logística, para quién y cómo.</span></li>
+    <li><span><b>Visión logística:</b> cómo se verá la logística en 3 años.</span></li>
+    <li><span><b>4 objetivos SMART:</b> uno por cada problema de la conclusión del taller 4. Usen la fábrica de objetivos.</span></li>
+    <li><span><b>Conecten:</b> cada objetivo logístico con el objetivo corporativo al que aporta.</span></li>
+  </ol>
+  <div class="cta"><a class="act" href="../taller-plan-estrategico/" target="_blank" rel="noopener">Abrir el taller en la app →</a><span class="note">Taller 5 · Rumbo estratégico logístico. La app guarda en el dispositivo.</span></div>
+</section>
+
+<section class="slide" data-s="5" data-title="Socialización">
+  <div class="eyebrow">Socialización · 30 minutos</div>
+  <h2>Lista de chequeo antes de entregar</h2>
+  <div class="check" data-check="5"></div>
+  <div class="meter"><span data-bar="5"></span></div><p class="note" data-txt="5"></p>
+</section>
+
+<section class="slide" data-s="5" data-title="Cierre">
+  <div class="eyebrow">Cierre · 10 minutos</div>
+  <h2>Entrega y tarea para mañana</h2>
+  <div class="grid g2">
+    <div class="box"><h3>Entreguen hoy</h3><ol class="steps5" style="margin-top:10px"><li><span>En la app, al final del taller 5, envíen el <b>código de entrega</b> por WhatsApp o correo (o usen <b>Copiar código</b>).</span></li><li><span>Descarguen el <b>respaldo .json</b> antes de cerrar.</span></li></ol></div>
+    <div class="box"><h3>Traigan mañana (clase 6)</h3><p>De los 4 proveedores más importantes de su empresa:</p><div class="bring" style="margin-top:10px"><div>Qué le venden y precio de un producto clave</div><div>Cada cuánto entregan y si llegan a tiempo</div><div>Plazo de pago o crédito que dan</div><div>Problemas de calidad de los últimos meses</div></div></div>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+<!-- ================= CLASE 6 ================= -->
+
+<section class="slide cover" data-s="6" data-title="Portada">
+  <div class="eyebrow">Competencia 210101007 · Taller Plan Estratégico Logístico · Clase 6 de 12 · Evidencia 3.3.2</div>
+  <h1>Política de compras<br>y proveedores</h1>
+  <p class="lead">Ayer fijamos el rumbo. Hoy ponemos la primera regla de juego: a quién le compramos, cómo los evaluamos y qué reglas se cumplen siempre al comprar.</p>
+  <div class="meta"><span>Jueves 29 oct · 1:00 – 4:00 pm</span><span>Fase: Políticas</span><span>Entregable: evaluación de proveedores y política de aprovisionamiento</span></div>
+  <div class="where" aria-label="Ruta del taller">
+    <span class="done">1–4 Diagnóstico</span><span class="done">5 Rumbo</span><span class="on">6 Compras</span><span>7 Inventarios</span><span>8–12 Estrategias, plan e indicadores</span>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+<section class="slide" data-s="6" data-title="Agenda">
+  <div class="eyebrow">Ruta de la tarde</div>
+  <h2>Agenda de hoy</h2>
+  <div class="agenda" data-ag="6"></div>
+  <p class="note">El bloque en curso se resalta solo, según la hora del computador, el día de la clase.</p>
+</section>
+
+<section class="slide" data-s="6" data-title="Retoma">
+  <div class="eyebrow">Retoma · 10 minutos</div>
+  <h2>¿Política o deseo?</h2>
+  <p class="lead">Una política es una regla que se cumple siempre y se puede verificar. Un deseo es una buena intención.</p>
+  <div class="quiz" data-quiz="pol"></div>
+</section>
+
+<section class="slide" data-s="6" data-title="Ciclo de compras">
+  <div class="eyebrow">Fundamento</div>
+  <h2>El ciclo de aprovisionamiento</h2>
+  <div class="cycle">
+    <div><b>Necesidad</b><small>El inventario llega al punto de pedido</small></div>
+    <div><b>Cotizar</b><small>Pedir precio y condiciones a 2 o más</small></div>
+    <div><b>Seleccionar</b><small>Escoger con la matriz, no por amistad</small></div>
+    <div><b>Pedir</b><small>Orden de compra escrita: qué, cuánto, cuándo</small></div>
+    <div><b>Recibir</b><small>Contar y revisar contra la orden</small></div>
+    <div><b>Pagar</b><small>En el plazo acordado</small></div>
+    <div><b>Evaluar</b><small>Calificar al proveedor y volver a empezar</small></div>
+  </div>
+  <div class="box" style="background:var(--sena-soft)"><b>¿Dónde falla su empresa?</b> En el taller 2 anotaron cómo se compra hoy. Ubiquen en qué paso del ciclo está el problema: ahí deben ir las reglas de la política.</div>
+</section>
+
+<section class="slide" data-s="6" data-title="Criterios">
+  <div class="eyebrow">Paso 2 del taller</div>
+  <h2>Cómo calificar a un proveedor de 1 a 5</h2>
+  <div class="tw"><table class="ftable sea">
+    <tr><th>Criterio</th><th>5 · Excelente</th><th>3 · Aceptable</th><th>1 · Deficiente</th></tr>
+    <tr><td><b>Precio</b></td><td>El más bajo de las cotizaciones o con descuento por volumen</td><td>En el promedio del mercado</td><td>El más caro sin una razón</td></tr>
+    <tr><td><b>Cumplimiento</b></td><td>Entrega completa y a tiempo 9 de cada 10 pedidos o más</td><td>7 u 8 de cada 10</td><td>Menos de 6 de cada 10</td></tr>
+    <tr><td><b>Calidad</b></td><td>Sin devoluciones ni producto dañado o vencido</td><td>Fallas ocasionales que resuelve rápido</td><td>Fallas frecuentes o sin respuesta</td></tr>
+    <tr><td><b>Crédito</b></td><td>Plazo de pago de 30 días o más</td><td>Plazo de 8 a 15 días</td><td>Solo de contado o pago anticipado</td></tr>
+  </table></div>
+  <p class="note">Escala sugerida para este taller. El 2 y el 4 quedan entre los niveles. Cada calificación debe tener un dato que la soporte: una factura, una entrevista o una observación.</p>
+</section>
+
+<section class="slide" data-s="6" data-title="Evaluador">
+  <div class="eyebrow">Demostración · ejemplo de la panadería</div>
+  <h2>Evaluación de proveedores</h2>
+  <div class="tw"><table class="ftable" id="evT">
+    <thead><tr><th>Proveedor</th><th>Precio</th><th>Cumplimiento</th><th>Calidad</th><th>Crédito</th><th>Total /20</th><th>Decisión</th></tr></thead><tbody></tbody>
+  </table></div>
+  <div class="grid g3">
+    <div class="box"><span class="badge g">17 a 20 · Seguir</span><p class="note" style="margin-top:6px">Proveedor confiable. Mantener y buscar un acuerdo de precio.</p></div>
+    <div class="box"><span class="badge y">12 a 16 · Negociar</span><p class="note" style="margin-top:6px">Hablar del criterio más bajo y acordar una mejora con fecha.</p></div>
+    <div class="box"><span class="badge r">11 o menos · Buscar otro</span><p class="note" style="margin-top:6px">Conseguir un segundo proveedor. También si algún criterio vale 1.</p></div>
+  </div>
+  <div class="acts"><button class="tbtn" id="evReset">Volver al ejemplo</button><span class="note">Cambien las calificaciones y miren cómo cambia la decisión. En la app la suma sale sola.</span></div>
+</section>
+
+<section class="slide" data-s="6" data-title="Productos críticos">
+  <div class="eyebrow">¿A qué productos les ponemos más reglas?</div>
+  <h2>Matriz de Kraljic simplificada</h2>
+  <div class="krj">
+    <div class="ax">RIESGO DE QUE FALTE →</div>
+    <div class="q4" style="--c:var(--sun)"><h3>Cuello de botella</h3><p>Pesa poco en el costo, pero si falta se para todo. <i>Ej.: levadura fresca, repuesto del horno.</i></p><p class="note">Regla: stock de seguridad y proveedor alterno identificado.</p></div>
+    <div class="q4" style="--c:var(--alert)"><h3>Estratégico</h3><p>Pesa mucho y es difícil de conseguir. <i>Ej.: harina de trigo.</i></p><p class="note">Regla: mínimo 2 proveedores y acuerdo de precio por temporada.</p></div>
+    <div class="q4" style="--c:var(--sena)"><h3>Rutinario</h3><p>Barato y fácil de conseguir. <i>Ej.: bolsas, servilletas.</i></p><p class="note">Regla: compra simple, pocas veces al mes.</p></div>
+    <div class="q4" style="--c:var(--sea)"><h3>Apalancamiento</h3><p>Pesa mucho en el costo, pero hay muchos que lo venden. <i>Ej.: azúcar, gas.</i></p><p class="note">Regla: cotizar a varios y negociar por volumen.</p></div>
+    <div></div><div class="axx">IMPACTO EN EL COSTO O EN LAS VENTAS →</div>
+  </div>
+</section>
+
+<section class="slide" data-s="6" data-title="Política modelo">
+  <div class="eyebrow">Paso 4 del taller</div>
+  <h2>Así se ve una política de aprovisionamiento</h2>
+  <div class="rules">
+    <div><span>Todo insumo crítico (harina, azúcar y margarina) tendrá mínimo 2 proveedores aprobados.</span><span class="tag">Cuántos proveedores</span></div>
+    <div><span>Los pedidos se hacen los lunes y jueves antes de las 10:00 a. m., según el punto de pedido.</span><span class="tag">Frecuencia</span></div>
+    <div><span>Las compras de más de $500.000 las autoriza el administrador; las menores, el encargado de producción.</span><span class="tag">Autorización</span></div>
+    <div><span>Toda mercancía se recibe contra la orden de compra: se cuenta, se revisa vencimiento y estado, y lo que no cumple se devuelve el mismo día.</span><span class="tag">Recepción</span></div>
+    <div><span>Se negocia pago a 15 días o más; el pago de contado solo se acepta con descuento.</span><span class="tag">Pago</span></div>
+    <div><span>Cada 3 meses se evalúa a cada proveedor con la matriz; quien saque menos de 12 entra en plan de mejora.</span><span class="tag">Evaluación</span></div>
+  </div>
+  <p class="note">Ejemplo de la panadería. Los montos y días los decide su empresa. Palabras que delatan una política: siempre, todo, cada, mínimo, máximo, solo.</p>
+</section>
+
+<section class="slide" data-s="6" data-title="Conexión con el rumbo">
+  <div class="eyebrow">Amarre con la clase 5</div>
+  <h2>La política trabaja para un objetivo</h2>
+  <div class="grid g2">
+    <div class="box" style="border-top:6px solid var(--sena)"><div class="eyebrow">Objetivo SMART de ayer</div><p style="font-size:1.15em">Pasar de 1 a 2 proveedores de harina aprobados en 4 meses.</p></div>
+    <div class="box" style="border-top:6px solid var(--sea)"><div class="eyebrow">Regla de hoy que lo hace posible</div><p style="font-size:1.15em">Todo insumo crítico tendrá mínimo 2 proveedores aprobados.</p></div>
+  </div>
+  <div class="box" style="background:var(--sena-soft)"><b>Pregunta para cada equipo:</b> ¿cuál de sus 4 objetivos SMART se apoya en la política de compras? Si ninguno, revisen: o falta una regla o falta un objetivo.</div>
+</section>
+
+<section class="slide" data-s="6" data-title="Taller 6">
+  <div class="eyebrow">Trabajo en equipo · 1 h 30 min</div>
+  <h2>Taller 6 paso a paso</h2>
+  <ol class="steps5">
+    <li><span><b>Listen</b> los 4 proveedores más importantes de su empresa (los datos que trajeron de tarea).</span></li>
+    <li><span><b>Califiquen</b> cada uno de 1 a 5 en precio, cumplimiento, calidad y crédito. La app suma el total.</span></li>
+    <li><span><b>Decidan:</b> con quién seguir, con quién negociar y para qué producto hace falta un segundo proveedor.</span></li>
+    <li><span><b>Escriban la política</b> con mínimo 5 reglas: proveedores por producto, frecuencia, autorización, recepción y pago.</span></li>
+  </ol>
+  <div class="cta"><a class="act" href="../taller-plan-estrategico/" target="_blank" rel="noopener">Abrir el taller en la app →</a><span class="note">Taller 6 · Política de compras y proveedores.</span></div>
+</section>
+
+<section class="slide" data-s="6" data-title="Socialización">
+  <div class="eyebrow">Socialización · 30 minutos</div>
+  <h2>Lista de chequeo antes de entregar</h2>
+  <div class="check" data-check="6"></div>
+  <div class="meter"><span data-bar="6"></span></div><p class="note" data-txt="6"></p>
+</section>
+
+<section class="slide" data-s="6" data-title="Cierre">
+  <div class="eyebrow">Cierre · 10 minutos</div>
+  <h2>Entrega y tarea para la clase 7</h2>
+  <div class="grid g2">
+    <div class="box"><h3>Entreguen hoy</h3><ol class="steps5" style="margin-top:10px"><li><span>En la app, al final del taller 6, envíen el <b>código de entrega</b> por WhatsApp o correo (o usen <b>Copiar código</b>).</span></li><li><span>Descarguen el <b>respaldo .json</b> actualizado.</span></li></ol></div>
+    <div class="box"><h3>Traigan el miércoles 4 nov (clase 7 · inventarios)</h3><div class="bring" style="margin-top:10px"><div>Los 10 productos que más vende la empresa</div><div>Cuánto vende de cada uno por semana, aproximado</div><div>Cuánto tiene hoy en bodega de cada uno</div><div>Cuáles se agotan y cada cuánto</div></div></div>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+</main>
+
+<nav class="nav">
+  <button class="navbtn ghost" id="prev" aria-label="Anterior">←</button>
+  <div class="dots" id="dots"></div>
+  <span class="foot" id="slideName"></span>
+  <button class="navbtn" id="next" aria-label="Siguiente">→</button>
+  <button class="tbtn" id="fs">Pantalla completa</button>
+  <a class="tbtn" href="../../" style="text-decoration:none">← Portal</a>
+  <span class="foot">LogiLab SENA · By Carlos Barrios · Instructor</span>
+</nav>
+
+<script>
+(function(){
+const LS='pe56-';
+function get(k){try{return localStorage.getItem(LS+k)}catch(e){return null}}
+function set(k,v){try{localStorage.setItem(LS+k,v)}catch(e){}}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+
+/* clase activa y navegación */
+const all=[...document.querySelectorAll('.slide')];
+let ses='5',slides=[],cur=0;const dots=document.getElementById('dots');
+function setSes(s,start){ses=s;set('ses',s);slides=all.filter(x=>x.dataset.s===s);
+ document.querySelectorAll('[data-ses]').forEach(b=>b.classList.toggle('on',b.dataset.ses===s));
+ dots.innerHTML='';slides.forEach((sl,i)=>{const b=document.createElement('button');b.className='dot';b.title=sl.dataset.title;b.setAttribute('aria-label',sl.dataset.title);b.onclick=()=>go(i);dots.appendChild(b)});
+ go(start||0);tick()}
+function go(i){cur=Math.max(0,Math.min(slides.length-1,i));all.forEach(x=>x.classList.remove('on'));slides[cur].classList.add('on');[...dots.children].forEach((d,k)=>d.classList.toggle('on',k===cur));document.getElementById('slideName').textContent='Clase '+ses+' · '+(cur+1)+'/'+slides.length+' · '+slides[cur].dataset.title;set('slide'+ses,cur);slides[cur].scrollTop=0}
+document.querySelectorAll('[data-ses]').forEach(b=>b.onclick=()=>setSes(b.dataset.ses,+get('slide'+b.dataset.ses)||0));
+document.getElementById('prev').onclick=()=>go(cur-1);document.getElementById('next').onclick=()=>go(cur+1);
+document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1)});
+document.getElementById('fs').onclick=()=>{try{if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen()}catch(e){}};
+
+/* agendas */
+const AG={
+ '5':{d:'2026-10-28',b:[
+  ['13:00','13:10','Retoma: ¿F, D, O o A?','Inicio'],
+  ['13:10','13:30','Rumbo estratégico: misión, visión y SMART','Teoría'],
+  ['13:30','14:30','Taller: objetivos del dueño, misión y visión','Taller'],
+  ['14:30','14:45','Receso','—'],
+  ['14:45','15:20','Taller: 4 objetivos SMART y alineación','Taller'],
+  ['15:20','15:50','Socialización con lista de chequeo','3.3.2'],
+  ['15:50','16:00','Código de entrega, respaldo y tarea','Cierre']]},
+ '6':{d:'2026-10-29',b:[
+  ['13:00','13:10','Retoma: ¿política o deseo?','Inicio'],
+  ['13:10','13:30','Ciclo de compras, criterios y productos críticos','Teoría'],
+  ['13:30','14:30','Taller: evaluación de 4 proveedores','Taller'],
+  ['14:30','14:45','Receso','—'],
+  ['14:45','15:20','Taller: decisión y política de aprovisionamiento','Taller'],
+  ['15:20','15:50','Socialización con lista de chequeo','3.3.2'],
+  ['15:50','16:00','Código de entrega, respaldo y tarea','Cierre']]}};
+function fmt(t){let[h,m]=t.split(':').map(Number);h=h>12?h-12:h;return h+':'+String(m).padStart(2,'0')}
+function mins(t){const[h,m]=t.split(':').map(Number);return h*60+m}
+document.querySelectorAll('[data-ag]').forEach(el=>{AG[el.dataset.ag].b.forEach(a=>{const d=document.createElement('div');d.className='ag';d.innerHTML=`<time>${fmt(a[0])}–${fmt(a[1])}</time><span>${a[2]}</span><span class="tag">${a[3]}</span>`;el.appendChild(d)})});
+function today(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
+function tick(){const n=new Date(),nm=n.getHours()*60+n.getMinutes();document.getElementById('clockNow').textContent=n.toLocaleTimeString('es-CO',{hour:'numeric',minute:'2-digit'});
+ const A=AG[ses];let f=-1;if(today()===A.d)A.b.forEach((a,i)=>{if(nm>=mins(a[0])&&nm<mins(a[1]))f=i});
+ const el=document.querySelector(`[data-ag="${ses}"]`);[...el.children].forEach((c,i)=>c.classList.toggle('live',i===f));
+ document.getElementById('nowBlock').textContent=f>=0?A.b[f][2]:'Fuera del horario de clase';document.getElementById('nowLeft').textContent=f>=0?(mins(A.b[f][1])-nm)+' min':''}
+setInterval(tick,15000);
+
+/* cronómetro */
+let left=0,run=false,iv=null;const clk=document.getElementById('clk'),play=document.getElementById('tPlay');
+function show(){clk.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');clk.classList.toggle('low',left>0&&left<=60)}
+function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();[0,.35,.7].forEach(t=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.2,c.currentTime+t);o.start(c.currentTime+t);o.stop(c.currentTime+t+.2)})}catch(e){}}
+document.querySelectorAll('[data-min]').forEach(b=>b.onclick=()=>{left=+b.dataset.min*60;show()});
+play.onclick=()=>{if(run){clearInterval(iv);run=false;play.textContent='Iniciar';return}if(left<=0)return;run=true;play.textContent='Pausar';iv=setInterval(()=>{left--;show();if(left<=0){clearInterval(iv);run=false;play.textContent='Iniciar';beep()}},1000)};
+document.getElementById('tReset').onclick=()=>{clearInterval(iv);run=false;left=0;play.textContent='Iniciar';show()};
+
+/* quizzes */
+const QZ={
+ dofa:{o:[['F','Fortaleza'],['D','Debilidad'],['O','Oportunidad'],['A','Amenaza']],q:[
+  ['No hay registro de inventario: todo se lleva de memoria.','D','Debilidad: es interno y estorba.'],
+  ['La temporada de turistas de diciembre aumenta la demanda en Riohacha.','O','Oportunidad: viene de afuera y ayuda.'],
+  ['El horno nuevo produce 300 panes por hora.','F','Fortaleza: es interno y ayuda.'],
+  ['Los cierres de la Troncal del Caribe retrasan la llegada de la harina.','A','Amenaza: viene de afuera y estorba.'],
+  ['Hay clientes fieles que compran todos los días.','F','Fortaleza: es de la empresa y le ayuda.']]},
+ smart:{o:[['S','Es SMART'],['N','Le falta algo']],q:[
+  ['Mejorar el inventario.','N','No dice qué se mide, cuánto ni cuándo. Falla en S, M y T.'],
+  ['Reducir los días con agotado de pan de la tarde del 60 % al 10 % en 6 meses.','S','Tiene verbo, qué, de dónde a dónde y plazo.'],
+  ['Entregar el 100 % de los pedidos en 5 minutos desde mañana.','N','No es alcanzable (A) para una empresa pequeña.'],
+  ['Ser la mejor panadería de La Guajira.','N','Es un deseo o parte de una visión: no se puede medir así.'],
+  ['Aumentar la exactitud del inventario de harina del 80 % al 95 % antes de junio de 2027.','S','Específico, medible, con fecha. Falta confirmar que responde a un problema del diagnóstico.']]},
+ pol:{o:[['P','Política'],['D','Deseo']],q:[
+  ['Comprar siempre barato.','D','Es un deseo: ¿barato comparado con qué? No se puede verificar.'],
+  ['Toda compra de más de $500.000 la autoriza el administrador.','P','Política: dice quién, cuándo y se puede revisar.'],
+  ['Tratar bien a los proveedores.','D','Es una buena intención, no una regla.'],
+  ['La mercancía solo se recibe con la orden de compra y revisando el vencimiento.','P','Política: es una regla verificable en cada recepción.'],
+  ['Cada proveedor se evalúa cada 3 meses con la matriz de 4 criterios.','P','Política: frecuencia y herramienta definidas.'],
+  ['Tener buenos proveedores.','D','Deseo. Conviértanlo en regla: "mínimo 2 proveedores aprobados por insumo crítico".']]}};
+document.querySelectorAll('[data-quiz]').forEach(el=>{const Z=QZ[el.dataset.quiz];Z.q.forEach((q,i)=>{const d=document.createElement('div');d.className='qi';d.innerHTML=`<span>${i+1}. ${esc(q[0])}</span><span class="opts">${Z.o.map(o=>`<button class="opt" data-v="${o[0]}">${o[1]}</button>`).join('')}</span><span class="fb" hidden></span>`;
+ d.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{d.querySelectorAll('.opt').forEach(x=>x.classList.remove('ok','bad'));const ok=b.dataset.v===q[1];b.classList.add(ok?'ok':'bad');if(!ok)d.querySelector(`.opt[data-v="${q[1]}"]`).classList.add('ok');const fb=d.querySelector('.fb');fb.hidden=false;fb.textContent=(ok?'✓ ':'✗ ')+q[2]});el.appendChild(d)})});
+
+/* fábrica de objetivos */
+const B=['bV','bQ','bD','bH','bT','bR'];
+B.forEach(id=>{const e=document.getElementById(id);const v=get(id);if(v!==null)e.value=v;e.addEventListener('input',()=>{set(id,e.value);build()});e.addEventListener('change',()=>{set(id,e.value);build()})});
+const bA=document.getElementById('bA');bA.checked=get('bA')==='1';bA.onchange=()=>{set('bA',bA.checked?'1':'0');build()};
+function v(id){return document.getElementById(id).value.trim()}
+function sentence(){const q=v('bQ'),d=v('bD'),h=v('bH'),t=v('bT');if(!q)return '';let s=v('bV')+' '+q;if(d&&h)s+=' del '+d+' al '+h;else if(h)s+=' hasta '+h;if(t)s+=' '+t;return s+'.'}
+function build(){const s=sentence();document.getElementById('bOut').textContent=s||'Llenen los campos y aquí sale el objetivo.';
+ const L={S:!!v('bQ'),M:!!(v('bD')&&v('bH')),A:bA.checked,R:!!v('bR'),T:!!v('bT')};Object.entries(L).forEach(([k,on])=>document.getElementById('l'+k).classList.toggle('on',on))}
+function copyTxt(t){function fb(){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copiado')}catch(e){toast('Seleccione y copie manualmente')}setTimeout(()=>ta.remove(),100)}if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('Copiado'),fb);else fb()}
+document.getElementById('bCopy').onclick=()=>{const s=sentence();if(!s){toast('Primero escriban qué se mide');return}copyTxt(s)};
+document.getElementById('bClear').onclick=()=>{['bQ','bD','bH','bT','bR'].forEach(id=>{document.getElementById(id).value='';set(id,'')});bA.checked=false;set('bA','0');build()};
+build();
+
+/* evaluador de proveedores */
+const EX=[['Distribuidor de harina (Barranquilla)',4,2,4,3],['Proveedor de azúcar y margarina',3,4,4,4],['Bolsas y empaques',5,5,4,1],['Gas propano',4,5,5,4]];
+let EV;try{EV=JSON.parse(get('ev')||'null')}catch(e){EV=null}if(!EV)EV=JSON.parse(JSON.stringify(EX));
+const tb=document.querySelector('#evT tbody');
+function dec(r){const t=r[1]+r[2]+r[3]+r[4];const one=[r[1],r[2],r[3],r[4]].includes(1);if(t<=11||one)return ['r',one&&t>11?'Buscar otro (un criterio en 1)':'Buscar otro'];if(t<=16)return ['y','Negociar'];return ['g','Seguir']}
+function drawEv(){tb.innerHTML=EV.map((r,i)=>{const t=r[1]+r[2]+r[3]+r[4];const d=dec(r);return `<tr><td><input data-r="${i}" data-c="0" value="${esc(r[0])}" aria-label="Proveedor ${i+1}"></td>`+[1,2,3,4].map(c=>`<td class="c"><select data-r="${i}" data-c="${c}">${[1,2,3,4,5].map(n=>`<option${n===r[c]?' selected':''}>${n}</option>`).join('')}</select></td>`).join('')+`<td class="c tot">${t}</td><td><span class="badge ${d[0]}">${d[1]}</span></td></tr>`}).join('');
+ tb.querySelectorAll('input,select').forEach(e=>e.addEventListener(e.tagName==='INPUT'?'input':'change',()=>{const r=+e.dataset.r,c=+e.dataset.c;EV[r][c]=c?+e.value:e.value;set('ev',JSON.stringify(EV));if(c)drawEv()}))}
+document.getElementById('evReset').onclick=()=>{EV=JSON.parse(JSON.stringify(EX));set('ev','');drawEv()};
+drawEv();
+
+/* listas de chequeo */
+const CK={
+ '5':['Los objetivos de la empresa vienen del dueño o administrador, no los inventamos.','La misión dice qué hace la logística, para quién y cómo.','La visión tiene horizonte de 3 años y algo que se pueda verificar.','Hay 4 objetivos con verbo, qué, de cuánto a cuánto y plazo.','Cada objetivo responde a un problema de la conclusión del taller 4.','Cada objetivo está conectado con un objetivo de la empresa.'],
+ '6':['Están los 4 proveedores reales más importantes de la empresa.','Cada calificación tiene un dato que la soporta.','Hay una decisión clara por proveedor: seguir, negociar o buscar otro.','La política tiene mínimo 5 reglas verificables (siempre, cada, mínimo, solo).','Las reglas cubren proveedores por producto, frecuencia, autorización, recepción y pago.','Al menos una regla apoya un objetivo SMART de la clase 5.']};
+document.querySelectorAll('[data-check]').forEach(el=>{const k=el.dataset.check;CK[k].forEach((c,i)=>{const l=document.createElement('label');l.innerHTML=`<input type="checkbox" id="ck${k}-${i}"> <span>${esc(c)}</span>`;el.appendChild(l)});
+ const up=()=>{const n=el.querySelectorAll('input:checked').length;document.querySelector(`[data-bar="${k}"]`).style.width=(n/CK[k].length*100)+'%';document.querySelector(`[data-txt="${k}"]`).textContent=n+' de '+CK[k].length+' criterios cumplidos'};
+ el.querySelectorAll('input').forEach(cb=>{cb.checked=get(cb.id)==='1';cb.onchange=()=>{set(cb.id,cb.checked?'1':'0');up()}});up()});
+
+/* arranque: #c5 / #c6, luego la fecha, luego lo último usado */
+let s0=get('ses')||'5';const h=location.hash;if(h==='#c6'||h==='#clase6')s0='6';else if(h==='#c5'||h==='#clase5')s0='5';else if(today()==='2026-10-29')s0='6';else if(today()==='2026-10-28')s0='5';
+setSes(s0,+get('slide'+s0)||0);
+})();
+</script>
+</body></html>
