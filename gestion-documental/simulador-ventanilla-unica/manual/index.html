@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manual Ventanilla Única en Vivo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500..800&family=Public+Sans:wght@400..700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{--bg:#E4EAE1;--bar:#FFFFFF;--fg:#17221A;--muted:#566659;--line:#D6DFD2;--accent:#39A900;--accent-ink:#2A7A00}
+@media (prefers-color-scheme:dark){:root{--bg:#0B100C;--bar:#171F19;--fg:#E4ECE3;--muted:#9BAE9E;--line:#2B382E;--accent:#5CC72A;--accent-ink:#7FD94F;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Public Sans",Arial,sans-serif;display:flex;flex-direction:column}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bar);border-bottom:1px solid var(--line)}
+.top a{color:var(--accent-ink);font-weight:600;text-decoration:none}
+.top b{font-family:Archivo,Arial,sans-serif}
+.stage{flex:1;min-height:0;display:grid;place-items:center;padding:16px;overflow:hidden}
+.frame{position:relative;overflow:hidden;border-radius:8px;box-shadow:0 10px 40px -20px rgba(0,0,0,.5)}
+.canvas{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+.canvas section{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;line-height:1.4}
+.canvas section[hidden]{display:none!important}
+.canvas h1,.canvas h2,.canvas h3,.canvas p,.canvas ul,.canvas ol{margin:0}
+.canvas h1{font-size:96px;line-height:1.1}.canvas h2{line-height:1.15}.canvas h3{line-height:1.2}
+.canvas table{width:100%;border-collapse:collapse}
+.canvas th,.canvas td{padding:.35em .6em;border-bottom:1px solid #C9D3C5;text-align:left;vertical-align:top}
+.canvas th{font-weight:700;border-bottom:2px solid #17221A}
+.nav{display:flex;gap:10px;align-items:center;justify-content:center;padding:10px 16px 16px}
+.nav button{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--bar);color:var(--fg);border-radius:8px;padding:8px 16px;cursor:pointer}
+.nav button:hover{border-color:var(--accent)}
+.nav button:disabled{opacity:.4;cursor:default}
+.nav button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.count{font-variant-numeric:tabular-nums;min-width:70px;text-align:center;color:var(--muted)}
+.dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.dots i{width:10px;height:6px;border-radius:2px;background:var(--line);cursor:pointer}
+.dots i.on{background:var(--accent)}
+:fullscreen .stage{padding:0}:fullscreen .frame{border-radius:0}
+</style></head>
+<body>
+<header class="top"><span><b>LogiLab SENA</b> · Manual de usuario · Ventanilla Única en Vivo</span>
+<span><a href="../">Abrir el simulador →</a> · <a href="../../../">Portal</a></span></header>
+<main class="stage" id="stage"><div class="frame" id="frame"><div class="canvas" id="canvas">
+<section id="portada" data-transition="fade" style="background:#17221A;color:#F3F6F1;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between">
+<div style="position:absolute;left:0;top:0;width:24px;height:1080px;background:#39A900"></div>
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:28px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#7FD94F">LogiLab SENA · Gestión Documental</p>
+<div style="display:flex;flex-direction:column;gap:32px">
+<h1 style="font-family:'Archivo', Arial, sans-serif;font-size:140px;font-weight:800;line-height:1;color:#F3F6F1">Ventanilla Única<br>en Vivo</h1>
+<p style="font-size:44px;color:#BFD3C2;line-height:1.3">Manual de usuario del simulador de radicación PQRSD</p>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:end">
+<p style="font-size:28px;color:#BFD3C2;line-height:1.5">Fichas 3410084 · 3326720 · 3538385<br>Centro Industrial y de Energías Alternativas · Regional Guajira</p>
+<p style="font-size:28px;color:#F3F6F1;font-weight:600">By Carlos Barrios · Instructor</p>
+</div>
+<div style="position:absolute;right:128px;top:128px;width:300px;border:4px double #EB6D72;padding:20px;transform:rotate(-6deg)">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:32px;font-weight:600;color:#EB6D72;text-align:center;line-height:1.3">RADICADO<br>VU-2026-01241</p>
+</div>
+
+</section>
+<section id="que-es" data-transition="fade" style="background:#F3F6F1;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">Qué es</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1">Trabajas 10 días como radicador de una empresa de acueducto</h2>
+</div>
+<p style="font-size:32px;color:#4A5A4D;line-height:1.45">La empresa es <b>Aguas del Wüin S.A. E.S.P.</b> Los documentos llegan a la bandeja día a día. Tú los lees, los radicas, controlas los plazos y despachas las respuestas a tiempo.</p>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:16px;padding:40px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:120px;font-weight:800;line-height:1;color:#2A7A00">24</p>
+<p style="font-size:32px;font-weight:600">documentos</p>
+<p style="font-size:26px;color:#4A5A4D;line-height:1.4">PQRSD, tutelas, facturas, circulares e invitaciones</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:16px;padding:40px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:120px;font-weight:800;line-height:1;color:#2A7A00">10</p>
+<p style="font-size:32px;font-weight:600">días hábiles</p>
+<p style="font-size:26px;color:#4A5A4D;line-height:1.4">Del 9 al 23 de noviembre de 2026, con festivos</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:16px;padding:40px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:120px;font-weight:800;line-height:1;color:#2A7A00">2</p>
+<p style="font-size:32px;font-weight:600">despachos por día</p>
+<p style="font-size:26px;color:#4A5A4D;line-height:1.4">No alcanza para todo: hay que priorizar</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 2</p>
+
+</section>
+<section id="iniciar" data-transition="fade" style="background:#F3F6F1;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">Paso 1</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1">Abrir la ventanilla</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div style="display:flex;gap:28px;align-items:start;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:16px;padding:36px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:56px;font-weight:800;line-height:1;color:#2A7A00">1</p>
+<div style="display:flex;flex-direction:column;gap:8px"><h3 style="font-size:34px;font-weight:700">Nombre completo</h3><p style="font-size:28px;color:#4A5A4D;line-height:1.4">Aparece en el informe y en la entrega.</p></div>
+</div>
+<div style="display:flex;gap:28px;align-items:start;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:16px;padding:36px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:56px;font-weight:800;line-height:1;color:#2A7A00">2</p>
+<div style="display:flex;flex-direction:column;gap:8px"><h3 style="font-size:34px;font-weight:700">Número de documento</h3><p style="font-size:28px;color:#4A5A4D;line-height:1.4">Solo números. Define qué documentos te llegan.</p></div>
+</div>
+<div style="display:flex;gap:28px;align-items:start;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:16px;padding:36px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:56px;font-weight:800;line-height:1;color:#2A7A00">3</p>
+<div style="display:flex;flex-direction:column;gap:8px"><h3 style="font-size:34px;font-weight:700">Ficha</h3><p style="font-size:28px;color:#4A5A4D;line-height:1.4">3410084, 3326720 o 3538385.</p></div>
+</div>
+<div style="display:flex;gap:28px;align-items:start;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:16px;padding:36px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:56px;font-weight:800;line-height:1;color:#2A7A00">4</p>
+<div style="display:flex;flex-direction:column;gap:8px"><h3 style="font-size:34px;font-weight:700">Modo</h3><p style="font-size:28px;color:#4A5A4D;line-height:1.4"><b>Práctica:</b> explicación tras cada radicado.<br><b>Evaluación:</b> explicación al cerrar el día 10.</p></div>
+</div>
+</div>
+<p style="font-size:30px;color:#17221A;line-height:1.4">Pulsa <b>Abrir la ventanilla</b>. La partida se guarda sola en tu navegador: si cierras la página, al volver sigues donde ibas.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 3</p>
+
+</section>
+<section id="pantalla" data-transition="fade" style="background:#F3F6F1;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">La pantalla</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1">Cuatro zonas de trabajo</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;justify-content:space-between;align-items:center;background:#17221A;border-radius:12px;padding:24px 32px">
+<p style="font-size:28px;color:#F3F6F1"><b>A · Encabezado</b> — día actual, barra de 10 días y botón <b>Cerrar jornada</b></p>
+<p style="font-size:24px;color:#17221A;background:#7FD94F;border-radius:8px;padding:8px 18px;font-weight:700">Cerrar jornada →</p>
+</div>
+<div style="display:flex;gap:20px">
+<div style="width:520px;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:12px;padding:28px">
+<h3 style="font-size:30px;font-weight:700">B · Bandeja de entrada</h3>
+<p style="font-size:26px;color:#4A5A4D;line-height:1.4">Documentos por radicar: canal, remitente, asunto y hora de llegada. Los atrasados se marcan en rojo.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:12px;padding:28px">
+<h3 style="font-size:30px;font-weight:700">C · Documento</h3>
+<p style="font-size:26px;color:#4A5A4D;line-height:1.4">El texto completo, la firma, los anexos y los folios. Debajo, el <b>formulario de radicación</b>.</p>
+</div>
+</div>
+<div style="display:flex;gap:16px;align-items:center;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:12px;padding:24px 32px">
+<p style="font-size:28px;font-weight:700">D · Pestañas</p>
+<p style="font-size:26px;background:#E9EEE6;border-radius:8px;padding:6px 16px">Ventanilla</p>
+<p style="font-size:26px;background:#E9EEE6;border-radius:8px;padding:6px 16px">Libro radicador</p>
+<p style="font-size:26px;background:#E9EEE6;border-radius:8px;padding:6px 16px">Manual</p>
+<p style="font-size:26px;background:#E9EEE6;border-radius:8px;padding:6px 16px">Informe y entrega</p>
+</div>
+</div>
+<p style="font-size:28px;color:#4A5A4D;line-height:1.4">Bajo el encabezado: por radicar · radicados · despachos disponibles · respuestas listas · próximo consecutivo.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 4</p>
+
+</section>
+<section id="radicar" data-transition="fade" style="background:#F3F6F1;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">Paso 2</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1">Radicar: lee primero, luego llena 6 campos</h2>
+</div>
+<table style="font-size:28px;color:#17221A">
+<tr><th style="width:28%">Campo</th><th style="width:72%">Qué escribir</th></tr>
+<tr><td><b>Número de radicado</b></td><td>El consecutivo siguiente, sin saltos ni repetidos. Ejemplo: VU-2026-01242</td></tr>
+<tr><td><b>Tipología</b></td><td>Lo que el ciudadano pide en el texto, no lo que dice el asunto</td></tr>
+<tr><td><b>Dependencia</b></td><td>Código de la tabla de dependencias (TRD) según el tema</td></tr>
+<tr><td><b>Acción</b></td><td>Asignar · requerir completar · trasladar por competencia · informar</td></tr>
+<tr><td><b>Plazo</b></td><td>Días hábiles según la tipología o la acción. 0 si no requiere respuesta</td></tr>
+<tr><td><b>Vencimiento</b></td><td>Fecha límite contando solo días hábiles. Vacía si el plazo es 0</td></tr>
+</table>
+<p style="font-size:30px;line-height:1.4">La fecha de radicación la pone el sistema. Pulsa <b>Radicar y sellar</b>: el documento recibe su sello rojo.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 5</p>
+
+</section>
+<section id="plazos" data-transition="fade" style="background:#F3F6F1;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">Plazos · Ley 1755 de 2015</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1">Cuántos días hábiles tiene cada documento</h2>
+</div>
+<table style="font-size:28px;color:#17221A">
+<tr><th style="width:62%">Tipología o acción</th><th style="width:14%;text-align:right">Días</th><th style="width:24%">Fundamento</th></tr>
+<tr><td>Petición, queja, reclamo, sugerencia, denuncia</td><td style="text-align:right"><b>15</b></td><td>Art. 14</td></tr>
+<tr><td>Solicitud de documentos o información</td><td style="text-align:right"><b>10</b></td><td>Art. 14 y 30</td></tr>
+<tr><td>Consulta (concepto sobre una norma)</td><td style="text-align:right"><b>30</b></td><td>Art. 14</td></tr>
+<tr><td>Acción de tutela</td><td style="text-align:right"><b>2</b></td><td>Lo fija el juez</td></tr>
+<tr><td>Factura o cuenta de cobro de proveedor</td><td style="text-align:right"><b>3</b></td><td>Aceptación</td></tr>
+<tr style="background:#E3F0DC"><td>Acción: trasladar por competencia</td><td style="text-align:right"><b>5</b></td><td>Art. 21</td></tr>
+<tr style="background:#E3F0DC"><td>Acción: requerir completar documentos</td><td style="text-align:right"><b>10</b></td><td>Art. 17</td></tr>
+<tr><td>Comunicación informativa</td><td style="text-align:right"><b>0</b></td><td>Sin respuesta</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.4"><b>Ojo:</b> si la acción es trasladar o requerir (filas verdes), manda el plazo de la acción, no el de la tipología.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 6</p>
+
+</section>
+<section id="dependencias" data-transition="fade" style="background:#F3F6F1;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">Tabla de dependencias (TRD)</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:64px;font-weight:800;line-height:1.1">A quién le toca cada tema</h2>
+</div>
+<table style="font-size:26px;color:#17221A">
+<tr><th style="width:10%">Código</th><th style="width:30%">Dependencia</th><th style="width:60%">Atiende</th></tr>
+<tr><td><b>100</b></td><td>Gerencia General</td><td>Invitaciones, circulares de entes de control</td></tr>
+<tr><td><b>110</b></td><td>Oficina Jurídica</td><td>Tutelas, notificaciones judiciales, consultas</td></tr>
+<tr><td><b>120</b></td><td>Control Interno</td><td>Quejas contra funcionarios, denuncias de corrupción</td></tr>
+<tr><td><b>210</b></td><td>Atención al Usuario</td><td>Facturación, acuerdos de pago, sugerencias, traslados</td></tr>
+<tr><td><b>310</b></td><td>Operación de Acueducto</td><td>Conexiones, falta de agua, medidores, fraudes</td></tr>
+<tr><td><b>320</b></td><td>Alcantarillado</td><td>Manholes rebosados, taponamientos, malos olores</td></tr>
+<tr><td><b>400</b></td><td>Dirección Financiera</td><td>Facturas y cuentas de cobro de proveedores</td></tr>
+<tr><td><b>500</b></td><td>Talento Humano</td><td>Hojas de vida, certificados laborales</td></tr>
+<tr><td><b>600</b></td><td>Gestión Documental</td><td>Copias del archivo central e histórico</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 7 · Versión completa en la pestaña Manual del simulador</p>
+
+</section>
+<section id="vencimiento" data-transition="fade" style="background:#F3F6F1;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">Fecha de vencimiento</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1">Se cuenta desde el día hábil siguiente</h2>
+</div>
+<p style="font-size:30px;color:#4A5A4D;line-height:1.4">Ejemplo: una tutela radicada el <b>viernes 13 de noviembre</b> con plazo de <b>2 días hábiles</b>.</p>
+<div style="display:flex;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:center;background:#17221A;border-radius:12px;padding:28px 12px">
+<p style="font-size:26px;color:#BFD3C2">Vie 13</p><p style="font-family:'Archivo', Arial, sans-serif;font-size:48px;font-weight:800;color:#F3F6F1">Radica</p><p style="font-size:24px;color:#BFD3C2">no cuenta</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:center;background:#E9EEE6;border-radius:12px;padding:28px 12px">
+<p style="font-size:26px;color:#4A5A4D">Sáb 14</p><p style="font-family:'Archivo', Arial, sans-serif;font-size:48px;font-weight:800;color:#8A988C">—</p><p style="font-size:24px;color:#4A5A4D">fin de semana</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:center;background:#E9EEE6;border-radius:12px;padding:28px 12px">
+<p style="font-size:26px;color:#4A5A4D">Dom 15</p><p style="font-family:'Archivo', Arial, sans-serif;font-size:48px;font-weight:800;color:#8A988C">—</p><p style="font-size:24px;color:#4A5A4D">fin de semana</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:center;background:#FBE3E1;border-radius:12px;padding:28px 12px">
+<p style="font-size:26px;color:#8A2420">Lun 16</p><p style="font-family:'Archivo', Arial, sans-serif;font-size:48px;font-weight:800;color:#8A2420">—</p><p style="font-size:24px;color:#8A2420">festivo</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:center;background:#FFFFFF;border:2px solid #39A900;border-radius:12px;padding:28px 12px">
+<p style="font-size:26px;color:#4A5A4D">Mar 17</p><p style="font-family:'Archivo', Arial, sans-serif;font-size:48px;font-weight:800;color:#2A7A00">1</p><p style="font-size:24px;color:#4A5A4D">día hábil</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:center;background:#2A7A00;border-radius:12px;padding:28px 12px">
+<p style="font-size:26px;color:#E3F0DC">Mié 18</p><p style="font-family:'Archivo', Arial, sans-serif;font-size:48px;font-weight:800;color:#FFFFFF">2</p><p style="font-size:24px;color:#E3F0DC;font-weight:700">VENCE</p>
+</div>
+</div>
+<div style="display:flex;gap:24px;align-items:center;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:12px;padding:28px 36px">
+<p style="font-size:28px;font-weight:700">En Excel es lo mismo:</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:30px;font-weight:600;color:#2A7A00">=DIA.LAB(fecha_radicado; plazo; festivos)</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 8 · Festivos del periodo: 02/11, 16/11, 08/12, 25/12, 01/01, 11/01</p>
+
+</section>
+<section id="libro" data-transition="fade" style="background:#E9EEE6;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">Paso 3 · Libro radicador</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1">El semáforo muestra qué está por vencer</h2>
+</div>
+<p style="font-size:30px;color:#4A5A4D;line-height:1.4">Cada radicado queda en el libro. El semáforo cuenta los días hábiles que faltan hasta el vencimiento que <b>tú</b> calculaste, y se actualiza al cerrar cada jornada.</p>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border-radius:16px;padding:36px">
+<p style="font-size:28px;font-weight:700;color:#23803A;background:#E3F3E2;border-radius:24px;padding:8px 20px">● Verde</p>
+<p style="font-size:28px;line-height:1.4">Faltan <b>4 días o más</b></p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border-radius:16px;padding:36px">
+<p style="font-size:28px;font-weight:700;color:#8A5B00;background:#FBF0D6;border-radius:24px;padding:8px 20px">● Amarillo</p>
+<p style="font-size:28px;line-height:1.4">Faltan <b>1 a 3 días</b></p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border-radius:16px;padding:36px">
+<p style="font-size:28px;font-weight:700;color:#A52A24;background:#FBE3E1;border-radius:24px;padding:8px 20px">● Rojo</p>
+<p style="font-size:28px;line-height:1.4"><b>Vence hoy</b> o ya está vencido</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border-radius:16px;padding:36px">
+<p style="font-size:28px;font-weight:700;color:#4A5A4D;background:#E9EEE6;border-radius:24px;padding:8px 20px">● Gris</p>
+<p style="font-size:28px;line-height:1.4">Cerrado o informativo</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.4">Usa <b>Ordenar por → Fecha de vencimiento</b> para ver arriba lo más urgente.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 9</p>
+
+</section>
+<section id="despachos" data-transition="fade" style="background:#2A7A00;color:#F3F6F1;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:center;gap:48px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#E3F0DC">Paso 4 · Despachar respuestas</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:96px;font-weight:800;line-height:1.05;color:#FFFFFF">Solo 2 despachos por día.<br>Despacha primero lo que vence primero.</h2>
+<div style="display:flex;gap:48px">
+<p style="flex:1;font-size:30px;line-height:1.45;color:#F3F6F1">La dependencia responde <b>al día hábil siguiente</b>. Entonces aparece el botón <b>Despachar respuesta</b> en el libro.</p>
+<p style="flex:1;font-size:30px;line-height:1.45;color:#F3F6F1">Si asignaste a la dependencia equivocada, <b>te la devuelven</b> y la respuesta tarda un día más.</p>
+<p style="flex:1;font-size:30px;line-height:1.45;color:#F3F6F1">Despachar por orden de llegada deja en promedio <b>2 respuestas vencidas</b>. Por vencimiento, ninguna.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#E3F0DC">Manual Ventanilla Única en Vivo · 10</p>
+
+</section>
+<section id="jornada" data-transition="fade" style="background:#F3F6F1;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">Paso 5 · Cerrar jornada</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1">Un día de trabajo, de principio a fin</h2>
+</div>
+<div style="display:flex;gap:0px;align-items:stretch">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:16px 0 0 16px;padding:36px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:28px;font-weight:800;color:#2A7A00">1 · Llegan</p>
+<p style="font-size:28px;line-height:1.4">Los documentos del día aparecen en la bandeja.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border:1px solid #D6DFD2;border-left:none;padding:36px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:28px;font-weight:800;color:#2A7A00">2 · Radicas</p>
+<p style="font-size:28px;line-height:1.4">Todos el mismo día. Lo atrasado se marca en rojo.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border:1px solid #D6DFD2;border-left:none;padding:36px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:28px;font-weight:800;color:#2A7A00">3 · Despachas</p>
+<p style="font-size:28px;line-height:1.4">Hasta 2 respuestas listas, por vencimiento.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#17221A;border-radius:0 16px 16px 0;padding:36px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:28px;font-weight:800;color:#7FD94F">4 · Cierras</p>
+<p style="font-size:28px;line-height:1.4;color:#F3F6F1">El reloj avanza al siguiente día hábil.</p>
+</div>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FBF0D6;border-radius:16px;padding:32px">
+<h3 style="font-size:30px;font-weight:700;color:#5C3D00">¿Quedan documentos sin radicar?</h3>
+<p style="font-size:26px;line-height:1.4;color:#5C3D00">El botón cambia a <b>Confirmar cierre</b>. Púlsalo otra vez solo si de verdad quieres dejarlos para mañana.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FFFFFF;border:1px solid #D6DFD2;border-radius:16px;padding:32px">
+<h3 style="font-size:30px;font-weight:700">Día 10</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5A4D">Al cerrar la última jornada la partida termina y se abre el <b>Informe y entrega</b>.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 11</p>
+
+</section>
+<section id="informe" data-transition="fade" style="background:#17221A;color:#F3F6F1;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#7FD94F">Informe · Puntaje sobre 100</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1;color:#F3F6F1">Así se calcula tu nota</h2>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;border-top:6px solid #7FD94F;padding:32px 0">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:120px;font-weight:800;line-height:1;color:#7FD94F">50</p>
+<h3 style="font-size:36px;font-weight:700;color:#F3F6F1">Exactitud</h3>
+<p style="font-size:28px;line-height:1.4;color:#BFD3C2">Tipología, dependencia, plazo, vencimiento y acción de cada documento.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;border-top:6px solid #7FD94F;padding:32px 0">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:120px;font-weight:800;line-height:1;color:#7FD94F">30</p>
+<h3 style="font-size:36px;font-weight:700;color:#F3F6F1">Oportunidad</h3>
+<p style="font-size:28px;line-height:1.4;color:#BFD3C2">Radicar el mismo día (10) y despachar respuestas antes del vencimiento real (20).</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;border-top:6px solid #7FD94F;padding:32px 0">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:120px;font-weight:800;line-height:1;color:#7FD94F">20</p>
+<h3 style="font-size:36px;font-weight:700;color:#F3F6F1">Trazabilidad</h3>
+<p style="font-size:28px;line-height:1.4;color:#BFD3C2">Consecutivos correctos: sin saltos ni números repetidos.</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.4;color:#F3F6F1">El informe también trae la gráfica de documentos por tipología y la revisión documento por documento con ✓ y ✗.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#BFD3C2">Manual Ventanilla Única en Vivo · 12</p>
+
+</section>
+<section id="excel" data-transition="fade" style="background:#F3F6F1;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">Paso 6 · Reto en Excel</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1">Reconstruye tu libro con fórmulas</h2>
+</div>
+<div style="display:flex;gap:24px">
+<p style="flex:1;font-size:28px;line-height:1.4"><b>1.</b> En el informe pulsa <b>Copiar tabla para Excel</b> y pégala en A1.</p>
+<p style="flex:1;font-size:28px;line-height:1.4"><b>2.</b> Crea la hoja <b>Festivos</b> con las 6 fechas en A2:A7.</p>
+<p style="flex:1;font-size:28px;line-height:1.4"><b>3.</b> Agrega columnas con fórmulas y compara con el simulador.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:0px;background:#17221A;border-radius:16px;padding:40px 48px">
+<p style="font-size:24px;color:#BFD3C2">Plazo según la tipología</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:28px;font-weight:600;color:#7FD94F;line-height:1.5">=SI.CONJUNTO(G2="Consulta";30; … ;VERDADERO;15)</p>
+<p style="font-size:24px;color:#BFD3C2;line-height:2">Vencimiento</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:28px;font-weight:600;color:#7FD94F;line-height:1.5">=DIA.LAB(B2;I2;Festivos!$A$2:$A$7)</p>
+<p style="font-size:24px;color:#BFD3C2;line-height:2">¿Coincide con lo que radicaste?</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:28px;font-weight:600;color:#7FD94F;line-height:1.5">=SI(N2=J2;"OK";"Revisar")</p>
+<p style="font-size:24px;color:#BFD3C2;line-height:2">Reclamos despachados</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:28px;font-weight:600;color:#7FD94F;line-height:1.5">=CONTAR.SI.CONJUNTO(G:G;"Reclamo";K:K;"Despachado")</p>
+</div>
+<p style="font-size:28px;line-height:1.4"><b>El reto:</b> la fórmula de plazo no considera traslados (5) ni requerimientos (10). Agrégale la condición con la columna de acción.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 13 · Las fórmulas completas están en el informe del simulador</p>
+
+</section>
+<section id="entrega" data-transition="fade" style="background:#E9EEE6;color:#17221A;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2A7A00">Paso 7 · Entrega</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:800;line-height:1.1">Envía tu resultado por el medio que funcione</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px">
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;border-radius:16px;padding:36px">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#2A7A00;width:64px;height:64px;flex:none" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+<h3 style="font-size:32px;font-weight:700">WhatsApp</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5A4D">Abre el chat con el resumen ya escrito.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;border-radius:16px;padding:36px">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#2A7A00;width:64px;height:64px;flex:none" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+<h3 style="font-size:32px;font-weight:700">Correo</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5A4D">A cabarriosn@gmail.com, con el Excel adjunto.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;border-radius:16px;padding:36px">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#2A7A00;width:64px;height:64px;flex:none" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/></svg>
+<h3 style="font-size:32px;font-weight:700">Copiar</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5A4D">Copia el resumen y pégalo donde pida el instructor.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;border-radius:16px;padding:36px">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#2A7A00;width:64px;height:64px;flex:none" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>
+<h3 style="font-size:32px;font-weight:700">CSV</h3>
+<p style="font-size:26px;line-height:1.4;color:#4A5A4D">Descarga tu libro radicador como archivo.</p>
+</div>
+</div>
+<div style="display:flex;gap:24px;align-items:center;background:#FFFFFF;border-radius:16px;padding:32px 40px">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#2A7A00;width:56px;height:56px;flex:none" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+<p style="font-size:28px;line-height:1.4">El resumen trae un <b>código de verificación</b>. Si alguien cambia el puntaje a mano, el código no coincide.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7A6D">Manual Ventanilla Única en Vivo · 14 · La entrega se habilita al cerrar el día 10</p>
+
+</section>
+<section id="reglas" data-transition="fade" style="background:#17221A;color:#F3F6F1;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="position:absolute;left:0;top:0;width:24px;height:1080px;background:#39A900"></div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Archivo', Arial, sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#7FD94F">Antes de empezar</p>
+<h2 style="font-family:'Archivo', Arial, sans-serif;font-size:80px;font-weight:800;line-height:1.1;color:#F3F6F1">Las 4 reglas de oro de la ventanilla</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px 64px">
+<div style="display:flex;flex-direction:column;gap:10px;border-top:2px solid #3A4A3D;padding:28px 0 0">
+<h3 style="font-size:40px;font-weight:700;color:#7FD94F">Nunca se rechaza</h3>
+<p style="font-size:28px;line-height:1.4;color:#BFD3C2">Incompleto, anónimo o ajeno: todo se recibe y se radica.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;border-top:2px solid #3A4A3D;padding:28px 0 0">
+<h3 style="font-size:40px;font-weight:700;color:#7FD94F">Consecutivo sin saltos</h3>
+<p style="font-size:28px;line-height:1.4;color:#BFD3C2">Cada radicado es el anterior más uno.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;border-top:2px solid #3A4A3D;padding:28px 0 0">
+<h3 style="font-size:40px;font-weight:700;color:#7FD94F">Se radica el mismo día</h3>
+<p style="font-size:28px;line-height:1.4;color:#BFD3C2">Un documento en la bandeja es un término que corre.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;border-top:2px solid #3A4A3D;padding:28px 0 0">
+<h3 style="font-size:40px;font-weight:700;color:#7FD94F">Lee el contenido</h3>
+<p style="font-size:28px;line-height:1.4;color:#BFD3C2">El asunto puede engañar; lo que se pide, no.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#BFD3C2">LogiLab SENA · By Carlos Barrios · Instructor</p>
+
+</section>
+</div></div></main>
+<nav class="nav" aria-label="Navegación de diapositivas">
+<button id="prev" aria-label="Anterior">←</button><span class="count" id="count"></span><button id="next" aria-label="Siguiente">→</button>
+<button id="fs">Pantalla completa</button></nav>
+<div class="dots" id="dots" style="padding:0 16px 14px"></div>
+<p style="text-align:center;color:var(--muted);font-size:13px;margin:0 0 14px">Usa las flechas del teclado o desliza en el celular · By Carlos Barrios · Instructor</p>
+<script>
+const S=[...document.querySelectorAll('#canvas section')];let i=0;
+const h=location.hash.match(/^#(\d+)$/);if(h)i=Math.min(S.length-1,Math.max(0,+h[1]-1));
+const dots=document.getElementById('dots');dots.innerHTML=S.map((_,k)=>'<i data-k="'+k+'" title="Diapositiva '+(k+1)+'"></i>').join('');
+function show(){S.forEach((s,k)=>s.hidden=k!==i);document.getElementById('count').textContent=(i+1)+' / '+S.length;
+ document.getElementById('prev').disabled=i===0;document.getElementById('next').disabled=i===S.length-1;
+ [...dots.children].forEach((d,k)=>d.classList.toggle('on',k===i));history.replaceState(null,'','#'+(i+1))}
+function fit(){const st=document.getElementById('stage'),cs=getComputedStyle(st);
+ const w=st.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),hh=st.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+ const k=Math.min(w/1920,hh/1080);const f=document.getElementById('frame');f.style.width=1920*k+'px';f.style.height=1080*k+'px';
+ document.getElementById('canvas').style.transform='scale('+k+')'}
+const go=d=>{i=Math.min(S.length-1,Math.max(0,i+d));show()};
+document.getElementById('prev').onclick=()=>go(-1);document.getElementById('next').onclick=()=>go(1);
+dots.onclick=e=>{if(e.target.dataset.k){i=+e.target.dataset.k;show()}};
+document.addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(1)}if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(-1)}});
+let x0=null;document.getElementById('stage').addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+document.getElementById('stage').addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>40)go(dx<0?1:-1);x0=null});
+document.getElementById('fs').onclick=()=>{const d=document.documentElement;(document.fullscreenElement?document.exitFullscreen():d.requestFullscreen&&d.requestFullscreen()).catch&&0};
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#(\d+)$/);if(m){i=Math.min(S.length-1,Math.max(0,+m[1]-1));show()}});addEventListener('resize',fit);document.addEventListener('fullscreenchange',fit);show();fit();
+</script>
+</body></html>

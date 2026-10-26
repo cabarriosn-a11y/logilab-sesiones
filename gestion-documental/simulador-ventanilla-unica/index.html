@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>Ventanilla Única en Vivo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: mostrador de trabajo — bandeja a la izquierda, documento + formulario a la derecha; libro radicador como tabla de control */
+:root{
+  --bg:#F3F6F1; --surface:#FFFFFF; --sunk:#E9EEE6; --ink:#17221A; --muted:#566659; --line:#D6DFD2;
+  --accent:#39A900; --accent-ink:#2A7A00; --on-accent:#FFFFFF; --stamp:#B3262D;
+  --ok:#23803A; --warn:#A66E00; --bad:#C0352E; --ok-bg:#E3F3E2; --warn-bg:#FBF0D6; --bad-bg:#FBE3E1;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1511; --surface:#171F19; --sunk:#1E2820; --ink:#E4ECE3; --muted:#9BAE9E; --line:#2B382E;
+  --accent:#5CC72A; --accent-ink:#7FD94F; --on-accent:#0C1A06; --stamp:#EB6D72;
+  --ok:#5CCB6E; --warn:#E3B04B; --bad:#F07A72; --ok-bg:#183020; --warn-bg:#33290F; --bad-bg:#3A1A18; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1511; --surface:#171F19; --sunk:#1E2820; --ink:#E4ECE3; --muted:#9BAE9E; --line:#2B382E;
+  --accent:#5CC72A; --accent-ink:#7FD94F; --on-accent:#0C1A06; --stamp:#EB6D72;
+  --ok:#5CCB6E; --warn:#E3B04B; --bad:#F07A72; --ok-bg:#183020; --warn-bg:#33290F; --bad-bg:#3A1A18; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
+h1,h2,h3{font-family:var(--f-display);font-stretch:85%;text-wrap:balance;margin:0;line-height:1.15}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:var(--r);cursor:pointer;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:5px 10px;font-size:13px}
+
+/* encabezado */
+.top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.brand small{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.brand h1{font-size:clamp(26px,4vw,38px);font-weight:800}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.clock{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.today{text-align:right}
+.today .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.today .d{font-family:var(--f-display);font-stretch:80%;font-size:26px;font-weight:800;line-height:1}
+.daybar{display:flex;gap:3px;margin-top:6px;justify-content:flex-end}
+.daybar i{width:14px;height:6px;border-radius:2px;background:var(--line)}
+.daybar i.done{background:var(--accent)}
+.daybar i.now{background:var(--ink)}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:6px 12px;font-size:13px;color:var(--muted)}
+.stat b{color:var(--ink);font-family:var(--f-mono);font-size:15px;margin-right:4px}
+
+.tabs{display:flex;gap:4px;margin:18px 0 14px;overflow-x:auto;border-bottom:1px solid var(--line)}
+.tab{border:0;background:none;padding:10px 14px;font-weight:700;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .n{font-family:var(--f-mono);font-size:12px;background:var(--sunk);border-radius:10px;padding:1px 7px;margin-left:4px}
+
+/* ventanilla */
+.desk{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.desk{grid-template-columns:minmax(0,1fr)}}
+.inbox{display:flex;flex-direction:column;gap:8px}
+.inbox h2{font-size:18px}
+.inbox .hint{color:var(--muted);font-size:13px;margin:0}
+.env{text-align:left;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:10px 12px;cursor:pointer;display:grid;gap:2px;position:relative}
+.env:hover{border-color:var(--accent)}
+.env[aria-current="true"]{border-color:var(--ink);box-shadow:inset 4px 0 0 var(--accent)}
+.env .meta{display:flex;justify-content:space-between;gap:8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.env .from{font-weight:700;font-size:14px;overflow-wrap:anywhere}
+.env .subj{font-size:13px;color:var(--muted)}
+.late{color:var(--bad)}
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:22px;color:var(--muted);text-align:center;background:var(--surface)}
+
+.work{display:grid;gap:16px;min-width:0}
+.paper{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:26px 28px;position:relative;box-shadow:0 1px 0 var(--line),0 8px 24px -18px rgba(0,0,0,.35);min-width:0}
+@media (max-width:520px){.paper{padding:20px 16px}}
+.paper .hdr{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.paper .hdr dt{color:var(--muted);font-weight:600}
+.paper .hdr dd{margin:0;overflow-wrap:anywhere}
+.paper .body{max-width:65ch;white-space:pre-line}
+.paper .sign{margin-top:18px;font-size:14px}
+.paper .anx{margin-top:12px;font-size:13px;color:var(--muted)}
+.stamp{position:absolute;top:18px;right:18px;border:3px double var(--stamp);color:var(--stamp);padding:6px 10px;transform:rotate(-6deg);font-family:var(--f-mono);font-size:11px;line-height:1.35;text-align:center;font-weight:600;background:color-mix(in srgb,var(--surface) 85%,transparent)}
+.stamp b{display:block;font-size:13px;letter-spacing:.05em}
+@media (max-width:520px){.stamp{position:static;transform:none;display:inline-block;margin-bottom:12px}}
+
+.form{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:14px}
+.form h3{font-size:18px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:grid;gap:4px;font-size:13px;font-weight:700}
+label.f span.h{font-weight:400;color:var(--muted);font-size:12px}
+input,select,textarea{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+.radin{display:flex;align-items:stretch}
+.radin span{font-family:var(--f-mono);background:var(--sunk);border:1px solid var(--line);border-right:0;border-radius:6px 0 0 6px;padding:8px 8px;font-size:14px;white-space:nowrap}
+.radin input{border-radius:0 6px 6px 0;font-family:var(--f-mono)}
+.err{color:var(--bad);font-size:13px;font-weight:600}
+.fb{border-radius:var(--r);padding:14px 16px;display:grid;gap:8px;font-size:14px}
+.fb.good{background:var(--ok-bg)} .fb.mix{background:var(--warn-bg)}
+.fb ul{margin:0;padding-left:18px}
+.fb .why{color:var(--ink)}
+
+/* libro */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--sunk);white-space:nowrap}
+tbody tr:hover{background:var(--bg)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;border-radius:20px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+.pill.g{background:var(--ok-bg);color:var(--ok)} .pill.y{background:var(--warn-bg);color:var(--warn)} .pill.r{background:var(--bad-bg);color:var(--bad)} .pill.n{background:var(--sunk);color:var(--muted)}
+.ok{color:var(--ok);font-weight:700} .no{color:var(--bad);font-weight:700}
+
+/* manual */
+.manual{display:grid;gap:22px;max-width:980px}
+.manual h2{font-size:22px;margin-bottom:8px}
+.manual p,.manual li{max-width:72ch}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;font-size:14px}
+.rule b{display:block;font-family:var(--f-display);font-stretch:85%;font-size:16px;margin-bottom:2px}
+
+/* informe */
+.score{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+@media (max-width:620px){.score{grid-template-columns:minmax(0,1fr)}}
+.big{font-family:var(--f-display);font-stretch:75%;font-weight:800;font-size:72px;line-height:.9}
+.big small{font-size:24px;color:var(--muted)}
+.bars{display:grid;gap:10px}
+.bar{display:grid;grid-template-columns:120px minmax(0,1fr) 64px;gap:10px;align-items:center;font-size:13px;font-weight:600}
+.bar .t{height:10px;background:var(--sunk);border-radius:5px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:var(--accent)}
+.sec{margin-top:22px;display:grid;gap:10px}
+.sec h2{font-size:20px}
+.freq{display:grid;gap:6px;max-width:640px}
+.freq div{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr) 28px;gap:8px;align-items:center;font-size:13px}
+.freq .t{height:12px;background:var(--sunk);border-radius:3px;overflow:hidden}.freq .t i{display:block;height:100%;background:var(--accent-ink)}
+textarea.tsv{font-family:var(--f-mono);font-size:12px;min-height:140px;white-space:pre;overflow:auto}
+.send{display:flex;flex-wrap:wrap;gap:8px}
+.code{background:var(--sunk);border-radius:6px;padding:10px 12px;font-family:var(--f-mono);font-size:13px;overflow-x:auto;white-space:pre}
+.note{font-size:13px;color:var(--muted)}
+
+/* inicio */
+.start{max-width:620px;margin:24px auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px;display:grid;gap:16px}
+.start h2{font-size:28px}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.mode{border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;gap:10px;cursor:pointer;font-size:14px}
+.mode input{width:auto;margin-top:3px}
+.mode:has(input:checked){border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:var(--r);font-weight:600;font-size:14px;max-width:calc(100% - 32px);z-index:20}
+footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+@media (prefers-reduced-motion:no-preference){.paper{animation:in .25s ease-out}@keyframes in{from{transform:translateY(6px);opacity:.6}}}
+</style>
+
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+/* ===================== Reglas del caso ===================== */
+const EMPRESA = 'Aguas del Wüin S.A. E.S.P.';
+const FICHAS = ['3410084','3326720','3538385'];
+const FEST = ['2026-11-02','2026-11-16','2026-12-08','2026-12-25','2027-01-01','2027-01-11'];
+const START = '2026-11-09';
+const SIZES = [2,2,3,2,2,8,2,1,1,1];
+const CAP = 2;            // despachos por día
+const BASE = 1241;        // primer radicado de la partida
+const PREF = 'VU-2026-';
+
+const TIPOS = {
+  PET:{n:'Petición (interés general o particular)',p:15},
+  INF:{n:'Solicitud de documentos o información',p:10},
+  CON:{n:'Consulta',p:30},
+  QUE:{n:'Queja',p:15},
+  REC:{n:'Reclamo',p:15},
+  SUG:{n:'Sugerencia',p:15},
+  DEN:{n:'Denuncia',p:15},
+  TUT:{n:'Acción de tutela',p:2},
+  FAC:{n:'Factura o cuenta de cobro',p:3},
+  COM:{n:'Comunicación informativa',p:0}
+};
+const ACC = {
+  ASI:{n:'Radicar y asignar a la dependencia',p:null},
+  REQ:{n:'Radicar y requerir completar (art. 17)',p:10},
+  TRA:{n:'Radicar y trasladar por competencia (art. 21)',p:5},
+  INFO:{n:'Radicar e informar (no requiere respuesta)',p:0}
+};
+const DEPS = [
+  ['100','Gerencia General','Invitaciones y comunicaciones institucionales para la gerencia; circulares de entes de control.'],
+  ['110','Oficina Jurídica','Acciones de tutela, notificaciones judiciales y consultas sobre interpretación de normas.'],
+  ['120','Control Interno','Quejas por la conducta de funcionarios y denuncias por posibles actos de corrupción.'],
+  ['210','Atención al Usuario y Facturación','Reclamos por facturación, acuerdos de pago, cambio de titular, sugerencias. Proyecta todos los traslados por competencia y los requerimientos para completar.'],
+  ['310','Operación de Acueducto','Conexiones nuevas, fugas, falta de agua, medidores, calidad del agua y conexiones fraudulentas.'],
+  ['320','Alcantarillado','Rebose de pozos de inspección (manholes), taponamientos y malos olores de la red.'],
+  ['400','Dirección Financiera','Facturas y cuentas de cobro de proveedores y contratistas.'],
+  ['500','Talento Humano','Hojas de vida, certificados laborales y asuntos de personal.'],
+  ['600','Gestión Documental y Archivo','Copias de documentos y expedientes del archivo central e histórico.']
+];
+const depName = c => (DEPS.find(d=>d[0]===c)||['','—'])[1];
+
+/* Banco de documentos. mand = siempre aparece. a = acción correcta (ASI por defecto). */
+const BANK = [
+ {id:'conexion',c:'Físico',t:'PET',d:'310',as:()=>'Solicitud de acometida domiciliaria',
+  body:v=>`Respetados señores:\n\nConstruí mi vivienda en la Calle ${v.k} del barrio ${v.b} y solicito la instalación de la acometida de acueducto con su medidor.`,anx:'2 anexos: copia de escritura y recibo de pago del estudio de conexión',fol:3,
+  why:'Pide un servicio nuevo: petición de interés particular (15 días). Las conexiones nuevas las atiende Operación de Acueducto (310).'},
+ {id:'historial',c:'Web',t:'INF',d:'210',as:()=>'Copia de facturas',
+  body:v=>`Buenas tardes. Necesito copia de las facturas de los últimos 12 meses de la cuenta ${v.c} para presentarlas en un trámite de crédito. Gracias.`,fol:1,
+  why:'Pide copias de documentos que la empresa ya tiene: solicitud de documentos (10 días). Las facturas de usuarios las maneja 210.'},
+ {id:'consulta_abog',mand:1,c:'Correo electrónico',t:'CON',d:'110',as:()=>'DERECHO DE PETICIÓN',
+  body:v=>`Yo, ${v.n}, abogado, en ejercicio del derecho de petición solicito a la empresa que me indique cuál es la norma que regula el cobro de la reconexión del servicio y si ese cobro aplica a inmuebles desocupados. Requiero el concepto para orientar a un cliente.`,fol:1,
+  why:'El asunto dice “derecho de petición”, pero lo que pide es un concepto sobre una norma: es una consulta (30 días). Interpretar normas le corresponde a la Oficina Jurídica (110).'},
+ {id:'queja_lector',mand:1,c:'Físico',t:'QUE',d:'120',as:()=>'Solicitud',
+  body:v=>`El día de ayer el funcionario que hace la lectura del medidor en el barrio ${v.b} me gritó y me trató de forma irrespetuosa delante de mis hijos cuando le pregunté por qué estimaba el consumo. Pido que la empresa tome medidas.`,fol:1,
+  why:'Aunque el asunto dice “Solicitud”, expresa inconformidad con la conducta de un funcionario: es una queja (15 días). Va a Control Interno (120).'},
+ {id:'reclamo_factura',c:'Físico',t:'REC',d:'210',as:()=>'Reclamo por cobro',
+  body:v=>`Mi factura de este mes, cuenta ${v.c}, llegó por $${v.v} cuando siempre pago alrededor de $48.000. En la casa vivimos las mismas cuatro personas. Solicito revisar el cobro y reliquidar.`,anx:'Copia de la factura',fol:2,
+  why:'Inconformidad con el cobro del servicio: reclamo (15 días). Facturación la atiende 210.'},
+ {id:'sin_agua',c:'Web',t:'REC',d:'310',as:()=>'Servicio',
+  body:v=>`Llevamos seis días sin agua en el sector de ${v.b} y nadie nos da razón. Pagamos puntual cada mes. Exigimos que se restablezca el servicio y que se descuenten esos días.`,fol:1,
+  why:'Inconformidad por la falla en la prestación del servicio: reclamo (15 días). La continuidad del agua la atiende Operación de Acueducto (310).'},
+ {id:'sugerencia',c:'Buzón',t:'SUG',d:'210',as:()=>'Propuesta',
+  body:v=>`Propongo que la oficina de atención abra los sábados en la mañana. Muchos trabajamos de lunes a viernes y no alcanzamos a venir a hacer los trámites.`,fol:1,
+  why:'Propone una mejora del servicio: sugerencia (15 días), Atención al Usuario (210).'},
+ {id:'anonimo',mand:1,c:'Buzón',t:'DEN',d:'120',anon:1,from:()=>'Anónimo',as:()=>'(sin asunto)',
+  body:v=>`Quiero denunciar que un funcionario del área de conexiones está cobrando $200.000 “por debajo” para agilizar las instalaciones en el barrio ${v.b}. No pongo mi nombre por miedo a represalias.`,fol:1,
+  why:'Un anónimo también se radica: la ventanilla no puede rechazarlo por no tener firma, y no hay a quién requerir. Denuncia un posible acto de corrupción de un funcionario: Control Interno (120), 15 días.'},
+ {id:'tutela',mand:1,c:'Correo electrónico',t:'TUT',d:'110',from:()=>'Juzgado Segundo Civil Municipal de Riohacha',as:()=>'Notificación auto admisorio — Acción de tutela',
+  body:v=>`Se notifica que este despacho admitió la acción de tutela interpuesta por ${v.n} contra ${EMPRESA}, por la suspensión del servicio de acueducto en su vivienda del barrio ${v.b}.\n\nSe ORDENA a la empresa pronunciarse sobre los hechos dentro de los DOS (2) días hábiles siguientes a esta notificación.`,anx:'Escrito de tutela',fol:6,
+  why:'Acción judicial con plazo fijado por el juez: 2 días hábiles. Va de inmediato a la Oficina Jurídica (110). Es la primera respuesta que debe salir.'},
+ {id:'factura',mand:1,c:'Correo electrónico',t:'FAC',d:'400',from:()=>'Químicos del Caribe S.A.S.',as:v=>'Factura electrónica FE-'+v.f,
+  body:v=>`Adjuntamos la factura electrónica FE-${v.f} por $${v.v2}, correspondiente al suministro de 40 tambores de hipoclorito de calcio para la planta de tratamiento. Agradecemos confirmar su aceptación.`,anx:'Archivo XML y PDF de la factura',fol:2,
+  why:'Factura de proveedor: Dirección Financiera (400). La empresa tiene 3 días hábiles para aceptarla o reclamarla; si no responde, queda aceptada tácitamente.'},
+ {id:'invitacion',mand:1,c:'Correo electrónico',t:'COM',d:'100',a:'INFO',from:()=>'Gobernación de La Guajira',as:()=>'Invitación mesa departamental del agua',
+  body:v=>`La Secretaría de Infraestructura invita al Gerente a la mesa departamental de agua potable que se realizará el próximo mes en Riohacha. Se agradece confirmar asistencia.`,fol:1,
+  why:'Es una invitación: comunicación informativa para Gerencia (100). No genera término legal de respuesta.'},
+ {id:'poste',mand:1,c:'Físico',t:'PET',d:'210',a:'TRA',as:()=>'Solicitud urgente daño',
+  body:v=>`En la esquina de mi casa en ${v.b} se cayó un poste de alumbrado público y los cables quedaron en el suelo. Solicito que la empresa lo repare urgente porque hay niños en el sector.`,fol:1,
+  why:'Es una petición, pero el alumbrado público no es competencia de una empresa de acueducto. Se radica y se traslada a la entidad competente en máximo 5 días hábiles (art. 21). Los traslados los proyecta 210.'},
+ {id:'estrato',c:'Web',t:'INF',d:'210',a:'TRA',as:()=>'Certificado de estrato',
+  body:v=>`Solicito un certificado de estratificación socioeconómica de mi vivienda ubicada en ${v.b}. Lo necesito para el colegio de mi hija.`,fol:1,
+  why:'El certificado de estrato lo expide la Secretaría de Planeación municipal, no la empresa. Se traslada por competencia (5 días), lo proyecta 210.'},
+ {id:'titular',mand:1,c:'Físico',t:'PET',d:'210',a:'REQ',as:()=>'Cambio de titular',
+  body:v=>`Compré la casa del barrio ${v.b} y solicito que la cuenta ${v.c} quede a mi nombre. Adjunto el certificado de tradición y libertad del inmueble.`,anx:'NINGUNO — el sobre llegó sin el certificado mencionado',fol:1,
+  why:'Dice que adjunta el certificado, pero no llegó. Se radica (nunca se devuelve en ventanilla) y se requiere al ciudadano para que complete (art. 17): 10 días hábiles.'},
+ {id:'irca',c:'Correo electrónico',t:'INF',d:'310',from:()=>'Secretaría de Salud Municipal',as:()=>'Requerimiento de información',
+  body:v=>`Solicitamos remitir el reporte del Índice de Riesgo de la Calidad del Agua (IRCA) del último trimestre, con los resultados por punto de muestreo.`,fol:1,
+  why:'Otra autoridad pide información: 10 días hábiles. La calidad del agua la maneja Operación de Acueducto (310).'},
+ {id:'rebose',mand:1,c:'Físico',t:'REC',d:'320',as:()=>'Petición',
+  body:v=>`Desde hace una semana el manhole frente a mi casa en ${v.b} se rebosa y las aguas negras corren por la calle. Ya llamé dos veces y no han venido. Estoy cansada de esta situación.`,fol:1,
+  why:'El asunto dice “Petición”, pero es inconformidad por la falla del servicio: reclamo (15 días). Es un problema de la red de alcantarillado: 320.'},
+ {id:'cert_laboral',c:'Correo electrónico',t:'INF',d:'500',as:()=>'Certificado laboral',
+  body:v=>`Trabajé en la empresa como operario de planta entre 2015 y 2020. Solicito un certificado laboral con funciones y salario para mi trámite de pensión.`,fol:1,
+  why:'Pide un documento: solicitud de documentos (10 días). Los certificados laborales los expide Talento Humano (500).'},
+ {id:'hoja_vida',c:'Físico',t:'COM',d:'500',a:'INFO',as:()=>'Hoja de vida',
+  body:v=>`Me permito presentar mi hoja de vida como técnico en gestión documental egresado del SENA, por si la empresa tiene vacantes.`,anx:'Hoja de vida con soportes',fol:6,
+  why:'Ofrece su hoja de vida sin pedir una actuación concreta: comunicación informativa para Talento Humano (500).'},
+ {id:'archivo',c:'Correo electrónico',t:'INF',d:'600',as:()=>'Solicitud de copias',
+  body:v=>`Soy investigador de la Universidad de La Guajira y solicito copia de los contratos de construcción del acueducto firmados en 1998, que deben reposar en el archivo histórico de la empresa.`,fol:1,
+  why:'Pide copias de documentos del archivo histórico: solicitud de documentos (10 días), Gestión Documental y Archivo (600).'},
+ {id:'cuenta_cobro',c:'Físico',t:'FAC',d:'400',as:v=>'Cuenta de cobro No. '+v.f2,
+  body:v=>`Presento cuenta de cobro por $${v.v3} por el mantenimiento de zonas verdes de la planta durante el mes anterior, según contrato ${v.ct}.`,anx:'Informe de actividades y planilla de seguridad social',fol:4,
+  why:'Cuenta de cobro de un contratista: Dirección Financiera (400), 3 días hábiles.'},
+ {id:'medidor',c:'Web',t:'PET',d:'310',as:()=>'Revisión de medidor',
+  body:v=>`Solicito una visita técnica para revisar el medidor de la cuenta ${v.c}: la aguja gira aunque todas las llaves de la casa estén cerradas.`,fol:1,
+  why:'Pide una actuación (una visita): petición (15 días). Los medidores los atiende 310.'},
+ {id:'acuerdo',c:'Físico',t:'PET',d:'210',as:()=>'Acuerdo de pago',
+  body:v=>`Tengo una deuda de cuatro meses en la cuenta ${v.c}. Solicito un acuerdo de pago a seis cuotas porque en este momento estoy sin empleo.`,fol:1,
+  why:'Petición de interés particular sobre la cartera del usuario: 210, 15 días.'},
+ {id:'fraude',c:'Buzón',t:'DEN',d:'310',as:()=>'Información',
+  body:v=>`Informo que en la casa de la esquina de la Carrera ${v.k} en ${v.b} tienen una manguera conectada directamente al tubo madre, sin medidor. Mientras tanto, a nosotros no nos llega presión.`,fol:1,
+  why:'Denuncia una conexión fraudulenta de un usuario (no de un funcionario): Operación de Acueducto (310), 15 días.'},
+ {id:'consulta_jac',c:'Físico',t:'CON',d:'110',from:v=>'Junta de Acción Comunal '+v.b,as:()=>'Consulta',
+  body:v=>`La Junta pregunta si, según la normativa de servicios públicos, la empresa está obligada a asumir el costo de las redes internas en un asentamiento que aún no está legalizado.`,fol:1,
+  why:'Pide un concepto sobre lo que dice la norma: consulta (30 días), Oficina Jurídica (110).'},
+ {id:'queja_ventanilla',c:'Correo electrónico',t:'QUE',d:'120',as:()=>'Mala atención',
+  body:v=>`El viernes la funcionaria de la ventanilla se negó a recibirme un documento porque “ya era casi la hora de cierre”. Me tocó volver hoy y perder otro día de trabajo.`,fol:1,
+  why:'Inconformidad con la conducta de una funcionaria: queja (15 días), Control Interno (120). Y recuerda: la ventanilla nunca puede negarse a recibir.'},
+ {id:'hueco',c:'Web',t:'PET',d:'210',a:'TRA',as:()=>'Arreglo de vía',
+  body:v=>`En la Calle ${v.k} de ${v.b} hay un hueco enorme que ya causó dos accidentes de motos. Solicito que lo tapen.`,fol:1,
+  why:'Las vías son competencia de la Secretaría de Obras del municipio: se traslada (5 días), lo proyecta 210. Si el hueco lo hubiera dejado una obra de la empresa, sí sería competencia propia.'},
+ {id:'superservicios',c:'Correo electrónico',t:'COM',d:'100',a:'INFO',from:()=>'Superintendencia de Servicios Públicos',as:()=>'Circular externa',
+  body:v=>`Se informa a los prestadores el nuevo calendario de cargue de información al Sistema Único de Información (SUI) para el próximo año.`,fol:1,
+  why:'Circular informativa de un ente de control para Gerencia (100). No exige respuesta.'},
+ {id:'reclamo_sin_datos',c:'Web',t:'REC',d:'210',a:'REQ',from:v=>v.n.split(' ')[0],as:()=>'Cobro injusto',
+  body:v=>`Me llegó un cobro muy alto y no es justo. Revisen eso por favor. No tengo la factura a la mano.`,fol:1,
+  why:'Es un reclamo, pero no trae número de cuenta, dirección ni datos para ubicar el predio. Se radica y se requiere completar (art. 17): 10 días.'}
+];
+const TPL = Object.fromEntries(BANK.map(b=>[b.id,b]));
+
+const NOMBRES = ['María José Epieyú','Luis Alberto Uriana','Rosa Ipuana','Andrés Pushaina','Yeimy Gómez Ortiz','Diana Brito Mendoza','Jorge Iguarán','Liliana Fince','Ana Pimienta','Rafael Deluque','Yolanda Ballesteros','Omar Choles','Keila Arpushana','Wilmer Cotes','Sandra Solano','Hernán Pinto','Lucía Jusayú','Fabián Ospino','Mileidys Cuello','Eder Romero'];
+const BARRIOS = ['Los Olivos','Cooperativo','15 de Mayo','Villa Fátima','José Antonio Galán','Las Tunas','Aeropuerto','Nuevo Horizonte','El Libertador','Comfamiliar','Marbella','Los Almendros','Entrerríos','Boca Grande'];
+
+/* ===================== Utilidades ===================== */
+function hash(s){let h1=0xdeadbeef,h2=0x41c6ce57;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);return (h1>>>0)}
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(arr,r){for(let i=arr.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n=>n.toLocaleString('es-CO');
+
+const d2 = s=>{const [y,m,d]=s.split('-').map(Number);return new Date(Date.UTC(y,m-1,d))};
+const iso = dt=>dt.toISOString().slice(0,10);
+const isBD = dt=>{const w=dt.getUTCDay();return w!==0&&w!==6&&!FEST.includes(iso(dt))};
+/* Equivalente a DIA.LAB(fecha; n; festivos) */
+function addBD(s,n){const dt=d2(s);let k=0;while(k<n){dt.setUTCDate(dt.getUTCDate()+1);if(isBD(dt))k++}return iso(dt)}
+/* días hábiles que faltan desde hoy hasta el vencimiento (0 = vence hoy, negativo = vencido) */
+function bdLeft(today,venc){if(venc===today)return 0;const a=d2(today<venc?today:venc),b=venc>today?venc:today;let k=0;while(iso(a)<b){a.setUTCDate(a.getUTCDate()+1);if(isBD(a))k++}return venc>today?k:-k}
+const DAYS=[START];for(let i=1;i<10;i++)DAYS.push(addBD(DAYS[i-1],1));
+const DSEM=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const fLong = s=>{const d=d2(s);return `${DSEM[d.getUTCDay()]} ${d.getUTCDate()} ${MES[d.getUTCMonth()]}`};
+const fDMY = s=>s?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):'';
+
+/* ===================== Estado ===================== */
+const KEY='vu-sim-logilab-v1';
+let S=null, ui={tab:'ventanilla',sel:null,sort:'orden',armed:false,flash:null};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{const t=localStorage.getItem(KEY);if(t)S=JSON.parse(t)}catch(e){S=null}}
+
+function newGame(nombre,doc,ficha,modo){
+  const seed=hash(doc.trim()+'|'+ficha);const r=rng(seed);
+  const mand=BANK.filter(b=>b.mand).map(b=>b.id);
+  const rest=shuffle(BANK.filter(b=>!b.mand).map(b=>b.id),r).slice(0,24-mand.length);
+  const ids=mand.concat(rest);
+  // ranuras por día; tutela y un traslado caen en el día del “puente” (6), la factura al día siguiente
+  let slots=[];SIZES.forEach((n,i)=>{for(let k=0;k<n;k++)slots.push(i)});
+  const fixed={tutela:5,poste:5,factura:6};
+  for(const id in fixed){slots.splice(slots.indexOf(fixed[id]),1)}
+  const free=shuffle(ids.filter(id=>!(id in fixed)),r);slots=shuffle(slots,r);
+  const docs=[];
+  const mk=(id,day)=>{
+    const v={n:NOMBRES[Math.floor(r()*NOMBRES.length)],b:BARRIOS[Math.floor(r()*BARRIOS.length)],
+      c:String(100000+Math.floor(r()*899999)),k:1+Math.floor(r()*40),
+      v:"",v2:money(Math.round((9+r()*6)*1e6/1000)*1000),
+      v3:money(Math.round((1.8+r()*1.4)*1e6/1000)*1000),f:String(2000+Math.floor(r()*7000)),
+      f2:String(10+Math.floor(r()*80)),ct:'CT-2026-0'+String(10+Math.floor(r()*80))};
+    v.v=money((140+Math.floor(r()*120))*1000);
+    return {id,day,v,ord:r(),rad:null,desp:null};
+  };
+  free.forEach((id,i)=>docs.push(mk(id,slots[i])));
+  for(const id in fixed){const x=mk(id,fixed[id]);if(id!=='poste')x.ord=1.5;docs.push(x)} // tutela y factura llegan al final del día
+  docs.sort((a,b)=>a.day-b.day||a.ord-b.ord);
+  // horas de llegada
+  const byDay={};docs.forEach(d=>{(byDay[d.day]=byDay[d.day]||[]).push(d)});
+  Object.values(byDay).forEach(list=>{let m=8*60+5;list.forEach(d=>{m+=10+Math.floor(r()*80);d.hora=String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')})});
+  docs.forEach((d,i)=>d.k=i);
+  S={v:1,nombre:nombre.trim(),doc:doc.trim(),ficha,modo,seed,day:0,used:0,finished:false,docs};
+  ui={tab:'ventanilla',sel:null,sort:'orden',armed:false,flash:null};
+  save();
+}
+
+/* respuestas correctas */
+function truth(d){const t=TPL[d.id];const a=t.a||'ASI';const p=ACC[a].p!=null?ACC[a].p:TIPOS[t.t].p;return {tipo:t.t,dep:t.d,acc:a,plazo:p}}
+function trueVenc(d){const T=truth(d);return T.plazo===0?'':addBD(DAYS[d.rad.day],T.plazo)}
+function radCount(){return S.docs.filter(d=>d.rad).length}
+function nextNum(){return BASE+radCount()}
+function today(){return DAYS[S.day]}
+function readyDay(d){ // la dependencia responde al día hábil siguiente; si se asignó mal, la devuelve y se pierde un día
+  if(!d.rad||d.rad.acc==='INFO')return null;return d.rad.day+(d.rad.dep===truth(d).dep?1:2)}
+
+function evalDoc(d){
+  if(!d.rad)return {pts:0,f:{}};
+  const T=truth(d),R=d.rad;
+  const f={tipo:R.tipo===T.tipo,dep:R.dep===T.dep,acc:R.acc===T.acc,plazo:+R.plazo===T.plazo,venc:(R.venc||'')===trueVenc(d),num:R.num===BASE+R.order};
+  const pts=(f.tipo?.25:0)+(f.dep?.25:0)+(f.plazo?.2:0)+(f.venc?.2:0)+(f.acc?.1:0);
+  return {pts,f};
+}
+function score(){
+  const N=S.docs.length,last=DAYS[9];
+  let ex=0,same=0,traz=0,resp=0,respOk=0,venc=0;
+  S.docs.forEach(d=>{const e=evalDoc(d);ex+=e.pts;if(d.rad){if(d.rad.day===d.day)same++;if(e.f.num)traz++}
+    const T=truth(d);if(T.plazo>0){resp++;
+      if(!d.rad){if(S.finished)venc++;return}
+      const tv=trueVenc(d);
+      if(d.desp!=null){if(DAYS[d.desp]<=tv)respOk++;else venc++}
+      else if(tv>last||!S.finished){respOk++}else venc++;
+    }});
+  const E=50*ex/N,O1=10*same/N,O2=20*respOk/resp,TZ=20*traz/N;
+  return {E,O:O1+O2,T:TZ,total:Math.round(E+O1+O2+TZ),same,traz,venc,resp,respOk,rad:radCount(),N};
+}
+
+/* ===================== Render ===================== */
+const $=s=>document.querySelector(s);
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3200)}
+
+function render(){
+  const app=$('#app');
+  if(!S){app.innerHTML=startView()+footer();bindStart();return}
+  const pend=S.docs.filter(d=>d.day<=S.day&&!d.rad);
+  const readyNow=S.docs.filter(d=>d.desp==null&&readyDay(d)!=null&&readyDay(d)<=S.day).length;
+  app.innerHTML=`
+  <header class="top">
+    <div class="brand"><small>LogiLab SENA · Gestión Documental</small><h1>Ventanilla Única en Vivo</h1>
+      <p>${esc(EMPRESA)} · Radicador: <b>${esc(S.nombre)}</b> · Ficha ${esc(S.ficha)} · ${S.modo==='practica'?'Modo práctica':'Modo evaluación'}</p></div>
+    <div class="clock">
+      <div class="today"><div class="lbl">${S.finished?'Partida cerrada':'Día '+(S.day+1)+' de 10'}</div>
+        <div class="d">${esc(fLong(today()))}</div>
+        <div class="daybar">${DAYS.map((_,i)=>`<i class="${i<S.day||S.finished?'done':i===S.day?'now':''}"></i>`).join('')}</div></div>
+      ${S.finished?'':`<button class="btn ${ui.armed?'danger':'primary'}" id="close">${ui.armed?`Confirmar cierre: quedan ${pend.length} sin radicar`:(S.day===9?'Cerrar última jornada':'Cerrar jornada →')}</button>`}
+    </div>
+  </header>
+  <div class="stats">
+    <span class="stat"><b>${pend.length}</b>por radicar</span>
+    <span class="stat"><b>${radCount()}</b>radicados</span>
+    <span class="stat"><b>${S.finished?0:CAP-S.used}/${CAP}</b>despachos disponibles hoy</span>
+    <span class="stat"><b>${readyNow}</b>respuestas listas</span>
+    <span class="stat">Próximo consecutivo: <b class="mono">${PREF}${String(nextNum()).padStart(5,'0')}</b></span>
+  </div>
+  <nav class="tabs" role="tablist">
+    ${[['ventanilla','Ventanilla',pend.length],['libro','Libro radicador',radCount()],['manual','Manual de la ventanilla'],['informe','Informe y entrega']].map(([k,l,n])=>`<button class="tab" role="tab" aria-selected="${ui.tab===k}" data-tab="${k}">${l}${n!=null?`<span class="n">${n}</span>`:''}</button>`).join('')}
+  </nav>
+  <main>${ui.tab==='ventanilla'?deskView(pend):ui.tab==='libro'?bookView():ui.tab==='manual'?manualView():reportView()}</main>
+  ${footer()}`;
+  bindMain();
+}
+const footer=()=>`<footer><span><a href="../../" style="color:inherit">← Portal LogiLab</a> · <a href="manual/" style="color:inherit">Manual de usuario</a> · Simulador de radicación PQRSD · Ley 1755 de 2015</span><span>By Carlos Barrios · Instructor</span></footer>`;
+
+function startView(){return `
+  <header class="top"><div class="brand"><small>LogiLab SENA · Gestión Documental</small><h1>Ventanilla Única en Vivo</h1><p>Simulador de radicación y control de términos · ${esc(EMPRESA)}</p></div></header>
+  <form class="start" id="startf">
+    <h2>Hoy empiezas como radicador</h2>
+    <p style="margin:0">Durante 10 días hábiles (del 9 al 23 de noviembre de 2026) van a llegar 24 documentos a la ventanilla. Tú decides cómo radicar cada uno, a qué dependencia va, qué plazo tiene y cuándo vence. Cada día solo puedes despachar ${CAP} respuestas, así que tendrás que priorizar.</p>
+    <label class="f">Nombre completo<input id="s-nom" required autocomplete="name"></label>
+    <label class="f">Número de documento <span class="h">Define qué documentos te llegan: cada aprendiz recibe una partida distinta.</span><input id="s-doc" required inputmode="numeric" pattern="[0-9]{5,12}"></label>
+    <label class="f">Ficha<select id="s-ficha">${FICHAS.map(f=>`<option>${f}</option>`).join('')}</select></label>
+    <div class="modes">
+      <label class="mode"><input type="radio" name="modo" value="practica" checked><span><b>Práctica</b><br>Ves la retroalimentación después de cada radicado.</span></label>
+      <label class="mode"><input type="radio" name="modo" value="evaluacion"><span><b>Evaluación</b><br>La retroalimentación aparece al cerrar el día 10.</span></label>
+    </div>
+    <div class="err" id="s-err"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">Abrir la ventanilla</button><a class="btn" href="manual/" style="text-decoration:none">Ver el manual de usuario</a></div>
+  </form>`}
+function bindStart(){$('#startf').addEventListener('submit',e=>{e.preventDefault();
+  const n=$('#s-nom').value,d=$('#s-doc').value;
+  if(n.trim().length<5){$('#s-err').textContent='Escribe tu nombre completo.';return}
+  if(!/^[0-9]{5,12}$/.test(d.trim())){$('#s-err').textContent='El documento debe tener solo números (5 a 12 dígitos).';return}
+  newGame(n,d,$('#s-ficha').value,document.querySelector('input[name=modo]:checked').value);
+  ui.sel=S.docs.find(x=>x.day===0).k;render();toast(`Llegaron ${SIZES[0]} documentos a la bandeja`)})}
+
+function docMeta(d){const t=TPL[d.id];return {from:t.from?t.from(d.v):d.v.n,as:t.as(d.v),t}}
+function paper(d){
+  const {from,as,t}=docMeta(d);
+  const contacto=t.anon?'No registra':t.c==='Físico'||t.c==='Buzón'?`Barrio ${d.v.b}, Riohacha`:'Correo registrado en el formulario';
+  return `<article class="paper">
+    ${d.rad?`<div class="stamp"><b>RADICADO</b>${PREF}${esc(d.rad.num.toString().padStart(5,'0'))}<br>${fDMY(DAYS[d.rad.day])} · Folios: ${t.fol}</div>`:''}
+    <dl class="hdr"><dt>Canal</dt><dd>${esc(t.c)} · llegó ${esc(fLong(DAYS[d.day]))}, ${d.hora}</dd>
+      <dt>Remitente</dt><dd>${esc(from)}</dd><dt>Contacto</dt><dd>${esc(contacto)}</dd><dt>Asunto</dt><dd><b>${esc(as)}</b></dd></dl>
+    <div class="body">${esc(t.body(d.v))}</div>
+    <div class="sign">${t.anon?'<i>Sin firma</i>':esc(from)}</div>
+    <div class="anx">Anexos: ${esc(t.anx||'Ninguno')} · Folios: ${t.fol}</div>
+  </article>`;
+}
+function feedback(d){
+  const e=evalDoc(d),T=truth(d),R=d.rad;
+  const rows=[['Consecutivo',e.f.num,PREF+String(BASE+R.order).padStart(5,'0')],['Tipología',e.f.tipo,TIPOS[T.tipo].n],['Dependencia',e.f.dep,T.dep+' · '+depName(T.dep)],['Acción',e.f.acc,ACC[T.acc].n],['Plazo',e.f.plazo,T.plazo===0?'No aplica (0)':T.plazo+' días hábiles'],['Vencimiento',e.f.venc,trueVenc(d)?fDMY(trueVenc(d)):'No aplica']];
+  const bad=rows.filter(r=>!r[1]);
+  return `<div class="fb ${bad.length?'mix':'good'}"><b>${bad.length?`Radicado con ${bad.length} ${bad.length===1?'error':'errores'}`:'Radicación correcta en todos los campos'}</b>
+    ${bad.length?`<ul>${bad.map(r=>`<li>${r[0]}: lo correcto era <b>${esc(r[2])}</b></li>`).join('')}</ul>`:''}
+    <div class="why">${esc(TPL[d.id].why)}</div></div>`;
+}
+function deskView(pend){
+  let sel=S.docs.find(d=>d.k===ui.sel);
+  if(!sel||(!sel.rad&&sel.day>S.day))sel=pend[0]||null;
+  if(sel)ui.sel=sel.k;
+  const list=pend.length?pend.map(d=>{const m=docMeta(d);return `<button class="env" data-sel="${d.k}" aria-current="${sel&&sel.k===d.k}">
+      <span class="meta"><span>${esc(m.t.c)}</span><span class="${d.day<S.day?'late':''}">${d.day<S.day?'Pendiente desde '+fDMY(DAYS[d.day]).slice(0,5):'Hoy '+d.hora}</span></span>
+      <span class="from">${esc(m.from)}</span><span class="subj">${esc(m.as)}</span></button>`}).join('')
+    :`<div class="empty">${S.finished?'La partida terminó. Revisa tu informe.':'Bandeja al día. Ve al libro radicador para despachar respuestas, o cierra la jornada.'}</div>`;
+  return `<div class="desk">
+    <section class="inbox" aria-label="Bandeja de entrada"><h2>Bandeja de entrada</h2><p class="hint">Léelo completo antes de clasificar: el asunto puede engañar.</p>${list}</section>
+    <section class="work">${sel?paper(sel)+(sel.rad?(S.modo==='practica'||S.finished?feedback(sel):`<div class="fb good"><b>Radicado ${PREF}${String(sel.rad.num).padStart(5,'0')} registrado.</b> La retroalimentación se publica al cerrar el día 10.</div>`):formView(sel)):'<div class="empty">Selecciona un documento de la bandeja.</div>'}</section>
+  </div>`;
+}
+function formView(d){
+  const opt=(o,ph)=>`<option value="">${ph}</option>`+o;
+  return `<form class="form" id="radf" novalidate>
+    <h3>Radicar este documento</h3>
+    <div class="grid2">
+      <label class="f">Número de radicado<span class="h">Continúa la numeración del libro, sin saltos.</span><span class="radin"><span>${PREF}</span><input id="r-num" inputmode="numeric" placeholder="00000" maxlength="5"></span></label>
+      <label class="f">Fecha de radicación<span class="h">La pone el sistema.</span><input value="${fDMY(today())}" disabled class="mono"></label>
+      <label class="f">Tipología documental<select id="r-tipo">${opt(Object.entries(TIPOS).map(([k,t])=>`<option value="${k}">${t.n}</option>`).join(''),'Selecciona…')}</select></label>
+      <label class="f">Dependencia (código TRD)<select id="r-dep">${opt(DEPS.map(x=>`<option value="${x[0]}">${x[0]} · ${x[1]}</option>`).join(''),'Selecciona…')}</select></label>
+      <label class="f">Acción en ventanilla<select id="r-acc">${opt(Object.entries(ACC).map(([k,a])=>`<option value="${k}">${a.n}</option>`).join(''),'Selecciona…')}</select></label>
+      <label class="f">Plazo (días hábiles)<span class="h">Escribe 0 si no requiere respuesta.</span><input id="r-plazo" type="number" min="0" max="60" inputmode="numeric"></label>
+      <label class="f">Fecha de vencimiento<span class="h">Cuenta desde el día hábil siguiente. Déjala vacía si el plazo es 0.</span><input id="r-venc" type="date" min="${START}" max="2027-02-28"></label>
+    </div>
+    <div class="err" id="r-err" role="alert"></div>
+    <div><button class="btn primary" type="submit">Radicar y sellar</button></div>
+  </form>`;
+}
+
+function bookView(){
+  let rows=S.docs.filter(d=>d.rad);
+  if(!rows.length)return `<div class="empty">El libro está vacío. Radica tu primer documento en la ventanilla.</div>`;
+  const t=today();
+  const key=d=>d.rad.venc||'9999';
+  rows=rows.slice().sort(ui.sort==='venc'?(a,b)=>key(a).localeCompare(key(b))||a.rad.order-b.rad.order:(a,b)=>a.rad.order-b.rad.order);
+  const capLeft=S.finished?0:CAP-S.used;
+  const body=rows.map(d=>{const R=d.rad,m=docMeta(d);
+    let sem='<span class="pill n">No aplica</span>',estado='';
+    if(R.acc==='INFO'){estado='<span class="pill n">Informado y archivado</span>'}
+    else if(d.desp!=null){sem='<span class="pill n">Cerrado</span>';estado=`Despachado ${fDMY(DAYS[d.desp]).slice(0,5)}`}
+    else{
+      if(R.venc){const L=bdLeft(t,R.venc);sem=L<0?`<span class="pill r">Vencido (${-L} d)</span>`:L===0?'<span class="pill r">Vence hoy</span>':L<=3?`<span class="pill y">${L} d</span>`:`<span class="pill g">${L} d</span>`}
+      const rd=readyDay(d);
+      if(rd<=S.day)estado=`<button class="btn sm primary" data-desp="${d.k}" ${capLeft>0?'':'disabled'}>Despachar respuesta</button>`;
+      else estado=(R.dep!==truth(d).dep&&rd-R.day===2&&S.day>R.day)?`<span class="note">Devuelto por ${R.dep}: no es su competencia. Reasignado.</span>`:`<span class="note">En trámite en ${R.dep}</span>`;
+    }
+    return `<tr><td class="mono">${PREF}${String(R.num).padStart(5,'0')}</td><td class="mono">${fDMY(DAYS[R.day]).slice(0,5)}</td><td>${esc(m.from)}<br><span class="note">${esc(m.as)}</span></td><td>${esc(TIPOS[R.tipo].n)}</td><td class="mono">${R.dep}</td><td class="num mono">${R.plazo}</td><td class="mono">${R.venc?fDMY(R.venc).slice(0,5):'—'}</td><td>${sem}</td><td>${estado}</td></tr>`}).join('');
+  return `<div class="toolbar"><div><b>Despachos de hoy:</b> ${S.finished?'jornadas cerradas':`te quedan <b>${capLeft}</b> de ${CAP}`}. <span class="note">La dependencia responde al día hábil siguiente de recibir el documento.</span></div>
+    <label class="f" style="grid-auto-flow:column;align-items:center;gap:8px">Ordenar por<select id="sort" style="width:auto"><option value="orden" ${ui.sort==='orden'?'selected':''}>Orden de radicación</option><option value="venc" ${ui.sort==='venc'?'selected':''}>Fecha de vencimiento</option></select></label></div>
+  <div class="scroll"><table><thead><tr><th>Radicado</th><th>Fecha</th><th>Remitente / asunto</th><th>Tipología</th><th>Dep.</th><th class="num">Plazo</th><th>Vence</th><th>Semáforo</th><th>Estado</th></tr></thead><tbody>${body}</tbody></table></div>
+  <p class="note">El semáforo usa el vencimiento que tú calculaste. Al cerrar la partida se compara contra el vencimiento real.</p>`;
+}
+
+function manualView(){return `<div class="manual">
+  <section><h2>Reglas de oro de la ventanilla</h2><div class="rules">
+    <div class="rule"><b>Nunca se rechaza</b>Todo documento se recibe y se radica, aunque esté incompleto, sea anónimo o no sea de nuestra competencia.</div>
+    <div class="rule"><b>Consecutivo sin saltos</b>Cada radicado es el anterior + 1. No se repiten ni se dejan números libres.</div>
+    <div class="rule"><b>Se radica el mismo día</b>Lo que llega hoy se radica hoy. Un documento que espera en la bandeja es un término que corre.</div>
+    <div class="rule"><b>Lee el contenido, no el asunto</b>La tipología la define lo que el ciudadano pide, no el título que le puso.</div>
+  </div></section>
+  <section><h2>Plazos de respuesta</h2><div class="scroll"><table><thead><tr><th>Tipología o acción</th><th class="num">Días hábiles</th><th>Fundamento</th></tr></thead><tbody>
+    <tr><td>Petición, queja, reclamo, sugerencia, denuncia</td><td class="num">15</td><td>Ley 1755 de 2015, art. 14</td></tr>
+    <tr><td>Solicitud de documentos o información (también entre autoridades)</td><td class="num">10</td><td>Art. 14 y art. 30</td></tr>
+    <tr><td>Consulta (concepto sobre materias a cargo de la empresa)</td><td class="num">30</td><td>Art. 14</td></tr>
+    <tr><td>Acción de tutela</td><td class="num">El que fije el juez</td><td>Auto admisorio</td></tr>
+    <tr><td>Factura o cuenta de cobro de proveedor</td><td class="num">3</td><td>Aceptación o reclamo de la factura</td></tr>
+    <tr><td>Traslado por competencia (acción)</td><td class="num">5</td><td>Art. 21</td></tr>
+    <tr><td>Requerir completar documentos faltantes (acción)</td><td class="num">10</td><td>Art. 17</td></tr>
+    <tr><td>Comunicación informativa</td><td class="num">0</td><td>No requiere respuesta</td></tr>
+  </tbody></table></div>
+  <p class="note">Cuando la acción es traslado o requerimiento, el plazo es el de la acción, no el de la tipología.</p></section>
+  <section><h2>Tabla de dependencias (TRD)</h2><div class="scroll"><table><thead><tr><th>Código</th><th>Dependencia</th><th>Qué atiende</th></tr></thead><tbody>
+    ${DEPS.map(d=>`<tr><td class="mono">${d[0]}</td><td><b>${d[1]}</b></td><td>${d[2]}</td></tr>`).join('')}</tbody></table></div></section>
+  <section><h2>Cómo calcular el vencimiento</h2>
+    <p>Se cuentan solo días hábiles (lunes a viernes, sin festivos), empezando el día hábil siguiente a la radicación. Es exactamente lo que hace <span class="mono">=DIA.LAB(fecha_radicado; plazo; festivos)</span> en Excel.</p>
+    <p>Ejemplo: radicado el viernes 13/11/2026 con plazo de 2 días → lunes 16 es festivo → cuentan martes 17 (1) y miércoles 18 (2). Vence el <b>18/11/2026</b>.</p>
+    <p><b>Festivos del periodo:</b> <span class="mono">${FEST.map(fDMY).join(' · ')}</span></p></section>
+  <section><h2>Despacho de respuestas</h2>
+    <p>Cada documento asignado vuelve como respuesta lista al día hábil siguiente. Si lo asignaste a la dependencia equivocada, te lo devuelven y se pierde un día más. La ventanilla solo puede despachar <b>${CAP} respuestas por día</b>: prioriza las que vencen primero.</p></section>
+</div>`}
+
+function reportView(){
+  const sc=score();
+  const freq={};S.docs.filter(d=>d.rad).forEach(d=>freq[d.rad.tipo]=(freq[d.rad.tipo]||0)+1);
+  const mx=Math.max(1,...Object.values(freq));
+  const showKey=S.finished||S.modo==='practica';
+  const review=S.docs.slice().sort((a,b)=>(a.rad?a.rad.order:99)-(b.rad?b.rad.order:99)).map(d=>{
+    const e=evalDoc(d),m=docMeta(d),T=truth(d);const mk=k=>d.rad?(e.f[k]?'<span class="ok">✓</span>':'<span class="no">✗</span>'):'<span class="no">—</span>';
+    return `<tr><td class="mono">${d.rad?PREF+String(d.rad.num).padStart(5,'0'):'Sin radicar'}</td><td>${esc(m.as)}<br><span class="note">${esc(m.from)}</span></td>
+      <td>${mk('tipo')} ${esc(TIPOS[T.tipo].n)}</td><td>${mk('dep')} ${T.dep}</td><td>${mk('acc')} ${esc(ACC[T.acc].n.replace('Radicar y ',''))}</td><td>${mk('plazo')} ${T.plazo}</td><td>${mk('venc')} ${d.rad&&trueVenc(d)?fDMY(trueVenc(d)).slice(0,5):'—'}</td></tr>`}).join('');
+  const bar=(l,v,max)=>`<div class="bar"><span>${l}</span><span class="t"><i style="width:${(100*v/max).toFixed(1)}%"></i></span><span class="mono">${v.toFixed(1)}/${max}</span></div>`;
+  return `
+  <div class="score"><div class="big">${sc.total}<small>/100</small></div>
+    <div class="bars">${bar('Exactitud',sc.E,50)}${bar('Oportunidad',sc.O,30)}${bar('Trazabilidad',sc.T,20)}
+    <div class="note">${sc.rad}/${sc.N} radicados · ${sc.same} el mismo día que llegaron · ${sc.traz} con consecutivo correcto · ${sc.venc} respuestas vencidas${S.finished?'':' (puntaje parcial: la partida sigue abierta)'}</div></div></div>
+
+  <section class="sec"><h2>Documentos por tipología (tu clasificación)</h2>
+    <div class="freq">${Object.keys(TIPOS).filter(k=>freq[k]).map(k=>`<div><span>${TIPOS[k].n}</span><span class="t"><i style="width:${100*freq[k]/mx}%"></i></span><span class="mono">${freq[k]}</span></div>`).join('')||'<span class="note">Aún no hay radicados.</span>'}</div></section>
+
+  ${showKey?`<section class="sec"><h2>Revisión documento por documento</h2><p class="note">La columna muestra la respuesta correcta; ✓ o ✗ indica si acertaste.</p>
+    <div class="scroll"><table><thead><tr><th>Radicado</th><th>Asunto</th><th>Tipología</th><th>Dep.</th><th>Acción</th><th>Plazo</th><th>Vence</th></tr></thead><tbody>${review}</tbody></table></div></section>`:''}
+
+  <section class="sec"><h2>Reto en Excel: reconstruye tu libro con fórmulas</h2>
+    <p>Copia la tabla, pégala en la celda A1 de una hoja de Excel o Google Sheets y se separa sola en columnas. En otra hoja llamada <b>Festivos</b> escribe los festivos en A2:A7 y en <b>Festivos!D1</b> la fecha de corte 23/11/2026. Luego agrega columnas con estas fórmulas y compara con lo que calculaste en el simulador:</p>
+    <div class="code">Plazo correcto (M2):   =SI.CONJUNTO(G2="Consulta";30;G2="Acción de tutela";2;G2="Factura o cuenta de cobro";3;G2="Comunicación informativa";0;G2="Solicitud de documentos o información";10;VERDADERO;15)
+Vencimiento (N2):      =SI(I2=0;"No aplica";DIA.LAB(B2;I2;Festivos!$A$2:$A$7))
+¿Coincide? (O2):       =SI(N2=J2;"OK";"Revisar")
+Semáforo al corte (P2): =SI(K2="Despachado";"Cerrado";SI(I2=0;"No aplica";SI(J2&lt;=Festivos!$D$1;"Rojo";SI(DIAS.LAB(Festivos!$D$1;J2;Festivos!$A$2:$A$7)-1&lt;=3;"Amarillo";"Verde"))))
+Reclamos despachados:  =CONTAR.SI.CONJUNTO(G:G;"Reclamo";K:K;"Despachado")</div>
+    <p class="note">Ojo: en M2 la fórmula no considera traslados ni requerimientos (5 y 10 días). Ese es tu reto: agrega la condición usando la columna de acción.</p>
+    <textarea class="tsv" id="tsv" readonly aria-label="Libro radicador para copiar">${esc(tsv())}</textarea>
+    <div class="send"><button class="btn" id="cp-tsv">Copiar tabla para Excel</button><button class="btn" id="dl-csv">Descargar CSV</button></div></section>
+
+  <section class="sec"><h2>Entrega al instructor</h2>
+    ${S.finished?`<p>Envía tu resumen por uno de estos medios. Si uno falla, usa el siguiente.</p>
+    <textarea class="tsv" id="sum" readonly style="min-height:150px;white-space:pre-wrap">${esc(summary(sc))}</textarea>
+    <div class="send">
+      <a class="btn primary" href="https://wa.me/?text=${encodeURIComponent(summary(sc))}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+      <a class="btn" href="mailto:cabarriosn@gmail.com?subject=${encodeURIComponent('Simulador Ventanilla Única – Ficha '+S.ficha+' – '+S.nombre)}&body=${encodeURIComponent(summary(sc)+'\n\n(Pegue aquí la tabla copiada del simulador)')}">Enviar por correo</a>
+      <button class="btn" id="cp-sum">Copiar resumen</button></div>
+    <p class="note">Correo del instructor: <span class="mono" style="user-select:all">cabarriosn@gmail.com</span>. Adjunta también el archivo de Excel del reto.</p>`
+    :`<div class="empty">La entrega se habilita cuando cierres la jornada del día 10.</div>`}
+    <div><button class="btn danger" id="reset">${ui.reset?'Confirmar: borrar esta partida':'Reiniciar partida'}</button></div></section>`;
+}
+function tsv(){
+  const H=['Radicado','Fecha_radicacion','Fecha_llegada','Canal','Remitente','Asunto','Tipologia','Dependencia','Plazo_dias','Vencimiento','Estado','Fecha_despacho','Accion'];
+  const rows=S.docs.filter(d=>d.rad).sort((a,b)=>a.rad.order-b.rad.order).map(d=>{const m=docMeta(d),R=d.rad;
+    return [PREF+String(R.num).padStart(5,'0'),fDMY(DAYS[R.day]),fDMY(DAYS[d.day]),m.t.c,m.from,m.as,TIPOS[R.tipo].n,R.dep,R.plazo,R.venc?fDMY(R.venc):'',R.acc==='INFO'?'Informado':d.desp!=null?'Despachado':'En trámite',d.desp!=null?fDMY(DAYS[d.desp]):'',ACC[R.acc].n].map(x=>String(x).replace(/\t/g,' '))});
+  return [H].concat(rows).map(r=>r.join('\t')).join('\n');
+}
+function summary(sc){
+  const code=hash(S.seed+'|'+sc.total+'|'+sc.rad+'|'+sc.venc+'|'+S.docs.map(d=>d.rad?d.rad.tipo+d.rad.dep+d.rad.plazo:'x').join('')).toString(36).toUpperCase().slice(0,7);
+  return `SIMULADOR VENTANILLA ÚNICA – LogiLab SENA
+Aprendiz: ${S.nombre} | Doc: ${S.doc} | Ficha: ${S.ficha}
+Modo: ${S.modo==='practica'?'Práctica':'Evaluación'}
+Puntaje: ${sc.total}/100 (Exactitud ${sc.E.toFixed(1)}/50 · Oportunidad ${sc.O.toFixed(1)}/30 · Trazabilidad ${sc.T.toFixed(1)}/20)
+Radicados: ${sc.rad}/${sc.N} · Mismo día: ${sc.same} · Consecutivo correcto: ${sc.traz} · Respuestas vencidas: ${sc.venc}
+Código de verificación: ${code}`;
+}
+
+/* ===================== Eventos ===================== */
+async function copy(text,el){try{await navigator.clipboard.writeText(text);toast('Copiado')}catch(e){if(el){el.focus();el.select()}toast('Selecciona el texto y cópialo con Ctrl+C')}}
+function bindMain(){
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ui.tab=b.dataset.tab;ui.armed=false;render();scrollTo(0,0)});
+  document.querySelectorAll('[data-sel]').forEach(b=>b.onclick=()=>{ui.sel=+b.dataset.sel;render()});
+  const c=$('#close');if(c)c.onclick=closeDay;
+  const f=$('#radf');if(f)f.onsubmit=radicar;
+  const so=$('#sort');if(so)so.onchange=()=>{ui.sort=so.value;render()};
+  document.querySelectorAll('[data-desp]').forEach(b=>b.onclick=()=>{if(S.used>=CAP)return;const d=S.docs[+b.dataset.desp];d.desp=S.day;S.used++;save();render();toast('Respuesta despachada')});
+  const t=$('#cp-tsv');if(t)t.onclick=()=>copy(tsv(),$('#tsv'));
+  const s=$('#cp-sum');if(s)s.onclick=()=>copy($('#sum').value,$('#sum'));
+  const dl=$('#dl-csv');if(dl)dl.onclick=async()=>{
+    const csv='\ufeff'+tsv().split('\n').map(r=>r.split('\t').map(x=>'"'+x.replace(/"/g,'""')+'"').join(';')).join('\n');
+    const filename=`ventanilla_${S.ficha}_${S.doc}.csv`;
+    const dls=window.claude&&window.claude.use?await window.claude.use('downloads').catch(()=>null):null;
+    if(dls){try{await dls.save({filename,data:csv});toast('Archivo guardado')}catch(e){toast(e&&e.code==='declined'?'Descarga cancelada':'Usa “Copiar tabla para Excel”')}return}
+    try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=filename;document.body.appendChild(a);a.click();a.remove();toast('Si no se descargó, usa “Copiar tabla para Excel”')}catch(e){toast('Usa “Copiar tabla para Excel”')}};
+  const r=$('#reset');if(r)r.onclick=()=>{if(!ui.reset){ui.reset=true;render();return}try{localStorage.removeItem(KEY)}catch(e){}S=null;ui={tab:'ventanilla'};render()};
+}
+function radicar(e){
+  e.preventDefault();const d=S.docs.find(x=>x.k===ui.sel);const err=$('#r-err');
+  const num=$('#r-num').value.trim(),tipo=$('#r-tipo').value,dep=$('#r-dep').value,acc=$('#r-acc').value,pl=$('#r-plazo').value,venc=$('#r-venc').value;
+  if(!/^\d{1,5}$/.test(num))return err.textContent='Escribe el número de radicado (solo dígitos).';
+  if(!tipo||!dep||!acc)return err.textContent='Selecciona tipología, dependencia y acción.';
+  if(pl===''||+pl<0)return err.textContent='Escribe el plazo en días hábiles (0 si no requiere respuesta).';
+  if(+pl>0&&!venc)return err.textContent='Escribe la fecha de vencimiento.';
+  if(venc&&venc<=today())return err.textContent='El vencimiento debe ser posterior a la fecha de radicación.';
+  d.rad={num:+num,day:S.day,tipo,dep,acc,plazo:+pl,venc:+pl>0?venc:'',order:radCount()};
+  ui.armed=false;save();
+  const nxt=S.docs.find(x=>x.day<=S.day&&!x.rad);
+  if(S.modo!=='practica'&&nxt)ui.sel=nxt.k;
+  render();toast(`Sellado: ${PREF}${String(+num).padStart(5,'0')}`);
+}
+function closeDay(){
+  const pend=S.docs.filter(d=>d.day<=S.day&&!d.rad).length;
+  if(pend&&!ui.armed){ui.armed=true;render();return}
+  ui.armed=false;
+  if(S.day===9){S.finished=true;save();ui.tab='informe';render();scrollTo(0,0);toast('Partida cerrada. Revisa tu informe.');return}
+  S.day++;S.used=0;save();
+  const n=S.docs.filter(d=>d.day===S.day);ui.sel=n[0]?n[0].k:null;ui.tab='ventanilla';render();scrollTo(0,0);
+  toast(`${fLong(today())}: llegaron ${n.length} documento${n.length===1?'':'s'}${S.day===5?' (después del puente festivo)':''}`);
+}
+
+load();if(S&&(!S.docs||S.v!==1))S=null;
+if(S){const p=S.docs.find(d=>d.day<=S.day&&!d.rad);ui.sel=p?p.k:null}
+render();
+</script>
+
+</body></html>
