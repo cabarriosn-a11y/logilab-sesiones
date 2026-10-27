@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Power BI desde Cero · Gestión Documental | LogiLab SENA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sena:#39A900;--sena-d:#2b7f00;--sena-l:#eaf6e2;
+  --pbi:#F2C811;--pbi-d:#c9a300;
+  --ink:#1c2321;--muted:#5d6763;--line:#dfe5e1;--bg:#f6f8f6;--card:#fff;
+  --info:#0b6bcb;--info-l:#e6f0fb;--warn:#b26a00;--warn-l:#fff4e0;--bad:#c62828;--bad-l:#fdecea;
+  --r:14px;--soft:#f5f7f6;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sena-d:#7ad94a;--sena-l:#1d2b16;--ink:#eef2ea;--muted:#a6b2a3;--line:#2f382d;--bg:#121612;--card:#1a1f1a;--soft:#222822;--info-l:#14263a;--warn-l:#2e2410;--bad-l:#33191a}}
+:root[data-theme="dark"]{--sena-d:#7ad94a;--sena-l:#1d2b16;--ink:#eef2ea;--muted:#a6b2a3;--line:#2f382d;--bg:#121612;--card:#1a1f1a;--soft:#222822;--info-l:#14263a;--warn-l:#2e2410;--bad-l:#33191a}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.topbar a,.topbar button{color:#fff;text-decoration:none;font:600 .82rem Inter,sans-serif;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.1);border-radius:99px;padding:5px 12px;cursor:pointer}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:16px}
+a{color:var(--sena-d)}
+code,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
+header.hero{background:linear-gradient(135deg,#1e3d12 0%,#2b7f00 55%,#39A900 100%);color:#fff;padding:28px 16px 22px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;opacity:.9}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--pbi)}
+h1{font-size:clamp(1.6rem,4.5vw,2.5rem);line-height:1.15;margin:10px 0 6px;font-weight:800}
+.hero p{margin:0;opacity:.92;max-width:680px}
+.prog{margin-top:18px;background:rgba(255,255,255,.18);border-radius:99px;height:12px;overflow:hidden}
+.prog>div{height:100%;background:var(--pbi);width:0;transition:width .4s}
+.prog-label{font-size:.85rem;margin-top:6px;opacity:.9}
+nav.tabs{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.04)}
+nav.tabs .wrap{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;scrollbar-width:thin}
+nav.tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:8px 14px;font:600 .9rem Inter,sans-serif;color:var(--ink);cursor:pointer;white-space:nowrap}
+nav.tabs button.on{background:var(--sena);border-color:var(--sena);color:#fff}
+nav.tabs button .ok{color:var(--sena);margin-left:4px}
+nav.tabs button.on .ok{color:#fff}
+main{padding:24px 0 40px}
+section.view{display:none}
+section.view.on{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:18px}
+h2{font-size:1.55rem;margin:0 0 6px;line-height:1.25}
+h3{font-size:1.15rem;margin:22px 0 10px}
+.kicker{display:inline-block;background:var(--pbi);color:#3a3000;font-weight:800;font-size:.75rem;padding:3px 10px;border-radius:99px;letter-spacing:.05em;text-transform:uppercase}
+.meta{color:var(--muted);font-size:.92rem;margin-top:4px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.concept{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--soft)}
+.concept>b{display:block;margin-bottom:4px;color:var(--sena-d)}
+.concept p{margin:0;font-size:.94rem}
+ol.steps{list-style:none;counter-reset:s;padding:0;margin:0}
+ol.steps>li{counter-increment:s;position:relative;padding:14px 14px 14px 58px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:var(--card)}
+ol.steps>li::before{content:counter(s);position:absolute;left:14px;top:14px;width:30px;height:30px;border-radius:50%;background:var(--sena);color:#fff;font-weight:800;display:grid;place-items:center;font-size:.9rem}
+ol.steps>li strong.t{display:block;margin-bottom:2px}
+ol.steps>li p{margin:4px 0}
+.ui{display:inline-block;background:var(--soft);border:1px solid #cfd6d2;border-bottom-width:2px;border-radius:6px;padding:0 7px;font-size:.86em;font-weight:600;white-space:nowrap}
+.path{color:var(--muted);font-size:.9rem}
+.box{border-radius:12px;padding:14px 16px;margin:14px 0;border-left:5px solid}
+.box.info{background:var(--info-l);border-color:var(--info)}
+.box.warn{background:var(--warn-l);border-color:var(--warn)}
+.box.ok{background:var(--sena-l);border-color:var(--sena)}
+.box.bad{background:var(--bad-l);border-color:var(--bad)}
+.box b.h{display:block;margin-bottom:4px}
+.box ul{margin:6px 0 0;padding-left:20px}
+pre.dax{background:#1e2420;color:#e6efe8;padding:14px 16px;border-radius:10px;overflow-x:auto;position:relative;margin:8px 0;font-size:.88rem;line-height:1.5}
+pre.dax .k{color:var(--pbi)}
+pre.dax .c{color:#8fd06a}
+.copy{position:absolute;top:8px;right:8px;background:#3a443e;color:#fff;border:0;border-radius:6px;padding:4px 10px;font:600 .75rem Inter;cursor:pointer}
+.copy:hover{background:var(--sena)}
+table.t{width:100%;border-collapse:collapse;font-size:.88rem}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 8px;text-align:left}
+table.t th{background:var(--sena-l)}
+.tscroll{overflow-x:auto}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:11px 16px;font:700 .92rem Inter,sans-serif;cursor:pointer;background:var(--sena);color:#fff;text-decoration:none}
+.btn:hover{background:var(--sena-d)}
+.btn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.pbi{background:var(--pbi);color:#3a3000}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.check{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--card);cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--sena);margin-top:2px;flex:0 0 auto}
+.quiz .q{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--card)}
+.quiz .q p{margin:0 0 8px;font-weight:600}
+.quiz .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:9px 12px;margin:6px 0;font:500 .93rem Inter,sans-serif;cursor:pointer;color:var(--ink)}
+.quiz .opt.right{background:var(--sena-l);border-color:var(--sena)}
+.quiz .opt.wrong{background:var(--bad-l);border-color:var(--bad)}
+.quiz .fb{font-size:.9rem;margin-top:6px;display:none}
+.done-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:var(--sena-l);border:1px solid #c6e5b3;border-radius:12px;padding:14px 16px;margin-top:18px}
+.mock{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px;display:grid;gap:10px;grid-template-columns:repeat(4,1fr)}
+.mock .kpi{border-radius:8px;background:var(--soft);padding:10px;text-align:center}
+.mock .kpi b{display:block;font-size:1.35rem;color:var(--sena-d)}
+.mock .kpi span{font-size:.72rem;color:var(--muted)}
+.mock .chart{grid-column:span 2;border-radius:8px;background:var(--soft);padding:10px;height:150px;display:flex;align-items:flex-end;gap:6px}
+.mock .chart i{flex:1;background:var(--sena);border-radius:4px 4px 0 0;opacity:.85}
+.mock .chart.y i{background:var(--pbi-d)}
+.mock .slicer{grid-column:span 4;display:flex;gap:6px;flex-wrap:wrap}
+.mock .slicer span{font-size:.75rem;border:1px solid var(--line);border-radius:99px;padding:3px 10px;background:var(--card)}
+@media(max-width:600px){.mock{grid-template-columns:repeat(2,1fr)}.mock .chart{grid-column:span 2}.mock .slicer{grid-column:span 2}ol.steps>li{padding-left:52px}}
+.route{display:grid;gap:10px}
+.route .r{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card);cursor:pointer}
+.route .r:hover{border-color:var(--sena)}
+.route .n{width:40px;height:40px;border-radius:10px;background:var(--sena);color:#fff;font-weight:800;display:grid;place-items:center;flex:0 0 auto}
+.route .r small{display:block;color:var(--muted)}
+.model{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:center;padding:14px;background:var(--soft);border:1px dashed #c9d2cd;border-radius:12px;margin:12px 0}
+.tbl{border:2px solid var(--sena);border-radius:10px;background:var(--card);min-width:170px;font-size:.82rem}
+.tbl .hd{background:var(--sena);color:#fff;font-weight:700;padding:6px 10px}
+.tbl.fact{border-color:var(--pbi-d)}
+.tbl.fact .hd{background:var(--pbi-d)}
+.tbl div.f{padding:3px 10px;border-top:1px solid var(--line)}
+.tbl div.f.key{font-weight:700}
+.arrow{font-weight:800;color:var(--muted);font-size:.85rem;text-align:center}
+label.f{display:block;font-weight:600;font-size:.9rem;margin:12px 0 4px}
+input.i,select.i,textarea.i{width:100%;border:1px solid #cdd5d0;border-radius:10px;padding:10px 12px;font:500 .95rem Inter,sans-serif;background:var(--card);color:var(--ink)}
+textarea.i{min-height:90px;resize:vertical}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(120px);background:#1c2321;color:#fff;padding:10px 18px;border-radius:99px;font-weight:600;font-size:.9rem;transition:transform .3s;z-index:50}
+.toast.on{transform:translateX(-50%) translateY(0)}
+footer{background:#1c2321;color:#cfd8d3;text-align:center;padding:20px 16px;font-size:.88rem}
+footer b{color:#fff}
+footer .s{color:var(--sena)}
+.num{font-weight:800;color:var(--sena-d)}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="topbar"><div class="brand"><span class="dot"></span> LogiLab SENA · Gestión Documental</div><div style="display:flex;gap:6px"><a href="../../">← Portal</a><button id="themeBtn" aria-label="Cambiar tema">◐ Tema</button></div></div>
+    <h1>Power BI desde Cero: del radicado al cuadro de mando</h1>
+    <p>Guía paso a paso en 5 clases. Trabajarás con datos de una ventanilla única de correspondencia: radicados, dependencias y tipos documentales (PQRS).</p>
+    <div class="prog"><div id="progFill"></div></div>
+    <div class="prog-label" id="progLabel">Progreso: 0 de 5 clases</div>
+  </div>
+</header>
+
+<nav class="tabs"><div class="wrap" id="tabs"></div></nav>
+
+<main><div class="wrap">
+
+<!-- ================= INICIO ================= -->
+<section class="view" id="v-inicio" data-tab="Inicio">
+  <div class="card">
+    <span class="kicker">Bienvenida</span>
+    <h2>¿Qué vas a construir?</h2>
+    <p>Al terminar la clase 5 tendrás un <b>cuadro de mando (dashboard)</b> que responde preguntas reales de un área de gestión documental:</p>
+    <ul>
+      <li>¿Cuántos documentos se radicaron y cuántos siguen en trámite?</li>
+      <li>¿Qué porcentaje de PQRS se respondió <b>dentro del plazo</b>?</li>
+      <li>¿Qué dependencia recibe más carga y cuál responde más lento?</li>
+      <li>¿En qué mes hubo más radicados y por qué medio llegan?</li>
+    </ul>
+    <div class="mock" aria-label="Vista previa del tablero final">
+      <div class="kpi"><b id="mk1">—</b><span>Total radicados</span></div>
+      <div class="kpi"><b id="mk2">—</b><span>En trámite</span></div>
+      <div class="kpi"><b id="mk3">—</b><span>% oportunidad</span></div>
+      <div class="kpi"><b id="mk4">—</b><span>Días prom. respuesta</span></div>
+      <div class="chart" id="mkc1"></div>
+      <div class="chart y" id="mkc2"></div>
+      <div class="slicer"><span>Mes ▾</span><span>Dependencia ▾</span><span>Tipo documental ▾</span><span>Medio de recepción ▾</span></div>
+    </div>
+    <p class="meta">Vista previa del tablero que armarás, con los datos reales de la práctica.</p>
+  </div>
+
+  <div class="card">
+    <h2>Ruta de aprendizaje</h2>
+    <div class="route" id="route"></div>
+  </div>
+
+  <div class="card">
+    <h2>Antes de empezar</h2>
+    <div class="grid g2">
+      <div class="concept"><b>💻 Equipo</b><p>Computador con <b>Windows 10 u 11</b>. Power BI Desktop no funciona en Mac ni en celular: usa el PC del ambiente de formación.</p></div>
+      <div class="concept"><b>⬇️ Programa</b><p><b>Power BI Desktop</b> es gratuito. Instálalo desde la <b>Microsoft Store</b> buscando “Power BI Desktop”. No necesitas cuenta para trabajar en tu PC.</p></div>
+      <div class="concept"><b>📁 Datos</b><p>Descarga los 3 archivos de la pestaña <b>Datos</b> y guárdalos juntos en una carpeta llamada <code>PowerBI_GD</code> en Documentos.</p></div>
+      <div class="concept"><b>🧠 Lo que ya sabes</b><p>Si manejas Excel (filtros, SUMAR.SI, BUSCARV), ya tienes media batalla ganada. Power BI hace lo mismo, pero más rápido y con más datos.</p></div>
+    </div>
+    <div class="box info"><b class="h">💡 Cómo usar esta guía</b>Ten Power BI abierto en una ventana y esta guía en otra (o en tu celular). Sigue los pasos en orden, revisa la caja <b>“✅ Comprueba”</b> para saber si vas bien y al final marca la clase como terminada.</div>
+  </div>
+</section>
+
+<!-- ================= DATOS ================= -->
+<section class="view" id="v-datos" data-tab="📁 Datos">
+  <div class="card">
+    <span class="kicker">Material de práctica</span>
+    <h2>Descarga los datos</h2>
+    <p>Son 3 tablas de una entidad ficticia. Guárdalas en la misma carpeta y <b>no las abras ni las modifiques en Excel</b> (Excel puede cambiar el formato de las fechas).</p>
+    <div class="btns">
+      <button class="btn" onclick="dl('Radicados')">⬇️ Radicados.csv</button>
+      <button class="btn" onclick="dl('Dependencias')">⬇️ Dependencias.csv</button>
+      <button class="btn" onclick="dl('Tipos_Documentales')">⬇️ Tipos_Documentales.csv</button>
+    </div>
+    <div class="box warn"><b class="h">⚠️ Ojo: los datos vienen “sucios” a propósito</b>La tabla Radicados tiene filas repetidas y textos escritos de diferentes formas (mayúsculas, espacios, sin tilde). Así llegan los datos en la vida real. En la Clase 2 aprenderás a limpiarlos.</div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">📄 Radicados <small class="meta">(tabla de hechos: cada fila es un documento radicado)</small></h3>
+    <div class="tscroll"><table class="t" id="prevRad"></table></div>
+    <h3>🏢 Dependencias <small class="meta">(tabla de dimensión)</small></h3>
+    <div class="tscroll"><table class="t" id="prevDep"></table></div>
+    <h3>🗂️ Tipos_Documentales <small class="meta">(tabla de dimensión, con plazo de respuesta)</small></h3>
+    <div class="tscroll"><table class="t" id="prevTip"></table></div>
+    <div class="box info"><b class="h">📚 Sobre los plazos</b>Los plazos se basan como referencia en la Ley 1755 de 2015 (peticiones 15 días, documentos e información 10 días, consultas 30 días). Para simplificar la práctica los contaremos como días calendario, aunque la ley habla de días hábiles.</div>
+  </div>
+</section>
+
+<!-- ================= CLASE 1 ================= -->
+<section class="view" id="v-c1" data-tab="Clase 1" data-class="1">
+  <div class="card">
+    <span class="kicker">Clase 1 · Conocer la herramienta</span>
+    <h2>¿Qué es Power BI? Primer contacto y primer gráfico</h2>
+    <p class="meta">⏱️ 2 a 3 horas · Resultado: tu primer informe con una tarjeta y un gráfico</p>
+    <h3>🎯 Objetivo</h3>
+    <p>Reconocer la interfaz de Power BI Desktop, cargar un archivo CSV y crear tus primeras visualizaciones.</p>
+
+    <h3>📖 Conceptos clave</h3>
+    <div class="grid g3">
+      <div class="concept"><b>Power BI</b><p>Herramienta de Microsoft para convertir datos en informes visuales e interactivos. BI = <i>Business Intelligence</i> (inteligencia de negocios).</p></div>
+      <div class="concept"><b>Informe</b><p>Una o varias páginas con gráficos que se pueden filtrar haciendo clic. Es el archivo <code>.pbix</code>.</p></div>
+      <div class="concept"><b>Visualización (objeto visual)</b><p>Cada gráfico, tabla o tarjeta que pones en la página.</p></div>
+      <div class="concept"><b>Campo</b><p>Una columna de tus datos (por ejemplo, <i>Medio_Recepcion</i>).</p></div>
+      <div class="concept"><b>CSV</b><p>Archivo de texto donde las columnas se separan con comas. Es el formato más común para intercambiar datos.</p></div>
+      <div class="concept"><b>Las 3 vistas</b><p>📊 <b>Informe</b> (diseñar), 🧮 <b>Tabla</b> (ver los datos), 🔗 <b>Modelo</b> (relacionar tablas). Están en la barra izquierda.</p></div>
+    </div>
+
+    <h3>🛠️ Paso a paso</h3>
+    <ol class="steps">
+      <li><strong class="t">Abre Power BI Desktop</strong><p>Busca “Power BI” en el menú Inicio de Windows. Si sale una ventana de bienvenida o de inicio de sesión, ciérrala con la <span class="ui">X</span>. Haz clic en <span class="ui">Informe en blanco</span> si aparece.</p></li>
+      <li><strong class="t">Reconoce la pantalla</strong><p>Ubica: la <b>cinta de opciones</b> arriba (Inicio, Insertar, Modelado…), el <b>lienzo</b> blanco en el centro, el panel <b>Visualizaciones</b> y el panel <b>Datos</b> a la derecha, y las 3 vistas en la barra izquierda.</p></li>
+      <li><strong class="t">Carga la tabla Radicados</strong><p><span class="ui">Inicio</span> → <span class="ui">Obtener datos</span> → <span class="ui">Texto/CSV</span>. Busca tu carpeta <code>PowerBI_GD</code> y abre <code>Radicados.csv</code>.</p></li>
+      <li><strong class="t">Revisa la vista previa</strong><p>Verás una ventana con las primeras filas. Confirma que el <b>delimitador</b> sea <span class="ui">Coma</span> y que el <b>origen de archivo</b> sea <span class="ui">65001: Unicode (UTF-8)</span> para que las tildes se vean bien. Haz clic en <span class="ui">Cargar</span>.</p></li>
+      <li><strong class="t">Mira tus datos en la vista Tabla</strong><p>Haz clic en el ícono de <b>Tabla</b> (cuadrícula) en la barra izquierda. Abajo a la izquierda verás cuántas filas tiene la tabla. Vuelve a la vista <b>Informe</b>.</p></li>
+      <li><strong class="t">Crea una tarjeta con el total</strong><p>En <b>Visualizaciones</b>, haz clic en el ícono <span class="ui">Tarjeta</span> (el que muestra “123”). En el panel Datos, despliega <b>Radicados</b> y arrastra <code>ID_Radicado</code> al campo de la tarjeta. Power BI pondrá “Recuento de ID_Radicado”.</p></li>
+      <li><strong class="t">Crea un gráfico de columnas</strong><p>Haz clic en un espacio vacío del lienzo. Elige <span class="ui">Gráfico de columnas agrupadas</span>. Arrastra <code>Medio_Recepcion</code> al <b>Eje X</b> y <code>ID_Radicado</code> al <b>Eje Y</b>.</p></li>
+      <li><strong class="t">Observa el problema 👀</strong><p>Mira las barras: aparecen “Ventanilla” y “VENTANILLA” como si fueran cosas distintas. ¡Los datos están sucios! Anótalo: lo arreglaremos en la Clase 2.</p></li>
+      <li><strong class="t">Ponle título y guarda</strong><p>Selecciona el gráfico → icono del pincel <span class="ui">Formato</span> → <span class="ui">General</span> → <span class="ui">Título</span> y escribe “Radicados por medio de recepción”. Guarda con <span class="ui">Ctrl + S</span> como <code>Tablero_GD_TuNombre.pbix</code> en la carpeta <code>PowerBI_GD</code>.</p></li>
+    </ol>
+
+    <div class="box ok"><b class="h">✅ Comprueba</b>Tu tarjeta debe mostrar <span class="num" id="c1Raw">—</span> radicados. En el gráfico deberías ver muchas barras (más de 4) por culpa de los textos mal escritos.</div>
+    <div class="box bad"><b class="h">🚫 Errores comunes</b><ul>
+      <li><b>Las tildes salen como “Ã©”:</b> en el paso 4 no elegiste UTF-8. Ve a <span class="ui">Transformar datos</span>, selecciona el paso <i>Origen</i> y cambia el origen de archivo a 65001.</li>
+      <li><b>La tarjeta muestra un número raro o con decimales:</b> arrastraste otra columna. Debe ser <code>ID_Radicado</code> y decir “Recuento”.</li>
+      <li><b>No ves el panel Datos:</b> menú <span class="ui">Vista</span> → activa <span class="ui">Datos</span> y <span class="ui">Visualizaciones</span>.</li>
+    </ul></div>
+
+    <h3>🏆 Reto de la clase</h3>
+    <p>Agrega un <b>gráfico circular</b> que muestre los radicados por <code>Estado</code> (Respondido vs En trámite). ¿Qué porcentaje está en trámite?</p>
+
+    <h3>🧩 Autoevaluación</h3>
+    <div class="quiz" data-quiz="1"></div>
+    <div class="done-bar"><label class="check" style="margin:0;border:0;background:none;padding:0"><input type="checkbox" data-done="1"> <b>Terminé la Clase 1</b></label><button class="btn" onclick="go('c2')">Siguiente: Clase 2 →</button></div>
+  </div>
+</section>
+
+<!-- ================= CLASE 2 ================= -->
+<section class="view" id="v-c2" data-tab="Clase 2" data-class="2">
+  <div class="card">
+    <span class="kicker">Clase 2 · Power Query</span>
+    <h2>Limpiar y transformar datos</h2>
+    <p class="meta">⏱️ 2 a 3 horas · Resultado: tabla Radicados limpia y lista para analizar</p>
+    <h3>🎯 Objetivo</h3>
+    <p>Usar el Editor de Power Query para corregir tipos de datos, eliminar duplicados y estandarizar textos, como lo haría un técnico de gestión documental antes de un informe.</p>
+
+    <h3>📖 Conceptos clave</h3>
+    <div class="grid g3">
+      <div class="concept"><b>Power Query</b><p>El “taller de limpieza” de Power BI. Allí transformas los datos <b>antes</b> de usarlos, sin dañar el archivo original.</p></div>
+      <div class="concept"><b>Pasos aplicados</b><p>Cada cambio queda grabado como una receta. Si te equivocas, borras el paso con la ❌. Cuando los datos se actualizan, la receta se repite sola.</p></div>
+      <div class="concept"><b>Tipo de dato</b><p>Texto (ABC), número entero (123), fecha (📅). Si una fecha queda como texto, no podrás calcular días.</p></div>
+      <div class="concept"><b>Duplicado</b><p>Un mismo radicado registrado dos veces. En archivo, sería como foliar dos veces el mismo documento: infla los totales.</p></div>
+    </div>
+
+    <h3>🛠️ Paso a paso</h3>
+    <ol class="steps">
+      <li><strong class="t">Abre tu archivo y entra a Power Query</strong><p>Abre <code>Tablero_GD_TuNombre.pbix</code>. Clic en <span class="ui">Inicio</span> → <span class="ui">Transformar datos</span>. Se abre una ventana nueva: el <b>Editor de Power Query</b>.</p></li>
+      <li><strong class="t">Ubica las partes del editor</strong><p>Izquierda: lista de <b>Consultas</b> (tablas). Centro: los datos. Derecha: <b>Configuración de la consulta</b> con la lista de <b>Pasos aplicados</b>. Si no ves la barra de fórmulas, activa <span class="ui">Vista</span> → <span class="ui">Barra de fórmulas</span>.</p></li>
+      <li><strong class="t">Activa la calidad de columna</strong><p><span class="ui">Vista</span> → marca <span class="ui">Calidad de columnas</span> y <span class="ui">Distribución de columnas</span>. Ahora ves cuántos valores vacíos y distintos tiene cada columna.</p></li>
+      <li><strong class="t">Corrige los tipos de datos</strong><p>Mira el ícono a la izquierda de cada encabezado. <code>Fecha_Radicacion</code> y <code>Fecha_Respuesta</code> deben tener el ícono de calendario 📅 (<b>Fecha</b>). Si no, haz clic en el ícono y elige <span class="ui">Fecha</span>. Si pregunta, elige <span class="ui">Reemplazar actual</span>.</p></li>
+      <li><strong class="t">Elimina los duplicados</strong><p>Haz clic en el encabezado de <code>ID_Radicado</code> para seleccionarlo. <span class="ui">Inicio</span> → <span class="ui">Quitar filas</span> → <span class="ui">Quitar duplicados</span>. Cada radicado debe aparecer una sola vez.</p></li>
+      <li><strong class="t">Quita los espacios sobrantes</strong><p>Selecciona la columna <code>Medio_Recepcion</code>. Clic derecho en el encabezado → <span class="ui">Transformar</span> → <span class="ui">Recortar</span>. Esto borra espacios al inicio y al final.</p></li>
+      <li><strong class="t">Iguala mayúsculas y minúsculas</strong><p>Con la misma columna seleccionada: clic derecho → <span class="ui">Transformar</span> → <span class="ui">Poner En Mayúsculas Cada Palabra</span>. Ahora “VENTANILLA” y “ventanilla” quedan como “Ventanilla”.</p></li>
+      <li><strong class="t">Corrige la tilde faltante</strong><p>Clic derecho en <code>Medio_Recepcion</code> → <span class="ui">Reemplazar los valores…</span>. En <b>Valor que buscar</b> escribe <code>Electronico</code> y en <b>Reemplazar con</b> escribe <code>Electrónico</code>. Aceptar.</p></li>
+      <li><strong class="t">Verifica con el filtro</strong><p>Haz clic en la flechita ▾ del encabezado <code>Medio_Recepcion</code>. Solo deben aparecer <b>4 valores</b>: Correo Electrónico, Página Web, Teléfono y Ventanilla. Cierra el filtro sin cambiar nada.</p></li>
+      <li><strong class="t">Revisa tu receta y aplica</strong><p>Mira la lista de <b>Pasos aplicados</b>: ahí está todo lo que hiciste. Haz clic en <span class="ui">Inicio</span> → <span class="ui">Cerrar y aplicar</span>. Guarda con <span class="ui">Ctrl + S</span>.</p></li>
+    </ol>
+
+    <div class="box ok"><b class="h">✅ Comprueba</b>Vuelve a la vista Informe. Tu tarjeta ahora debe mostrar <span class="num" id="c2Clean">—</span> radicados (se eliminaron <span class="num" id="c2Dup">—</span> duplicados) y el gráfico de columnas debe tener solo <b>4 barras</b>.</div>
+    <div class="box warn"><b class="h">💡 Dato de oficio</b>Esto es control de calidad de datos. En gestión documental equivale a verificar que no haya radicados repetidos y que los metadatos (medio, fecha, dependencia) estén bien diligenciados según las Tablas de Retención Documental y el programa de gestión documental.</div>
+    <div class="box bad"><b class="h">🚫 Errores comunes</b><ul>
+      <li><b>“Quitar duplicados” borró casi todo:</b> tenías seleccionada otra columna (por ejemplo, Medio_Recepcion). Borra ese paso con la ❌ en Pasos aplicados y repítelo seleccionando <code>ID_Radicado</code>.</li>
+      <li><b>Las fechas salen como “Error”:</b> la configuración regional las leyó al revés. Clic derecho en la columna → <span class="ui">Cambiar tipo</span> → <span class="ui">Usar configuración regional…</span> → Tipo <i>Fecha</i>, configuración <i>Inglés (Estados Unidos)</i>.</li>
+      <li><b>Fecha_Respuesta tiene vacíos:</b> ¡es correcto! Son los radicados que siguen en trámite.</li>
+    </ul></div>
+
+    <h3>🏆 Reto de la clase</h3>
+    <p>En Power Query, selecciona <code>Fecha_Radicacion</code> → <span class="ui">Agregar columna</span> → <span class="ui">Fecha</span> → <span class="ui">Mes</span> → <span class="ui">Nombre del mes</span>. Luego crea en el informe un gráfico de radicados por mes. ¿Notas algún problema con el orden de los meses? (Lo resolveremos en la Clase 3.)</p>
+
+    <h3>🧩 Autoevaluación</h3>
+    <div class="quiz" data-quiz="2"></div>
+    <div class="done-bar"><label class="check" style="margin:0;border:0;background:none;padding:0"><input type="checkbox" data-done="2"> <b>Terminé la Clase 2</b></label><button class="btn" onclick="go('c3')">Siguiente: Clase 3 →</button></div>
+  </div>
+</section>
+
+<!-- ================= CLASE 3 ================= -->
+<section class="view" id="v-c3" data-tab="Clase 3" data-class="3">
+  <div class="card">
+    <span class="kicker">Clase 3 · Modelo de datos</span>
+    <h2>Cruces de tablas: relaciones</h2>
+    <p class="meta">⏱️ 2 a 3 horas · Resultado: modelo con 4 tablas relacionadas</p>
+    <h3>🎯 Objetivo</h3>
+    <p>Cargar las tablas de dimensión, relacionarlas con la tabla de hechos y entender por qué esto reemplaza al BUSCARV de Excel.</p>
+
+    <h3>📖 Conceptos clave</h3>
+    <div class="grid g3">
+      <div class="concept"><b>Tabla de hechos</b><p>Registra los eventos: cada radicado. Tiene muchas filas y códigos (ID_Dependencia, ID_Tipo).</p></div>
+      <div class="concept"><b>Tabla de dimensión</b><p>Describe los códigos: qué dependencia es la D03 o cuántos días de plazo tiene la T04. Pocas filas, sin repetir.</p></div>
+      <div class="concept"><b>Clave (llave)</b><p>La columna que conecta las dos tablas. Debe tener el mismo nombre de dato en ambas, como <code>ID_Dependencia</code>.</p></div>
+      <div class="concept"><b>Relación 1 a varios (1:*)</b><p>Una dependencia tiene muchos radicados, pero cada radicado pertenece a una sola dependencia.</p></div>
+      <div class="concept"><b>Modelo en estrella ⭐</b><p>Los hechos en el centro y las dimensiones alrededor. Es la forma recomendada de organizar datos en Power BI.</p></div>
+      <div class="concept"><b>Tabla calendario</b><p>Una tabla con todas las fechas del año. Permite analizar por mes, trimestre o semana en el orden correcto.</p></div>
+    </div>
+
+    <div class="model">
+      <div class="tbl"><div class="hd">🏢 Dependencias</div><div class="f key">🔑 ID_Dependencia</div><div class="f">Dependencia</div><div class="f">Responsable</div></div>
+      <div class="arrow">1 ──── *</div>
+      <div class="tbl fact"><div class="hd">📄 Radicados</div><div class="f">ID_Radicado</div><div class="f">Fecha_Radicacion</div><div class="f key">ID_Dependencia</div><div class="f key">ID_Tipo</div><div class="f">Medio_Recepcion</div><div class="f">Fecha_Respuesta</div><div class="f">Estado</div></div>
+      <div class="arrow">* ──── 1</div>
+      <div class="tbl"><div class="hd">🗂️ Tipos_Documentales</div><div class="f key">🔑 ID_Tipo</div><div class="f">Tipo_Documental</div><div class="f">Plazo_Dias</div></div>
+    </div>
+    <p class="meta" style="text-align:center">Y abajo de Radicados, la tabla 📅 Calendario conectada por la fecha de radicación.</p>
+
+    <h3>🛠️ Paso a paso</h3>
+    <ol class="steps">
+      <li><strong class="t">Carga las dos tablas que faltan</strong><p><span class="ui">Inicio</span> → <span class="ui">Obtener datos</span> → <span class="ui">Texto/CSV</span> → <code>Dependencias.csv</code> → <span class="ui">Cargar</span>. Repite con <code>Tipos_Documentales.csv</code>.</p></li>
+      <li><strong class="t">Ve a la vista Modelo</strong><p>Clic en el tercer ícono de la barra izquierda (tres cuadritos conectados). Verás las tablas como cajas. Arrástralas para dejar <b>Radicados en el centro</b>.</p></li>
+      <li><strong class="t">Revisa si Power BI ya creó relaciones</strong><p>Power BI a veces detecta solo las relaciones cuando las columnas se llaman igual. Si ves una línea entre las cajas, pasa el mouse sobre ella: se resaltan las columnas conectadas.</p></li>
+      <li><strong class="t">Crea la relación con Dependencias (si no existe)</strong><p>Arrastra <code>ID_Dependencia</code> desde la caja <b>Dependencias</b> y suéltalo sobre <code>ID_Dependencia</code> en <b>Radicados</b>. En la ventana confirma: Cardinalidad <span class="ui">Uno a varios (1:*)</span>, dirección <span class="ui">Única</span> y <span class="ui">Activar esta relación</span>. Aceptar.</p></li>
+      <li><strong class="t">Crea la relación con Tipos_Documentales</strong><p>Igual: arrastra <code>ID_Tipo</code> de <b>Tipos_Documentales</b> a <code>ID_Tipo</code> de <b>Radicados</b>. Verifica que sea <b>1 a varios</b>.</p></li>
+      <li><strong class="t">Crea la tabla Calendario</strong><p>Ve a <span class="ui">Modelado</span> → <span class="ui">Nueva tabla</span> y escribe en la barra de fórmulas:</p>
+<pre class="dax"><button class="copy">Copiar</button>Calendario = <span class="k">CALENDAR</span>( <span class="k">DATE</span>(2026, 1, 1), <span class="k">DATE</span>(2026, 12, 31) )</pre>
+      <p>Presiona Enter. Se crea una tabla con una columna <code>Date</code> con los 365 días del año.</p></li>
+      <li><strong class="t">Agrega el mes al calendario</strong><p>Con la tabla Calendario seleccionada (en el panel Datos), clic en <span class="ui">Nueva columna</span> y crea estas dos columnas, una por una:</p>
+<pre class="dax"><button class="copy">Copiar</button>Mes_Num = <span class="k">MONTH</span>( Calendario[Date] )</pre>
+<pre class="dax"><button class="copy">Copiar</button>Mes = <span class="k">FORMAT</span>( Calendario[Date], "mmmm" )</pre></li>
+      <li><strong class="t">Ordena los meses correctamente</strong><p>Selecciona la columna <code>Mes</code> en el panel Datos → aparece la pestaña <span class="ui">Herramientas de columnas</span> → <span class="ui">Ordenar por columna</span> → <span class="ui">Mes_Num</span>. ¡Adiós al orden alfabético (abril, agosto, diciembre…)!</p></li>
+      <li><strong class="t">Relaciona el Calendario</strong><p>En la vista Modelo, arrastra <code>Date</code> de <b>Calendario</b> hasta <code>Fecha_Radicacion</code> de <b>Radicados</b>. Debe quedar 1 a varios.</p></li>
+      <li><strong class="t">Prueba el cruce en el informe</strong><p>En la vista Informe crea una <span class="ui">Tabla</span> (objeto visual) y arrastra: <code>Dependencias[Dependencia]</code> y <code>Radicados[ID_Radicado]</code> (recuento). ¡Los nombres de las dependencias aparecen aunque esa información estaba en otro archivo! Eso es un cruce de tablas.</p></li>
+    </ol>
+
+    <div class="box ok"><b class="h">✅ Comprueba</b>En la vista Modelo debes ver <b>4 tablas</b> y <b>3 líneas de relación</b>, todas con un <b>1</b> del lado de la dimensión y un <b>*</b> del lado de Radicados. La dependencia con más radicados es <span class="num" id="c3Top">—</span>.</div>
+    <div class="box info"><b class="h">🔄 BUSCARV vs relaciones</b>En Excel, para traer el nombre de la dependencia escribías un BUSCARV en cada fila y lo arrastrabas. En Power BI la relación se crea <b>una sola vez</b> y sirve para todos los gráficos, filtros y cálculos. Si llegan 10.000 radicados nuevos, sigue funcionando.</div>
+    <div class="box bad"><b class="h">🚫 Errores comunes</b><ul>
+      <li><b>La relación sale “varios a varios” (*:*):</b> la tabla de dimensión tiene códigos repetidos o la soltaste al revés. Bórrala (clic en la línea → Supr) y créala desde la dimensión hacia Radicados.</li>
+      <li><b>Todas las filas de la tabla muestran el mismo número:</b> falta la relación o está inactiva (línea punteada). Revisa la vista Modelo.</li>
+      <li><b>Error en la fórmula DAX con comas:</b> si tu Power BI usa punto y coma, escribe <code>DATE(2026; 1; 1)</code>. Puedes cambiarlo en <span class="ui">Archivo</span> → <span class="ui">Opciones</span> → <span class="ui">Configuración regional</span> → <span class="ui">Separadores DAX</span>.</li>
+    </ul></div>
+
+    <h3>🏆 Reto de la clase</h3>
+    <p>Crea una <span class="ui">Matriz</span> con <code>Dependencia</code> en <b>Filas</b>, <code>Tipo_Documental</code> en <b>Columnas</b> y el recuento de <code>ID_Radicado</code> en <b>Valores</b>. ¿Qué dependencia recibe más quejas?</p>
+
+    <h3>🧩 Autoevaluación</h3>
+    <div class="quiz" data-quiz="3"></div>
+    <div class="done-bar"><label class="check" style="margin:0;border:0;background:none;padding:0"><input type="checkbox" data-done="3"> <b>Terminé la Clase 3</b></label><button class="btn" onclick="go('c4')">Siguiente: Clase 4 →</button></div>
+  </div>
+</section>
+
+<!-- ================= CLASE 4 ================= -->
+<section class="view" id="v-c4" data-tab="Clase 4" data-class="4">
+  <div class="card">
+    <span class="kicker">Clase 4 · DAX</span>
+    <h2>Columnas calculadas y medidas (los indicadores)</h2>
+    <p class="meta">⏱️ 2 a 3 horas · Resultado: 6 indicadores de gestión documental</p>
+    <h3>🎯 Objetivo</h3>
+    <p>Escribir fórmulas DAX para calcular los indicadores clave: total de radicados, pendientes, oportunidad de respuesta y tiempo promedio.</p>
+
+    <h3>📖 Conceptos clave</h3>
+    <div class="grid g3">
+      <div class="concept"><b>DAX</b><p>El lenguaje de fórmulas de Power BI. Se parece a las fórmulas de Excel, pero trabaja con tablas y columnas completas.</p></div>
+      <div class="concept"><b>Columna calculada</b><p>Se calcula <b>fila por fila</b> y se guarda en la tabla. Úsala para clasificar (ej.: “A tiempo” o “Vencido”).</p></div>
+      <div class="concept"><b>Medida</b><p>Se calcula <b>al momento</b>, según los filtros que tenga el gráfico. Úsala para totales, promedios y porcentajes.</p></div>
+      <div class="concept"><b>Indicador (KPI)</b><p>Una cifra que dice si el proceso va bien. Ej.: % de PQRS respondidas a tiempo.</p></div>
+    </div>
+    <div class="box info"><b class="h">🧠 Regla fácil</b>¿Lo quieres poner en el eje o usarlo como filtro? → <b>Columna</b>. ¿Lo quieres sumar, contar o promediar? → <b>Medida</b>.</div>
+
+    <h3>🛠️ Parte A: columnas calculadas (en la tabla Radicados)</h3>
+    <ol class="steps">
+      <li><strong class="t">Ve a la vista Tabla y selecciona Radicados</strong><p>En el panel Datos haz clic en <b>Radicados</b>. Luego <span class="ui">Herramientas de tablas</span> → <span class="ui">Nueva columna</span>.</p></li>
+      <li><strong class="t">Calcula los días de respuesta</strong><p>Escribe la fórmula y presiona Enter. Si el radicado no tiene respuesta, queda en blanco.</p>
+<pre class="dax"><button class="copy">Copiar</button>Dias_Respuesta =
+<span class="k">IF</span>(
+    <span class="k">ISBLANK</span>( Radicados[Fecha_Respuesta] ),
+    <span class="k">BLANK</span>(),
+    <span class="k">DATEDIFF</span>( Radicados[Fecha_Radicacion], Radicados[Fecha_Respuesta], <span class="k">DAY</span> )
+)</pre></li>
+      <li><strong class="t">Clasifica el cumplimiento del plazo</strong><p>Nueva columna. Aquí usamos <code>RELATED</code>, que trae el plazo desde la tabla Tipos_Documentales gracias a la relación de la Clase 3 (¡como un BUSCARV automático!).</p>
+<pre class="dax"><button class="copy">Copiar</button>Cumplimiento =
+<span class="k">IF</span>(
+    <span class="k">ISBLANK</span>( Radicados[Fecha_Respuesta] ),
+    "En trámite",
+    <span class="k">IF</span>(
+        Radicados[Dias_Respuesta] &lt;= <span class="k">RELATED</span>( Tipos_Documentales[Plazo_Dias] ),
+        "A tiempo",
+        "Vencido"
+    )
+)</pre></li>
+    </ol>
+
+    <h3>🛠️ Parte B: medidas (los indicadores)</h3>
+    <ol class="steps">
+      <li><strong class="t">Crea cada medida</strong><p>Selecciona la tabla <b>Radicados</b> en el panel Datos → <span class="ui">Inicio</span> → <span class="ui">Nueva medida</span>. Escribe una fórmula, Enter, y repite para la siguiente. Las medidas aparecen con el ícono de calculadora 🧮.</p>
+<pre class="dax"><button class="copy">Copiar</button>Total Radicados = <span class="k">COUNTROWS</span>( Radicados )</pre>
+<pre class="dax"><button class="copy">Copiar</button>Respondidos = <span class="k">CALCULATE</span>( [Total Radicados], Radicados[Estado] = "Respondido" )</pre>
+<pre class="dax"><button class="copy">Copiar</button>En Tramite = <span class="k">CALCULATE</span>( [Total Radicados], Radicados[Estado] = "En trámite" )</pre>
+<pre class="dax"><button class="copy">Copiar</button>A Tiempo = <span class="k">CALCULATE</span>( [Total Radicados], Radicados[Cumplimiento] = "A tiempo" )</pre>
+<pre class="dax"><button class="copy">Copiar</button>% Oportunidad = <span class="k">DIVIDE</span>( [A Tiempo], [Respondidos] )</pre>
+<pre class="dax"><button class="copy">Copiar</button>Promedio Dias Respuesta = <span class="k">AVERAGE</span>( Radicados[Dias_Respuesta] )</pre></li>
+      <li><strong class="t">Dale formato de porcentaje</strong><p>Selecciona la medida <code>% Oportunidad</code> → pestaña <span class="ui">Herramientas de medidas</span> → botón <span class="ui">%</span>. Para <code>Promedio Dias Respuesta</code> deja <b>1 decimal</b>.</p></li>
+      <li><strong class="t">Prueba tus medidas</strong><p>En la vista Informe crea 4 <span class="ui">Tarjetas</span>: Total Radicados, En Tramite, % Oportunidad y Promedio Dias Respuesta.</p></li>
+      <li><strong class="t">Mira cómo cambian con un filtro</strong><p>Crea una tabla con <code>Dependencia</code>, <code>[Total Radicados]</code>, <code>[% Oportunidad]</code> y <code>[Promedio Dias Respuesta]</code>. La misma medida da un valor distinto en cada fila: ¡esa es la magia de las medidas!</p></li>
+    </ol>
+
+    <div class="box ok"><b class="h">✅ Comprueba tus resultados</b>
+      <ul>
+        <li>Total Radicados: <span class="num" id="c4Tot">—</span></li>
+        <li>Respondidos: <span class="num" id="c4Res">—</span> · En trámite: <span class="num" id="c4Tra">—</span></li>
+        <li>A tiempo: <span class="num" id="c4At">—</span> · % Oportunidad: <span class="num" id="c4Op">—</span></li>
+        <li>Promedio de días de respuesta: <span class="num" id="c4Prom">—</span></li>
+      </ul>
+      Si tus cifras no coinciden, revisa que hayas quitado los duplicados en la Clase 2.</div>
+    <div class="box bad"><b class="h">🚫 Errores comunes</b><ul>
+      <li><b>“No se encuentra la columna”:</b> los nombres deben escribirse exactamente igual, con guion bajo y tildes. Usa el autocompletado: escribe <code>Radicados[</code> y elige de la lista.</li>
+      <li><b>RELATED da error:</b> falta la relación entre Radicados y Tipos_Documentales (Clase 3).</li>
+      <li><b>En Tramite sale en blanco:</b> en la fórmula escribiste “En tramite” sin tilde. El texto debe ser idéntico al de los datos: <code>"En trámite"</code>.</li>
+      <li><b>Error de separadores:</b> cambia las comas por punto y coma ( ; ).</li>
+    </ul></div>
+
+    <h3>🏆 Reto de la clase</h3>
+    <p>Crea la medida <code>Vencidos</code> (cuenta los radicados con Cumplimiento = "Vencido") y la medida <code>% Vencidos</code>. Pista: copia la estructura de <code>A Tiempo</code> y <code>% Oportunidad</code>.</p>
+
+    <h3>🧩 Autoevaluación</h3>
+    <div class="quiz" data-quiz="4"></div>
+    <div class="done-bar"><label class="check" style="margin:0;border:0;background:none;padding:0"><input type="checkbox" data-done="4"> <b>Terminé la Clase 4</b></label><button class="btn" onclick="go('c5')">Siguiente: Clase 5 →</button></div>
+  </div>
+</section>
+
+<!-- ================= CLASE 5 ================= -->
+<section class="view" id="v-c5" data-tab="Clase 5" data-class="5">
+  <div class="card">
+    <span class="kicker">Clase 5 · Proyecto final</span>
+    <h2>Cuadro de mando e informe de gestión</h2>
+    <p class="meta">⏱️ 3 horas · Resultado: tablero interactivo de 2 páginas + informe en PDF</p>
+    <h3>🎯 Objetivo</h3>
+    <p>Diseñar un cuadro de mando profesional, con indicadores, gráficos y filtros interactivos, y presentarlo como informe de gestión de la ventanilla única.</p>
+
+    <h3>📖 Conceptos clave</h3>
+    <div class="grid g3">
+      <div class="concept"><b>Cuadro de mando</b><p>Una sola página que muestra de un vistazo cómo va el proceso. Lo más importante va arriba a la izquierda.</p></div>
+      <div class="concept"><b>Segmentación de datos</b><p>Un filtro con botones o lista desplegable para que el usuario elija el mes, la dependencia, etc.</p></div>
+      <div class="concept"><b>Interacción cruzada</b><p>Al hacer clic en una barra, los demás gráficos se filtran solos.</p></div>
+      <div class="concept"><b>Formato condicional</b><p>Colores automáticos según el valor: verde si cumple, rojo si no. Como un semáforo.</p></div>
+    </div>
+
+    <h3>🛠️ Página 1: Cuadro de mando</h3>
+    <ol class="steps">
+      <li><strong class="t">Prepara la página</strong><p>Crea una página nueva con el <span class="ui">+</span> de abajo y llámala “Cuadro de mando” (doble clic en el nombre). Elige un tema: <span class="ui">Vista</span> → <span class="ui">Temas</span>. Inserta un título con <span class="ui">Insertar</span> → <span class="ui">Cuadro de texto</span>: “Gestión de Correspondencia y PQRS 2026”.</p></li>
+      <li><strong class="t">Fila de indicadores (arriba)</strong><p>Pon 4 <span class="ui">Tarjetas</span> en fila: Total Radicados, En Tramite, % Oportunidad y Promedio Dias Respuesta. Alinéalas: selecciónalas con Ctrl + clic → <span class="ui">Formato</span> → <span class="ui">Alinear</span> → <span class="ui">Alinear parte superior</span> y <span class="ui">Distribuir horizontalmente</span>.</p></li>
+      <li><strong class="t">Tendencia mensual</strong><p><span class="ui">Gráfico de líneas</span> con <code>Calendario[Mes]</code> en el eje X y <code>[Total Radicados]</code> en el eje Y. Título: “Radicados por mes”.</p></li>
+      <li><strong class="t">Carga por dependencia</strong><p><span class="ui">Gráfico de barras agrupadas</span> con <code>Dependencia</code> en el eje Y y <code>[Total Radicados]</code> en el eje X. Ordénalo de mayor a menor con los <b>…</b> del gráfico → <span class="ui">Ordenar eje</span>.</p></li>
+      <li><strong class="t">Cumplimiento de plazos</strong><p><span class="ui">Gráfico de anillos</span> con <code>Cumplimiento</code> en Leyenda y <code>[Total Radicados]</code> en Valores. Asigna colores: Formato → <span class="ui">Sectores</span>: A tiempo = verde, Vencido = rojo, En trámite = gris.</p></li>
+      <li><strong class="t">Medios de recepción</strong><p><span class="ui">Gráfico de columnas</span> con <code>Medio_Recepcion</code> y <code>[Total Radicados]</code>.</p></li>
+      <li><strong class="t">Agrega los filtros (segmentadores)</strong><p>Inserta 3 <span class="ui">Segmentación de datos</span>: <code>Calendario[Mes]</code>, <code>Dependencias[Dependencia]</code> y <code>Tipos_Documentales[Tipo_Documental]</code>. En Formato → <span class="ui">Configuración de la segmentación</span> elige estilo <span class="ui">Desplegable</span> para ahorrar espacio.</p></li>
+      <li><strong class="t">Prueba la interactividad</strong><p>Haz clic en una barra de dependencia: todo el tablero se filtra. Vuelve a hacer clic para quitar el filtro. Elige un mes en el segmentador y mira cómo cambian las tarjetas.</p></li>
+    </ol>
+
+    <h3>🛠️ Página 2: Informe detallado</h3>
+    <ol class="steps">
+      <li><strong class="t">Matriz de seguimiento</strong><p>Página nueva “Detalle por dependencia”. Inserta una <span class="ui">Matriz</span> con <code>Dependencia</code> en Filas y en Valores: <code>[Total Radicados]</code>, <code>[En Tramite]</code>, <code>[% Oportunidad]</code>, <code>[Promedio Dias Respuesta]</code>.</p></li>
+      <li><strong class="t">Semáforo con formato condicional</strong><p>En el panel de la matriz, clic en la flechita de <code>% Oportunidad</code> → <span class="ui">Formato condicional</span> → <span class="ui">Color de fondo</span>. Formato por <span class="ui">Reglas</span>: si el valor es ≥ 0,9 → verde; ≥ 0,7 y &lt; 0,9 → amarillo; &lt; 0,7 → rojo. (0,9 = 90 %)</p></li>
+      <li><strong class="t">Lista de pendientes</strong><p>Inserta una <span class="ui">Tabla</span> con <code>ID_Radicado</code>, <code>Fecha_Radicacion</code>, <code>Dependencia</code>, <code>Tipo_Documental</code>. En el panel <b>Filtros</b> (a la derecha), arrastra <code>Estado</code> a “Filtros en este objeto visual” y marca solo <b>En trámite</b>. ¡Esa es la lista que debe atender la ventanilla!</p></li>
+      <li><strong class="t">Exporta el informe</strong><p><span class="ui">Archivo</span> → <span class="ui">Exportar</span> → <span class="ui">Exportar a PDF</span>. Guarda también el <code>.pbix</code>. Esos dos archivos son tu evidencia.</p></li>
+      <li><strong class="t">(Opcional) Publica en la web</strong><p>Si tienes cuenta institucional de Microsoft 365, en <span class="ui">Inicio</span> → <span class="ui">Publicar</span> puedes subirlo a Power BI Service y compartirlo. Si no, el PDF es suficiente.</p></li>
+    </ol>
+
+    <div class="box ok"><b class="h">✅ Lista de verificación del tablero</b>
+      <label class="check"><input type="checkbox" data-ck="1"> Tiene título claro y 4 tarjetas de indicadores alineadas</label>
+      <label class="check"><input type="checkbox" data-ck="2"> Los meses aparecen en orden (enero, febrero, marzo…)</label>
+      <label class="check"><input type="checkbox" data-ck="3"> Al hacer clic en un gráfico se filtran los demás</label>
+      <label class="check"><input type="checkbox" data-ck="4"> Tiene al menos 3 segmentadores funcionando</label>
+      <label class="check"><input type="checkbox" data-ck="5"> El % de oportunidad tiene semáforo de colores</label>
+      <label class="check"><input type="checkbox" data-ck="6"> Exporté el PDF y guardé el .pbix</label>
+    </div>
+    <div class="box info"><b class="h">🎨 Consejos de diseño</b><ul>
+      <li>Máximo 6 a 8 objetos visuales por página. Si no cabe, haz otra página.</li>
+      <li>Usa máximo 3 colores y el mismo color para lo mismo en todos los gráficos.</li>
+      <li>Cada gráfico debe responder una pregunta. Si no sabes cuál, quítalo.</li>
+      <li>Evita gráficos 3D y circulares con más de 5 partes.</li>
+    </ul></div>
+
+    <h3>🏆 Reto final: interpreta tu tablero</h3>
+    <p>Un tablero no sirve si nadie lo lee. Responde en la pestaña <b>Entrega</b>: ¿cuál es el mayor problema de la ventanilla y qué le recomendarías al jefe de gestión documental?</p>
+
+    <h3>🧩 Autoevaluación</h3>
+    <div class="quiz" data-quiz="5"></div>
+    <div class="done-bar"><label class="check" style="margin:0;border:0;background:none;padding:0"><input type="checkbox" data-done="5"> <b>Terminé la Clase 5</b></label><button class="btn pbi" onclick="go('entrega')">Ir a la entrega →</button></div>
+  </div>
+</section>
+
+<!-- ================= ENTREGA ================= -->
+<section class="view" id="v-entrega" data-tab="📤 Entrega">
+  <div class="card">
+    <span class="kicker">Evidencia</span>
+    <h2>Entrega de la evidencia</h2>
+    <p>Diligencia el formulario. Tu avance se guarda en este navegador. Al final envía el texto por el medio que te indique tu instructor <b>y adjunta tu PDF y tu archivo .pbix</b>.</p>
+    <label class="f" for="nom">Nombre completo</label>
+    <input class="i" id="nom" placeholder="Ej.: María Fernanda Pérez">
+    <label class="f" for="doc">Documento de identidad</label>
+    <input class="i" id="doc" inputmode="numeric">
+    <label class="f" for="fic">Ficha</label>
+    <select class="i" id="fic"><option value="">Selecciona…</option><option>3410084</option><option>3326720</option><option>3538385</option><option value="Otra">Otra</option></select>
+    <label class="f" for="r1">1. Escribe las cifras de tus 4 tarjetas (total, en trámite, % oportunidad, días promedio)</label>
+    <textarea class="i" id="r1"></textarea>
+    <label class="f" for="r2">2. ¿Qué dependencia tiene la peor oportunidad de respuesta? ¿Cuál crees que es la causa?</label>
+    <textarea class="i" id="r2"></textarea>
+    <label class="f" for="r3">3. ¿Cuál es el mayor problema de la ventanilla según tu tablero y qué recomiendas?</label>
+    <textarea class="i" id="r3"></textarea>
+    <label class="f" for="r4">4. ¿Qué diferencia encontraste entre hacer este análisis en Excel y en Power BI?</label>
+    <textarea class="i" id="r4"></textarea>
+    <div class="btns" style="margin-top:16px">
+      <button class="btn" onclick="sendWA()">💬 Enviar por WhatsApp</button>
+      <button class="btn alt" onclick="sendMail()">✉️ Enviar por correo</button>
+      <button class="btn alt" onclick="copyEv()">📋 Copiar texto</button>
+      <button class="btn alt" onclick="dlEv()">💾 Descargar .txt</button>
+    </div>
+    <div class="box warn"><b class="h">📎 No olvides</b>WhatsApp y el correo solo envían el texto. Adjunta manualmente tu <b>PDF del informe</b> y tu <b>archivo .pbix</b> en el mismo chat o correo.</div>
+    <p class="meta" id="saveState">Guardado automático activado.</p>
+  </div>
+</section>
+
+</div></main>
+
+<footer>
+  <b><span class="s">LogiLab SENA</span></b> · Centro Industrial y de Energías Alternativas · Regional Guajira<br>
+  Power BI desde Cero · Tecnólogo en Gestión Documental<br>
+  By Carlos Barrios · Instructor
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ DATOS DETERMINÍSTICOS ============ */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(20261027);
+const pick=a=>a[Math.floor(R()*a.length)];
+const DEP=[
+ ["D01","Gestión Documental","Laura Epieyú"],
+ ["D02","Talento Humano","Andrés Iguarán"],
+ ["D03","Financiera","Diana Pushaina"],
+ ["D04","Jurídica","Julián Brito"],
+ ["D05","Atención al Ciudadano","Yesenia Uriana"],
+ ["D06","Planeación","Camilo Fonseca"]];
+const DEPW=[14,16,13,18,28,11];
+const TIP=[
+ ["T01","Petición general",15],
+ ["T02","Queja",15],
+ ["T03","Reclamo",15],
+ ["T04","Solicitud de documentos",10],
+ ["T05","Consulta",30],
+ ["T06","Sugerencia",15]];
+const TIPW=[30,14,12,26,10,8];
+const MED={
+ "Correo Electrónico":["Correo electrónico","correo electrónico","CORREO ELECTRÓNICO","Correo electronico "," Correo Electrónico","Correo electrónico"],
+ "Ventanilla":["Ventanilla","VENTANILLA","ventanilla ","Ventanilla"],
+ "Página Web":["Página web","página web","Página Web ","Página web"],
+ "Teléfono":["Teléfono","teléfono"]};
+const MEDW={"Correo Electrónico":42,"Ventanilla":30,"Página Web":20,"Teléfono":8};
+const DEPSLOW={D01:0.9,D02:1.0,D03:1.15,D04:1.45,D05:0.8,D06:1.05};
+function wpick(items,w){let s=w.reduce((a,b)=>a+b,0),x=R()*s;for(let i=0;i<items.length;i++){x-=w[i];if(x<0)return items[i]}return items[items.length-1]}
+const iso=d=>d.toISOString().slice(0,10);
+const START=Date.UTC(2026,0,2),END=Date.UTC(2026,8,30),CUT=Date.UTC(2026,9,1);
+const rows=[];
+for(let i=1;i<=300;i++){
+  let t;do{t=START+Math.floor(R()*((END-START)/864e5+1))*864e5}while([0,6].includes(new Date(t).getUTCDay()));
+  const dep=wpick(DEP,DEPW),tip=wpick(TIP,TIPW);
+  const mc=wpick(Object.keys(MEDW),Object.values(MEDW));
+  const age=(CUT-t)/864e5;
+  const pend=age<14?R()<0.7:(age<45?R()<0.15:R()<0.04);
+  let fr="",est="En trámite";
+  if(!pend){
+    const base=tip[2]*DEPSLOW[dep[0]];
+    let d=Math.max(1,Math.round(base*(0.25+R()*0.95)));
+    fr=iso(new Date(t+d*864e5));est="Respondido";
+  }
+  rows.push({id:"RAD-2026-"+String(i).padStart(4,"0"),f:iso(new Date(t)),dep:dep[0],tip:tip[0],medClean:mc,med:pick(MED[mc]),fr,est});
+}
+rows.sort((a,b)=>a.f<b.f?-1:a.f>b.f?1:0);
+rows.forEach((r,i)=>r.id="RAD-2026-"+String(i+1).padStart(4,"0"));
+// duplicados
+const dupIdx=[];while(dupIdx.length<6){const k=Math.floor(R()*rows.length);if(!dupIdx.includes(k))dupIdx.push(k)}
+const raw=rows.slice();
+dupIdx.sort((a,b)=>b-a).forEach(k=>raw.splice(k+1,0,{...rows[k]}));
+
+/* ===== cifras esperadas ===== */
+const tipPlazo=Object.fromEntries(TIP.map(t=>[t[0],t[2]]));
+const depName=Object.fromEntries(DEP.map(d=>[d[0],d[1]]));
+const tot=rows.length,res=rows.filter(r=>r.est==="Respondido");
+const dias=res.map(r=>(Date.parse(r.fr)-Date.parse(r.f))/864e5);
+const at=res.filter((r,i)=>dias[i]<=tipPlazo[r.tip]).length;
+const prom=dias.reduce((a,b)=>a+b,0)/dias.length;
+const byDep={};rows.forEach(r=>byDep[r.dep]=(byDep[r.dep]||0)+1);
+const topDep=Object.entries(byDep).sort((a,b)=>b[1]-a[1])[0];
+const fmt=n=>n.toLocaleString("es-CO",{maximumFractionDigits:1});
+const pct=x=>(x*100).toLocaleString("es-CO",{maximumFractionDigits:2})+" %";
+const S=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+S("c1Raw",raw.length);S("c2Clean",tot);S("c2Dup",raw.length-tot);
+S("c3Top",depName[topDep[0]]+" ("+topDep[1]+" radicados)");
+S("c4Tot",tot);S("c4Res",res.length);S("c4Tra",tot-res.length);S("c4At",at);S("c4Op",pct(at/res.length));S("c4Prom",fmt(prom)+" días");
+S("mk1",tot);S("mk2",tot-res.length);S("mk3",Math.round(at/res.length*100)+"%");S("mk4",fmt(prom));
+// mini charts
+const byMonth=Array(9).fill(0);rows.forEach(r=>byMonth[+r.f.slice(5,7)-1]++);
+const mx=Math.max(...byMonth);document.getElementById("mkc1").innerHTML=byMonth.map(v=>`<i style="height:${v/mx*100}%" title="${v}"></i>`).join("");
+const dv=DEP.map(d=>byDep[d[0]]||0),mx2=Math.max(...dv);document.getElementById("mkc2").innerHTML=dv.map(v=>`<i style="height:${v/mx2*100}%" title="${v}"></i>`).join("");
+
+/* ===== CSV ===== */
+const q=v=>/[",\n]|^\s|\s$/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':v;
+const CSV={
+ Radicados:[["ID_Radicado","Fecha_Radicacion","ID_Dependencia","ID_Tipo","Medio_Recepcion","Fecha_Respuesta","Estado"],...raw.map(r=>[r.id,r.f,r.dep,r.tip,r.med,r.fr,r.est])],
+ Dependencias:[["ID_Dependencia","Dependencia","Responsable"],...DEP],
+ Tipos_Documentales:[["ID_Tipo","Tipo_Documental","Plazo_Dias"],...TIP]};
+function dl(name){
+  const txt="\uFEFF"+CSV[name].map(r=>r.map(q).join(",")).join("\r\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type:"text/csv;charset=utf-8"}));a.download=name+".csv";document.body.appendChild(a);a.click();a.remove();toast("Descargado "+name+".csv");
+}
+function prev(id,data,n){const h=data[0],b=data.slice(1,n+1);document.getElementById(id).innerHTML="<tr>"+h.map(x=>`<th>${x}</th>`).join("")+"</tr>"+b.map(r=>"<tr>"+r.map(x=>{x=String(x);return `<td>${x===""?"<i style='color:#aaa'>(vacío)</i>":x.replace(/^ | $/g,"<b style='color:#c62828'>␣</b>")}</td>`}).join("")+"</tr>").join("")}
+prev("prevRad",CSV.Radicados,8);prev("prevDep",CSV.Dependencias,6);prev("prevTip",CSV.Tipos_Documentales,6);
+
+/* ===== QUIZ ===== */
+const QZ={
+1:[["¿Qué formato tiene el archivo que guarda un informe de Power BI Desktop?",[".xlsx",".pbix",".csv"],1,"El informe se guarda como .pbix. El .csv es solo una fuente de datos."],
+   ["¿En qué vista puedes ver las filas de tus datos?",["Vista Informe","Vista Tabla","Vista Modelo"],1,"La vista Tabla muestra los datos fila por fila, como una hoja de Excel."],
+   ["¿Por qué aparecían “Ventanilla” y “VENTANILLA” como barras distintas?",["Power BI tiene un error","Los datos no estaban estandarizados","El gráfico estaba mal configurado"],1,"Para Power BI son textos diferentes. Hay que limpiar los datos antes de analizarlos."]],
+2:[["¿Dónde se limpian y transforman los datos en Power BI?",["En el Editor de Power Query","En la vista Modelo","En el panel Formato"],0,"Power Query es el taller de limpieza: se abre con Inicio → Transformar datos."],
+   ["Si te equivocas en Power Query, ¿qué haces?",["Vuelvo a descargar el archivo","Borro el paso en Pasos aplicados","Cierro sin guardar y empiezo de cero"],1,"Cada cambio es un paso. Lo borras con la ❌ y todo vuelve a como estaba."],
+   ["¿Para qué sirve la opción “Recortar”?",["Para eliminar columnas","Para quitar espacios al inicio y al final del texto","Para cortar las fechas"],1,"Recortar elimina espacios sobrantes, como en “Ventanilla ”."]],
+3:[["¿Cuál es la tabla de hechos en nuestro modelo?",["Dependencias","Radicados","Tipos_Documentales"],1,"Radicados registra cada evento (documento radicado). Las otras describen los códigos."],
+   ["Una dependencia tiene muchos radicados. ¿Qué tipo de relación es?",["Uno a uno (1:1)","Uno a varios (1:*)","Varios a varios (*:*)"],1,"Una dependencia (1) se relaciona con varios radicados (*)."],
+   ["¿Para qué sirve la columna Mes_Num en el calendario?",["Para ordenar los meses correctamente","Para sumar los meses","Para filtrar por año"],0,"Con “Ordenar por columna” usamos Mes_Num para que enero salga antes que febrero."]],
+4:[["Quieres calcular el % de PQRS respondidas a tiempo. ¿Qué creas?",["Una columna calculada","Una medida","Una tabla nueva"],1,"Porcentajes, totales y promedios se hacen con medidas, porque cambian según los filtros."],
+   ["¿Qué hace la función RELATED?",["Crea una relación entre tablas","Trae un valor de otra tabla relacionada","Cuenta filas relacionadas"],1,"RELATED funciona como un BUSCARV: trae el Plazo_Dias desde Tipos_Documentales."],
+   ["¿Por qué usamos DIVIDE en lugar de la barra / ?",["Porque es más rápido","Porque evita errores cuando el divisor es cero","Porque redondea el resultado"],1,"DIVIDE devuelve un blanco en vez de un error si no hay respondidos."]],
+5:[["¿Qué objeto visual permite al usuario elegir un mes o una dependencia?",["Tarjeta","Segmentación de datos","Matriz"],1,"La segmentación de datos funciona como un filtro con botones o lista."],
+   ["¿Dónde deben ir los indicadores más importantes del tablero?",["Abajo a la derecha","Arriba, en una fila de tarjetas","En una página aparte"],1,"Leemos de arriba a la izquierda hacia abajo: los KPI van primero."],
+   ["¿Qué es el formato condicional?",["Cambiar el tipo de letra","Aplicar colores automáticos según el valor","Ocultar datos vacíos"],1,"Funciona como un semáforo: verde si cumple, rojo si no."]]};
+document.querySelectorAll(".quiz").forEach(box=>{
+  const n=box.dataset.quiz;
+  QZ[n].forEach((qq,qi)=>{
+    const d=document.createElement("div");d.className="q";
+    d.innerHTML=`<p>${qi+1}. ${qq[0]}</p>`+qq[1].map((o,oi)=>`<button class="opt" data-o="${oi}">${String.fromCharCode(97+oi)}) ${o}</button>`).join("")+`<div class="fb"></div>`;
+    d.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+      d.querySelectorAll(".opt").forEach(x=>x.classList.remove("right","wrong"));
+      const ok=+b.dataset.o===qq[2];b.classList.add(ok?"right":"wrong");
+      if(!ok)d.querySelectorAll(".opt")[qq[2]].classList.add("right");
+      const fb=d.querySelector(".fb");fb.style.display="block";fb.innerHTML=(ok?"✅ <b>¡Correcto!</b> ":"💡 <b>Repasa:</b> ")+qq[3];
+    });
+    box.appendChild(d);
+  });
+});
+
+/* ===== NAV ===== */
+const views=[...document.querySelectorAll("section.view")];
+const tabs=document.getElementById("tabs");
+views.forEach(v=>{const b=document.createElement("button");b.dataset.v=v.id.slice(2);b.innerHTML=v.dataset.tab+(v.dataset.class?`<span class="ok" id="ok${v.dataset.class}"></span>`:"");b.onclick=()=>go(b.dataset.v);tabs.appendChild(b)});
+const routeData=[["c1","Conocer Power BI","Interfaz, cargar un CSV y primer gráfico"],["c2","Power Query","Limpiar duplicados, tipos y textos"],["c3","Modelo de datos","Cruces de tablas, relaciones y calendario"],["c4","DAX","Columnas calculadas e indicadores"],["c5","Cuadro de mando","Tablero interactivo e informe en PDF"]];
+document.getElementById("route").innerHTML=routeData.map((r,i)=>`<div class="r" onclick="go('${r[0]}')"><div class="n">${i+1}</div><div><b>${r[1]}</b><small>${r[2]}</small></div></div>`).join("");
+function go(id,noScroll){views.forEach(v=>v.classList.toggle("on",v.id==="v-"+id));[...tabs.children].forEach(b=>b.classList.toggle("on",b.dataset.v===id));if(!noScroll)window.scrollTo({top:document.querySelector("nav.tabs").offsetTop,behavior:"smooth"});try{history.replaceState(null,"","#"+id)}catch(e){}save()}
+document.addEventListener("click",e=>{if(e.target.classList.contains("copy")){const t=e.target.parentElement.innerText.replace(/^Copiar\s*/,"").replace(/Copiado ✓\s*/,"");cp(t);e.target.textContent="Copiado ✓";setTimeout(()=>e.target.textContent="Copiar",1500)}});
+
+/* ===== ESTADO ===== */
+const KEY="logilab_pbi_gd_v1";
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
+let ST=load();
+function save(){
+  ST.done={};document.querySelectorAll("[data-done]").forEach(c=>ST.done[c.dataset.done]=c.checked);
+  ST.ck={};document.querySelectorAll("[data-ck]").forEach(c=>ST.ck[c.dataset.ck]=c.checked);
+  ST.f={};["nom","doc","fic","r1","r2","r3","r4"].forEach(k=>ST.f[k]=document.getElementById(k).value);
+  try{localStorage.setItem(KEY,JSON.stringify(ST));S("saveState","Guardado automático: "+new Date().toLocaleTimeString("es-CO"))}catch(e){S("saveState","Tu navegador no permite guardar: usa “Descargar .txt” para no perder tus respuestas.")}
+  updProg();
+}
+function updProg(){let n=0;for(let i=1;i<=5;i++){const d=ST.done&&ST.done[i];if(d)n++;S("ok"+i,d?" ✓":"")}document.getElementById("progFill").style.width=n*20+"%";S("progLabel",`Progreso: ${n} de 5 clases`+(n===5?" 🎉 ¡Completaste la ruta!":""))}
+document.querySelectorAll("[data-done]").forEach(c=>{c.checked=!!(ST.done&&ST.done[c.dataset.done]);c.onchange=()=>{save();if(c.checked)toast("¡Clase "+c.dataset.done+" completada! 💪")}});
+document.querySelectorAll("[data-ck]").forEach(c=>{c.checked=!!(ST.ck&&ST.ck[c.dataset.ck]);c.onchange=save});
+["nom","doc","fic","r1","r2","r3","r4"].forEach(k=>{const e=document.getElementById(k);if(ST.f&&ST.f[k])e.value=ST.f[k];e.addEventListener("input",save);e.addEventListener("change",save)});
+["visibilitychange","pagehide"].forEach(ev=>window.addEventListener(ev,save));
+
+/* ===== ENTREGA ===== */
+function evText(){
+  const g=k=>document.getElementById(k).value.trim();
+  const done=[1,2,3,4,5].filter(i=>ST.done&&ST.done[i]).join(", ")||"ninguna";
+  return `EVIDENCIA · POWER BI DESDE CERO (Gestión Documental)\nLogiLab SENA\n\nAprendiz: ${g("nom")}\nDocumento: ${g("doc")}\nFicha: ${g("fic")}\nClases completadas: ${done}\n\n1. Cifras del tablero:\n${g("r1")}\n\n2. Dependencia con peor oportunidad y causa:\n${g("r2")}\n\n3. Mayor problema y recomendación:\n${g("r3")}\n\n4. Excel vs Power BI:\n${g("r4")}\n\n(Adjunto PDF del informe y archivo .pbix)`;
+}
+function valid(){const g=k=>document.getElementById(k).value.trim();if(!g("nom")||!g("fic")){toast("Escribe tu nombre y selecciona tu ficha");return false}return true}
+function sendWA(){if(!valid())return;window.open("https://wa.me/?text="+encodeURIComponent(evText()),"_blank")}
+function sendMail(){if(!valid())return;const n=document.getElementById("nom").value.trim();location.href="mailto:?subject="+encodeURIComponent("Evidencia Power BI - "+n)+"&body="+encodeURIComponent(evText())}
+function copyEv(){if(!valid())return;cp(evText())}
+function dlEv(){if(!valid())return;const n=document.getElementById("nom").value.trim().replace(/\s+/g,"_");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([evText()],{type:"text/plain;charset=utf-8"}));a.download="Evidencia_PowerBI_"+n+".txt";document.body.appendChild(a);a.click();a.remove();toast("Archivo descargado")}
+function cp(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copiado al portapapeles")).catch(()=>{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Copiado al portapapeles")}catch(e){toast("No se pudo copiar")}ta.remove()})}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),2200)}
+
+document.getElementById("themeBtn").onclick=()=>{const r=document.documentElement,d=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=d?"light":"dark";try{localStorage.setItem("logilab_theme",r.dataset.theme)}catch(e){}};
+try{const t=localStorage.getItem("logilab_theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
+const start=(location.hash||"#inicio").slice(1);
+go(document.getElementById("v-"+start)?start:"inicio",true);updProg();
+</script>
+</body>
+</html>
