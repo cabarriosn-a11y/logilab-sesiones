@@ -813,6 +813,21 @@ function renderBoard(){const box=document.getElementById('iBoard');if(!box)retur
   if(!ts.length){box.innerHTML='<p class="note" style="padding:14px">Aún no hay entregas. Pegue arriba los códigos que le enviaron.</p>';return}
   box.innerHTML=`<table class="mx"><thead><tr><th>Equipo · Empresa</th>${T.map((t,i)=>`<th title="${esc(t.t)}">${i+1}</th>`).join('')}<th>Plan</th></tr></thead><tbody>${ts.map(t=>`<tr><td class="tm" title="${esc(t.q)}"><b>${esc(teamShort(t.q)||'Equipo sin nombre')}</b><small>${esc(t.e||'Empresa sin definir')}</small></td>${KINDS.map(k=>{const a=t.by[k];if(!a)return `<td><span class="cell" style="display:grid;place-items:center">·</span></td>`;const s=cellState(a);return `<td><button class="cell ${s.c}${a.some(x=>x.sid===isel)?' on':''}" data-sid="${esc(a[0].sid)}" title="${esc(kindName(k))}${a.length>1?' · '+a.length+' versiones':''}">${s.t}</button></td>`}).join('')}</tr>`).join('')}</tbody></table>`;
   box.querySelectorAll('[data-sid]').forEach(b=>b.onclick=()=>openSub(b.dataset.sid))}
+/* Reconstruye el respaldo .json del EQUIPO (shape de la app del aprendiz) a partir de lo recibido,
+   para devolvérselo si perdieron el suyo: trae todos los talleres, su identidad (tid) y deja
+   visibles las notas ya puestas (csid/cloud) para que puedan corregir y reenviar. */
+function teamBackup(sid){const base=I.subs[sid];if(!base)return null;const key=gk(base);
+  const subs=Object.values(I.subs).filter(x=>gk(x)===key);
+  let tid=base.team;if(/^x-/.test(tid||'')){const r=subs.filter(x=>x.team&&!/^x-/.test(x.team)).sort((a,b)=>b.ts-a.ts)[0];if(r)tid=r.team}
+  const latest={};subs.forEach(x=>{if(!latest[x.kind]||latest[x.kind].ts<x.ts)latest[x.kind]=x});
+  const S0={v:1,tid:tid||'',wa:'',mail:'',sent:{},cloud:{},csid:{},done:{},d:{}};
+  const plan=latest.PLAN;if(plan){Object.assign(S0.d,plan.d||{});Object.assign(S0.done,plan.done||{})}
+  Object.keys(latest).forEach(k=>{if(k==='PLAN')return;const x=latest[k];if(!plan||x.ts>=plan.ts){S0.d[k]=x.d||{};S0.done[k]=!!x.done}});
+  Object.keys(latest).forEach(k=>{S0.csid[k]=latest[k].sid;S0.cloud[k]=latest[k].ts||latest[k].recv||Date.now()});
+  const g=teams().find(t=>t.key===key)||{};S0.d.T1=S0.d.T1||{};
+  if(!S0.d.T1.empresa&&(base.e||g.e))S0.d.T1.empresa=base.e||g.e;
+  if(!S0.d.T1.equipo&&(base.q||g.q))S0.d.T1.equipo=base.q||g.q;
+  return S0}
 function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();const grp=teams().find(t=>t.key===gk(s))||{q:'',e:''};
   const vers=Object.values(I.subs).filter(x=>gk(x)===gk(s)&&x.kind===s.kind).sort((a,b)=>b.ts-a.ts);
   const prev=vers.filter(x=>x.sid!==sid&&x.ts<s.ts).map(x=>({x,ev:I.ev[x.sid]})).find(o=>o.ev&&(o.ev.j||o.ev.obs));
@@ -834,6 +849,8 @@ function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();co
   <div class="jz"><button data-j="A" title="Aprobado">✓ A</button><button data-j="D" title="No aprobado">✗ D</button><button data-j="" title="Sin juicio todavía">Pendiente</button></div><span class="note">A = aprobado · D = no aprobado (corrigen y reenvían)</span>
   <label class="field"><span class="lbl">Observaciones para el equipo</span><textarea id="iObs" placeholder="Qué está bien, qué deben corregir y para cuándo">${esc(ev.obs||'')}</textarea></label>
   <div class="acts"><button class="btn" id="iFbCopy">📋 Copiar retroalimentación</button><a class="btn wa" id="iFbWa" href="#" target="_blank" rel="noopener">WhatsApp</a></div>
+  <div class="acts"><button class="btn dl" id="iTeamJson">⬇ Respaldo .json para el equipo</button></div>
+  <p class="note">Si el equipo perdió su respaldo: descárguelo y envíeselo (WhatsApp/correo). Ellos lo abren con <b>⬆ Cargar respaldo</b> y recuperan todo su trabajo —con su nota ya visible— para corregir y reenviar.</p>
   <div class="acts"><button class="btn pri" id="iNext">Siguiente por evaluar →</button><button class="btn" id="iDel">Eliminar entrega</button></div>
   <p class="note">Se guarda solo en este dispositivo y en la nube.</p></aside></div>`;
   document.getElementById('iJoin').onchange=e=>{I.alias[s.team]={to:e.target.value,at:Date.now()};isave();renderBoard();openSub(sid);cloudPush();toast(e.target.value?'Entregas unidas al equipo':'Unión quitada')};
@@ -844,6 +861,9 @@ function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();co
   jb.forEach(b=>b.onclick=()=>{E().j=b.dataset.j;markJ(b.dataset.j);upd()});
   const ob=document.getElementById('iObs');ob.oninput=()=>{const e=E();e.obs=ob.value;e.at=Date.now();isave();cloudPush()};
   const fb=()=>{const e=I.ev[sid]||{};return `Retroalimentación LogiLab · ${kindName(s.kind)}\nEmpresa: ${s.e||'—'}\nEquipo: ${teamShort(s.q)||'—'}\nEntrega del ${fdate(s.ts)}\n\nJuicio: ${e.j==='A'?'A · Aprobado':e.j==='D'?'D · No aprobado: corrijan y reenvíen el código':'En revisión'}\n${CRIT.map(([k,l])=>`${e.cr&&e.cr[k]?'✅':'⬜'} ${l}`).join('\n')}\n\nObservaciones: ${e.obs||'—'}\n\nCarlos Barrios · Instructor SENA`};
+  document.getElementById('iTeamJson').onclick=()=>{const b=teamBackup(sid);if(!b){toast('No pude armar el respaldo');return}
+    const nom=slugOf((b.d.T1&&b.d.T1.empresa)||teamShort(s.q)||'equipo');
+    download(JSON.stringify(b,null,1),'respaldo-equipo-'+nom+'.json','application/json')};
   document.getElementById('iFbCopy').onclick=()=>copy(fb(),'Retroalimentación copiada');
   document.getElementById('iFbWa').onclick=e=>{e.currentTarget.href='https://wa.me/?text='+encodeURIComponent(fb())};
   document.getElementById('iNext').onclick=()=>nextPending(sid);
