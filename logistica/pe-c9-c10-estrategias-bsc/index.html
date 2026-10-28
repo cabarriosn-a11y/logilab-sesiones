@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estrategias y Balanced Scorecard · Clases 9 y 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: proyector 16:9 — barra de control arriba, una diapositiva a la vez, navegación abajo */
+:root{
+  --sena:#39A900; --sena-deep:#2a7d00; --sena-soft:#e9f6df;
+  --sand:#f3efe6; --bg:#f7f8f4; --card:#ffffff; --fg:#17201a; --muted:#56635a; --line:#d9dfd3;
+  --sea:#0f6e8c; --sun:#e39b1b; --alert:#c2412d; --violet:#6b4fa3;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"JetBrains Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --sena:#5cc91f; --sena-deep:#7ad94a; --sena-soft:#1d2b16; --sand:#22261f; --bg:#121612; --card:#1a1f1a; --fg:#eef2ea; --muted:#a6b2a3; --line:#2f382d;
+  --sea:#4fb3d3; --sun:#f0b44a; --alert:#ef7a63; --violet:#a98ee0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --sena:#5cc91f; --sena-deep:#7ad94a; --sena-soft:#1d2b16; --sand:#22261f; --bg:#121612; --card:#1a1f1a; --fg:#eef2ea; --muted:#a6b2a3; --line:#2f382d;
+  --sea:#4fb3d3; --sun:#f0b44a; --alert:#ef7a63; --violet:#a98ee0; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:clamp(15px,1.25vw,20px);line-height:1.5;display:flex;flex-direction:column}
+h1,h2,h3{font-family:var(--display);line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.4rem,5.6vw,5rem);font-weight:800}
+h2{font-size:clamp(1.8rem,3.4vw,3rem);font-weight:700}
+h3{font-size:clamp(1.15rem,1.7vw,1.6rem);font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sena-deep)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+
+/* barra superior */
+.top{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:1.25rem}
+.brand i{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--sena);color:#fff;font-style:normal;font-size:1rem}
+.now{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);flex:1;min-width:200px}
+.now b{color:var(--fg)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--sena-soft);color:var(--sena-deep);font-weight:700;font-size:.8rem}
+.timer{display:flex;gap:6px;align-items:center}
+.timer .clock{font-family:var(--mono);font-size:1.35rem;min-width:5.2ch;text-align:center;font-variant-numeric:tabular-nums}
+.timer .clock.low{color:var(--alert)}
+.tbtn{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:4px 9px;font-size:.85rem}
+.tbtn.go{background:var(--sena);border-color:var(--sena);color:#fff}
+
+/* diapositivas */
+main{flex:1;min-height:0;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;overflow:auto;padding:clamp(18px,3.2vw,48px) clamp(16px,4vw,64px);display:none;flex-direction:column;gap:clamp(14px,2vw,26px)}
+.slide.on{display:flex;animation:in .35s ease}
+@keyframes in{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.on{animation:none}}
+.grid{display:grid;gap:clamp(12px,1.6vw,20px)}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:clamp(14px,1.6vw,22px);min-width:0}
+.lead{font-size:1.15em;color:var(--muted);max-width:62ch}
+
+/* bottom nav */
+.nav{display:flex;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid var(--line);background:var(--card);flex-wrap:wrap}
+.nav .dots{display:flex;gap:5px;flex:1;flex-wrap:wrap}
+.dot{width:26px;height:8px;border-radius:4px;border:0;background:var(--line);padding:0}
+.dot.on{background:var(--sena)}
+.navbtn{border:0;border-radius:8px;padding:6px 14px;background:var(--sena);color:#fff;font-weight:700}
+.navbtn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.foot{font-size:.78rem;color:var(--muted)}
+
+/* portada */
+.cover{justify-content:center;background:
+  radial-gradient(1200px 500px at 85% 110%, color-mix(in srgb,var(--sena) 22%,transparent), transparent 60%),
+  radial-gradient(700px 400px at 0% 0%, color-mix(in srgb,var(--sea) 14%,transparent), transparent 60%)}
+.cover .meta{display:flex;flex-wrap:wrap;gap:8px}
+.cover .meta span{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:.85rem}
+.kanas{display:flex;gap:6px;margin-top:6px}
+.kanas span{height:10px;flex:1;max-width:60px;border-radius:2px}
+
+/* agenda */
+.agenda{display:grid;gap:8px}
+.ag{display:grid;grid-template-columns:8.5ch 1fr auto;gap:14px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.ag time{font-family:var(--mono);font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ag.live{border-color:var(--sena);box-shadow:inset 5px 0 0 var(--sena)}
+.ag .tag{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sand);color:var(--muted);white-space:nowrap}
+
+/* temas */
+.topic{display:flex;gap:14px;align-items:flex-start}
+.topic .n{font-family:var(--display);font-weight:800;font-size:2.2rem;color:var(--sena);line-height:.9;min-width:1.4ch}
+
+/* fábula */
+.fable{max-width:72ch;font-size:1.08em;line-height:1.65}
+.fable p+p{margin-top:.8em}
+.fable .drop::first-letter{font-family:var(--display);font-size:3.4em;float:left;line-height:.85;padding-right:8px;color:var(--sena)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.who{border-top:6px solid var(--sena)}
+.who.bad{border-top-color:var(--alert)}
+.q{counter-increment:q;display:flex;gap:12px;align-items:flex-start}
+.q::before{content:counter(q);font-family:var(--display);font-weight:800;font-size:1.6rem;color:#fff;background:var(--sena);border-radius:8px;min-width:42px;height:42px;display:grid;place-items:center}
+
+/* cadena */
+.chain{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.link{flex:1 1 140px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;position:relative;min-width:0}
+.link b{display:block;font-family:var(--display);font-size:1.2rem}
+.link small{color:var(--muted)}
+.flows{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
+.flow{border-radius:10px;padding:12px 14px;color:var(--fg);background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c)}
+.flow b{font-family:var(--display);font-size:1.25rem}
+
+/* documental */
+.doc{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px}
+@media (max-width:800px){.doc{grid-template-columns:1fr}}
+.scene{background:linear-gradient(160deg,color-mix(in srgb,var(--sea) 18%,var(--card)),var(--card));border:1px solid var(--line);border-radius:14px;padding:clamp(16px,2.2vw,30px);display:flex;flex-direction:column;gap:12px;min-height:300px}
+.scene .hora{font-family:var(--mono);font-size:1.6rem;color:var(--sea)}
+.scene .txt{font-size:1.18em;line-height:1.6}
+.scene .guide{margin-top:auto;padding:10px 14px;border-radius:10px;background:var(--sena-soft);color:var(--fg)}
+.scene-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ficha{width:100%;border-collapse:collapse;font-size:.95em}
+.ficha th,.ficha td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.ficha th{background:var(--sena);color:#fff;font-family:var(--display);font-size:1.1rem;letter-spacing:.02em}
+.ficha td.ex{color:var(--muted);font-style:italic}
+
+/* canvas */
+.canvas{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.cb{border-radius:12px;padding:14px;background:var(--card);border:1px solid var(--line);border-top:8px solid var(--c);min-width:0;display:flex;flex-direction:column;gap:6px}
+.cb ul{margin:0;padding-left:1.1em;color:var(--muted);font-size:.93em}
+.cb .rap{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.c1{grid-column:span 2}.c2{grid-column:span 2}.c3{grid-column:span 2}.c4{grid-column:span 3}.c5{grid-column:span 3}
+@media (max-width:800px){.canvas{grid-template-columns:1fr}.c1,.c2,.c3,.c4,.c5{grid-column:auto}}
+.sectors{display:flex;flex-wrap:wrap;gap:8px}
+.sector{padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.sector b{color:var(--sena-deep)}
+
+/* evento */
+.deck{display:grid;place-items:center;gap:16px}
+.card-ev{width:min(760px,100%);border-radius:18px;padding:clamp(20px,3vw,40px);background:var(--card);border:2px solid var(--alert);display:flex;flex-direction:column;gap:14px;min-height:260px}
+.card-ev .k{font-family:var(--mono);color:var(--alert);letter-spacing:.1em;font-size:.8rem;text-transform:uppercase}
+.card-ev h3{font-size:clamp(1.5rem,2.6vw,2.4rem)}
+.card-ev .ask{padding:10px 14px;border-radius:10px;background:var(--sand)}
+.big{border:0;border-radius:12px;padding:12px 22px;background:var(--alert);color:#fff;font-weight:700;font-size:1.05rem}
+
+/* ruta */
+.route{display:grid;gap:8px}
+.rt{display:grid;grid-template-columns:6ch 1fr 7ch;gap:12px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.rt .code{font-family:var(--mono);font-weight:500;color:var(--sena-deep)}
+.rt .h{font-family:var(--mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.rt.today{background:var(--sena-soft);border-color:var(--sena)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px}
+.bar span{display:block;height:100%;background:var(--sena)}
+
+/* entrega */
+.form{display:grid;gap:10px}
+.form label{font-weight:700;font-size:.9rem}
+.form input,.form textarea,.form select{width:100%;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.form textarea{min-height:64px;resize:vertical}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.act{border:0;border-radius:10px;padding:9px 14px;font-weight:700;color:#fff;background:var(--sena);text-decoration:none;display:inline-block}
+.act.wa{background:#1f9d55}.act.mail{background:var(--sea)}.act.dl{background:var(--violet)}
+.toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-weight:700}
+.note{font-size:.85rem;color:var(--muted)}
+</style>
+<style>
+/* Extras clases 5 y 6 */
+.ses{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ses button{border:0;background:var(--bg);color:var(--fg);padding:5px 12px;font-weight:700;font-size:.9rem}
+.ses button.on{background:var(--sena);color:#fff}
+.quiz{display:grid;gap:10px}
+.qi{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.qi .opts{display:flex;gap:6px;flex-wrap:wrap}
+.opt{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:6px 12px;font-weight:700}
+.opt.ok{background:var(--sena);border-color:var(--sena);color:#fff}
+.opt.bad{background:var(--alert);border-color:var(--alert);color:#fff}
+.fb{grid-column:1/-1;font-size:.9rem;color:var(--muted)}
+@media (max-width:640px){.qi{grid-template-columns:1fr}}
+.pyr{display:grid;gap:6px;justify-items:center}
+.pyr div{padding:10px 16px;border-radius:10px;text-align:center;color:#fff;font-weight:700;min-width:0}
+.pyr small{display:block;font-weight:400;opacity:.92}
+.formula{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:1.05em}
+.formula span{padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.formula span b{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--sena-deep)}
+.formula i{font-style:normal;font-weight:800;color:var(--muted)}
+.vs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.vs .box{border-top:6px solid var(--c)}
+.vs .box .k{font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.smart{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:800px){.smart{grid-template-columns:1fr 1fr}}
+.sm{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.sm .L{font-family:var(--display);font-weight:800;font-size:2.6rem;line-height:1;color:var(--sena)}
+.sm h3{font-size:1.15rem;margin:4px 0}
+.sm p{font-size:.9em;color:var(--muted)}
+.builder{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:800px){.builder{grid-template-columns:1fr}}
+.out{font-size:1.25em;line-height:1.45;padding:16px;border-radius:12px;background:var(--sena-soft);border:1px solid var(--sena);min-height:90px}
+.letters{display:flex;gap:8px}
+.letters span{width:46px;height:46px;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.6rem;background:var(--line);color:var(--muted);transition:.2s}
+.letters span.on{background:var(--sena);color:#fff}
+.tw{overflow-x:auto}
+.ftable{width:100%;border-collapse:collapse;font-size:.95em}
+.ftable th,.ftable td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.ftable th{background:var(--sena);color:#fff;font-family:var(--display);font-size:1.08rem}
+.ftable.sea th{background:var(--sea)}
+.ftable td.c{text-align:center}
+.ftable select,.ftable input{font:inherit;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);padding:4px 6px;width:100%}
+.ftable select{width:auto}
+.tot{font-family:var(--mono);font-weight:500;font-size:1.1rem}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.82rem;white-space:nowrap}
+.badge.g{background:var(--sena);color:#fff}.badge.y{background:var(--sun);color:#1b1b1b}.badge.r{background:var(--alert);color:#fff}
+.cycle{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:8px;counter-reset:cy}
+.cycle div{counter-increment:cy;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;position:relative;min-width:0}
+.cycle div::before{content:counter(cy);font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--sea);display:block;line-height:1}
+.cycle b{display:block}
+.cycle small{color:var(--muted)}
+.krj{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr) auto;gap:8px}
+.krj .ax{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;color:var(--muted);grid-row:1/3}
+.krj .axx{grid-column:2/4;text-align:center;font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;color:var(--muted)}
+.krj .q4{border-radius:12px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c);min-width:0}
+.krj .q4 h3{font-size:1.2rem}
+.krj .q4 p{font-size:.92em}
+.krj .q4 .note{margin-top:4px}
+.rules{counter-reset:r;display:grid;gap:8px}
+.rules div{counter-increment:r;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.rules div::before{content:counter(r);font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--sea);min-width:1.2ch}
+.rules .tag{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sand);color:var(--muted);white-space:nowrap}
+.steps5{display:grid;gap:8px;counter-reset:s}
+.steps5 li{counter-increment:s;list-style:none;display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.steps5 li::before{content:counter(s);font-family:var(--display);font-weight:800;font-size:1.4rem;color:#fff;background:var(--sena);border-radius:8px;min-width:38px;height:38px;display:grid;place-items:center}
+.steps5{padding:0;margin:0}
+.check{display:grid;gap:6px}
+.check label{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.check input{width:20px;height:20px;accent-color:var(--sena);flex:none;margin-top:2px}
+.meter{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.meter span{display:block;height:100%;background:var(--sena);transition:width .3s}
+.cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cta a{text-decoration:none}
+.bring{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.bring div{padding:12px 14px;border-radius:10px;background:var(--card);border:1px dashed var(--sena)}
+.where{display:flex;flex-wrap:wrap;gap:6px}
+.where span{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.85rem;color:var(--muted)}
+.where span.on{background:var(--sena);border-color:var(--sena);color:#fff;font-weight:700}
+@media (max-width:640px){.nav .dots{display:none}}
+/* empresa guía y demostración */
+.casehead{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.casehead .logo{width:54px;height:54px;border-radius:12px;background:var(--sun);color:#1b1b1b;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.6rem}
+.fict{font-size:.78rem;font-weight:700;padding:2px 10px;border-radius:999px;border:1px dashed var(--muted);color:var(--muted)}
+.ficha2{width:100%;border-collapse:collapse;font-size:.85em}
+.ficha2 td{border:1px solid var(--line);padding:4px 8px;vertical-align:top}
+.ficha2 td:first-child{font-weight:700;width:38%;background:var(--sand)}
+.prob{display:grid;gap:8px}
+.prob div{padding:6px 10px;font-size:.92em;border-radius:10px;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--alert)}
+.prob b{color:var(--alert)}
+.steps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);gap:18px}
+@media (max-width:800px){.steps{grid-template-columns:1fr}}
+.steplist{display:grid;gap:6px;align-content:start}
+.st{display:flex;gap:10px;align-items:center;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);text-align:left}
+.st b{font-family:var(--display);font-size:1.3rem;min-width:1.4ch;color:var(--line)}
+.st.done{color:var(--fg)}.st.done b{color:var(--sena)}
+.st.cur{border-color:var(--sena);box-shadow:inset 5px 0 0 var(--sena);color:var(--fg)}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:clamp(12px,1.4vw,20px);display:flex;flex-direction:column;gap:10px;min-width:0;font-size:.93em}
+.stage .ftable th,.stage .ftable td{padding:5px 8px}
+.fld{display:grid;gap:4px}
+.fld>label{font-weight:700;font-size:.85rem;color:var(--muted)}
+.fld>div{padding:10px 12px;border-radius:8px;border:1.5px dashed var(--sena);background:var(--sena-soft);font-size:1.05em;line-height:1.5}
+.how{padding:8px 12px;border-radius:8px;background:var(--sand);font-size:.9em}
+.how b{color:var(--sena-deep)}
+.demo-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.applike{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--sena-deep)}
+.ag{padding:6px 14px;grid-template-columns:11ch 1fr auto}
+.ag time{white-space:nowrap}
+.slide[data-title="Retoma"] .lead{font-size:1em}
+.qi{padding:8px 14px}
+.ficha2{font-size:.8em}
+.slide[data-title="Empresa guía"]{gap:12px}
+.where span.done{background:var(--sena-soft);color:var(--sena-deep)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><i>LL</i>LogiLab SENA</div>
+  <div class="ses" role="group" aria-label="Clase">
+    <button data-ses="9">Clase 9</button><button data-ses="10">Clase 10</button>
+  </div>
+  <div class="now"><span id="clockNow">--:--</span> · <span>Ahora:</span> <b id="nowBlock">—</b> <span class="pill" id="nowLeft"></span></div>
+  <div class="timer" aria-label="Cronómetro de actividad">
+    <button class="tbtn" data-min="5">5'</button>
+    <button class="tbtn" data-min="10">10'</button>
+    <button class="tbtn" data-min="20">20'</button>
+    <button class="tbtn" data-min="30">30'</button>
+    <span class="clock" id="clk">00:00</span>
+    <button class="tbtn go" id="tPlay">Iniciar</button>
+    <button class="tbtn" id="tReset">Reiniciar</button>
+  </div>
+</header>
+
+<main id="deck">
+<style>
+/* utilidades compartidas (tablas, tarjetas, demo) */
+.vs2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.cost{border-radius:12px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-top:6px solid var(--c)}
+.cost h3{margin-bottom:6px}
+.cost ul{margin:0;padding-left:1.1em;display:grid;gap:3px}
+.types{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+.types div{padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.types b{display:block;font-family:var(--display);font-size:1.15rem}
+.types small{color:var(--muted)}
+.abcwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:14px}
+@media (max-width:900px){.abcwrap{grid-template-columns:1fr}}
+.mini{width:100%;border-collapse:collapse;font-size:.86em}
+.mini th,.mini td{border:1px solid var(--line);padding:3px 6px;text-align:left}
+.mini th{background:var(--sena);color:#fff;font-family:var(--display);font-size:.98rem}
+.mini input{width:100%;font:inherit;border:1px solid var(--line);border-radius:5px;background:var(--bg);color:var(--fg);padding:2px 5px}
+.mini td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cls{display:inline-grid;place-items:center;width:26px;height:22px;border-radius:6px;font-weight:800;color:#fff}
+.cls.A{background:var(--alert)}.cls.B{background:var(--sun);color:#1b1b1b}.cls.C{background:var(--sea)}
+.pbar{height:9px;border-radius:5px;background:var(--line);overflow:hidden;min-width:60px}
+.pbar span{display:block;height:100%}
+.rule3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:800px){.rule3{grid-template-columns:1fr}}
+.rule3 div{padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--line);border-top:6px solid var(--c)}
+.rule3 .big3{font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:1;color:var(--c)}
+.shelf{display:flex;gap:6px;align-items:flex-end}
+.shelf span{flex:1;min-width:0;border-radius:6px;padding:8px 4px;text-align:center;font-size:.8rem;font-weight:700;background:var(--card);border:1px solid var(--line)}
+.ropg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:16px}
+@media (max-width:800px){.ropg{grid-template-columns:1fr}}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi div{padding:10px;border-radius:10px;background:var(--sena-soft);border:1px solid var(--sena)}
+.kpi span{display:block;font-size:.8rem;color:var(--muted)}
+.kpi b{font-family:var(--display);font-size:1.6rem}
+.chart svg{width:100%;height:auto;display:block;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.tabs2{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tabs2 button{border:0;background:var(--bg);color:var(--fg);padding:6px 14px;font-weight:700}
+.tabs2 button.on{background:var(--sena);color:#fff}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cmp div{padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.cmp span{display:block;font-size:.8rem;color:var(--muted)}
+.cmp b{font-family:var(--display);font-size:1.5rem}
+.tl{display:grid;gap:8px}
+.tlrow{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center}
+.tltrack{position:relative;height:30px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+.tlbar{position:absolute;top:3px;bottom:3px;border-radius:6px;color:#fff;font-size:.75rem;font-weight:700;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.tl7{position:absolute;top:-6px;bottom:-6px;width:0;border-left:3px dashed var(--alert)}
+.tlaxis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-left:160px}
+.veh{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
+.veh div{padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+.veh b{font-family:var(--display);font-size:1.2rem;display:block}
+.veh .e{font-size:1.8rem}
+.icsec{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px;counter-reset:ic}
+.icsec div{counter-increment:ic;padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.icsec div::before{content:counter(ic);font-family:var(--display);font-weight:800;color:var(--sena);font-size:1.4rem;display:block;line-height:1}
+.icsec small{color:var(--muted)}
+.stage .ftable{font-size:.86em}
+.stage .ftable th,.stage .ftable td{padding:3px 8px}
+.slide[data-title="Rotación"]{gap:12px}
+.slide[data-title="Rotación"] .qi{padding:6px 12px}
+</style>
+
+<style>
+/* extras clases 9 y 10 */
+.persp{display:grid;gap:8px}
+.persp .p{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:12px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c)}
+.persp .p .ic{font-size:1.8rem}
+.persp .p b{font-family:var(--display);font-size:1.25rem;color:var(--c)}
+.persp .p small{color:var(--muted)}
+.cmap{display:grid;gap:10px;max-width:760px;margin:0 auto}
+.cmap .cl{padding:12px 16px;border-radius:12px;color:#fff;font-weight:700;text-align:center;position:relative}
+.cmap .cl small{display:block;font-weight:400;opacity:.95;font-size:.85em}
+.cmap .arrow{justify-self:center;font-size:1.5rem;color:var(--muted);line-height:.6}
+.verd{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.82rem;white-space:nowrap}
+.verd.ok{background:var(--sena);color:#fff}.verd.no{background:var(--alert);color:#fff}
+.bcn{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tech{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px}
+.tech div{padding:12px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);border-top:6px solid var(--c)}
+.tech b{font-family:var(--display);font-size:1.12rem;display:block}
+.tech small{color:var(--muted)}
+.rev{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;counter-reset:rv}
+@media (max-width:800px){.rev{grid-template-columns:1fr}}
+.rev div{counter-increment:rv;padding:12px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+.rev div::before{content:counter(rv);font-family:var(--display);font-weight:800;color:var(--sena);font-size:1.5rem;display:block;line-height:1}
+</style>
+
+
+<!-- ================= CLASE 9 ================= -->
+
+<section class="slide cover" data-s="9" data-title="Portada">
+  <div class="eyebrow">Competencia 210101007 · Taller Plan Estratégico Logístico · Clase 9 de 12 · Evidencia 3.3.3</div>
+  <h1>Estrategias con<br>Balanced Scorecard</h1>
+  <p class="lead">Ya tenemos objetivos y políticas. Hoy los convertimos en estrategias concretas y las ordenamos en las 4 perspectivas del Cuadro de Mando Integral, con su indicador y su meta.</p>
+  <div class="meta"><span>Miércoles 11 nov · 1:00 – 4:00 pm</span><span>Fase: Estrategias</span><span>Entregable: Cuadro de Mando Integral y mapa causa-efecto</span></div>
+  <div class="where" aria-label="Ruta del taller">
+    <span class="done">1–4 Diagnóstico</span><span class="done">5–6 Rumbo y compras</span><span class="done">7–8 Inventarios y distribución</span><span class="on">9 BSC</span><span>10 Costos</span><span>11 Plan maestro</span><span>12 Indicadores</span>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+<section class="slide" data-s="9" data-title="Agenda">
+  <div class="eyebrow">Ruta de la tarde</div>
+  <h2>Agenda de hoy</h2>
+  <div class="agenda" data-ag="9"></div>
+  <p class="note">El bloque en curso se resalta solo, según la hora del computador, el día de la clase.</p>
+</section>
+
+<section class="slide" data-s="9" data-title="Retoma">
+  <div class="eyebrow">Retoma de la clase 8 · 10 minutos</div>
+  <h2>¿Qué cerró la fase de políticas?</h2>
+  <p class="lead">Compras, inventarios y distribución. Veamos si quedó claro antes de armar las estrategias.</p>
+  <div class="quiz" data-quiz="distq"></div>
+</section>
+
+<section class="slide" data-s="9" data-title="¿Qué es el BSC?">
+  <div class="eyebrow">Fundamento</div>
+  <h2>El Cuadro de Mando Integral: la estrategia en 4 perspectivas</h2>
+  <p class="lead">Un objetivo sin estrategia es un deseo. El Balanced Scorecard (BSC) ordena lo que vamos a hacer en 4 niveles que se empujan de abajo hacia arriba.</p>
+  <div class="persp">
+    <div class="p" style="--c:var(--sena)"><span class="ic" aria-hidden="true">💰</span><div><b>Financiera</b><small>¿Qué resultados en plata esperamos? Ventas, costos, merma.</small></div></div>
+    <div class="p" style="--c:var(--sea)"><span class="ic" aria-hidden="true">🙂</span><div><b>Clientes</b><small>¿Qué debe sentir el cliente? Entregas a tiempo, sin agotados, buen trato.</small></div></div>
+    <div class="p" style="--c:var(--sun)"><span class="ic" aria-hidden="true">⚙️</span><div><b>Procesos internos</b><small>¿Qué debemos hacer bien por dentro? Inventario, rutas, recibo, despacho.</small></div></div>
+    <div class="p" style="--c:var(--violet)"><span class="ic" aria-hidden="true">📚</span><div><b>Aprendizaje y crecimiento</b><small>¿Qué debe aprender o tener el personal? Capacitación, herramientas, tecnología.</small></div></div>
+  </div>
+  <div class="box" style="background:var(--sena-soft)"><b>Se lee de abajo hacia arriba:</b> si el personal <b>aprende</b> → los <b>procesos</b> mejoran → el <b>cliente</b> queda contento → llega la <b>plata</b>.</div>
+</section>
+
+<section class="slide" data-s="9" data-title="Empresa guía">
+  <div class="eyebrow">Empresa guía · los objetivos SMART que venimos trabajando</div>
+  <div class="casehead"><span class="logo" aria-hidden="true">LE</span><h2>Lo que La Esperanza quiere lograr</h2><span class="fict">Empresa ficticia · datos de ejemplo</span></div>
+  <div class="grid g2">
+    <div class="box"><h3 style="margin-bottom:8px">Objetivos SMART (clase 5)</h3>
+      <div class="prob">
+        <div style="border-left-color:var(--sena)"><b style="color:var(--sena-deep)">Agotados:</b> bajar los días con agotado de pan de la tarde del 60 % al 10 % en 6 meses.</div>
+        <div style="border-left-color:var(--sena)"><b style="color:var(--sena-deep)">Merma:</b> bajar la merma de pan del 8 % al 3 % en 6 meses.</div>
+        <div style="border-left-color:var(--sena)"><b style="color:var(--sena-deep)">Entregas:</b> subir las entregas antes de las 7:00 a. m. del 40 % al 95 % en 4 meses.</div>
+        <div style="border-left-color:var(--sena)"><b style="color:var(--sena-deep)">Proveedores:</b> tener 100 % de los insumos A con proveedor evaluado y punto de reorden.</div>
+      </div></div>
+    <div class="box" style="background:var(--sena-soft)"><h3 style="margin-bottom:8px">La pregunta de hoy</h3><p>Cada objetivo vive en una perspectiva, pero <b>se logra desde abajo</b>. ¿Qué tiene que aprender el personal y qué proceso hay que afinar para que el cliente y la plata mejoren? Eso es la estrategia.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-s="9" data-title="Mapa causa-efecto">
+  <div class="eyebrow">Cómo se conectan las 4 perspectivas</div>
+  <h2>Mapa causa-efecto de La Esperanza</h2>
+  <div class="cmap">
+    <div class="cl" style="background:var(--sena)">💰 Financiera<small>Más ventas y menos pérdidas por merma y agotados</small></div>
+    <div class="arrow" aria-hidden="true">▲</div>
+    <div class="cl" style="background:var(--sea)">🙂 Clientes<small>Encuentran el pan y lo reciben antes de las 7:00 a. m.</small></div>
+    <div class="arrow" aria-hidden="true">▲</div>
+    <div class="cl" style="background:var(--sun);color:#1b1b1b">⚙️ Procesos<small>Inventario controlado (ABC + punto de reorden), rutas al tiempo, hoja de merma</small></div>
+    <div class="arrow" aria-hidden="true">▲</div>
+    <div class="cl" style="background:var(--violet)">📚 Aprendizaje<small>Personal capacitado en inventarios y rotación; WhatsApp Business para pedidos</small></div>
+  </div>
+  <p class="note">Las flechas van hacia arriba: lo de abajo es la causa, lo de arriba es el efecto. Así se dibuja en el papelógrafo.</p>
+</section>
+
+<section class="slide" data-s="9" data-title="Así lo hizo La Esperanza">
+  <div class="eyebrow">Demostración · el taller 9 lleno con la empresa guía</div>
+  <h2>Así quedó el Cuadro de Mando de La Esperanza</h2>
+  <div class="steps" data-demo="d9"><div class="steplist"></div><div class="stage"></div></div>
+  <div class="demo-nav"><button class="navbtn ghost" data-dp="d9">← Paso</button><span class="foot" data-dn="d9"></span><button class="navbtn" data-dx="d9">Paso →</button><span class="note">Así se ve cada campo del taller 9 en la app, ya lleno.</span></div>
+</section>
+
+<section class="slide" data-s="9" data-title="Taller 9">
+  <div class="eyebrow">Trabajo en equipo · 1 h 30 min</div>
+  <h2>Taller 9 paso a paso</h2>
+  <ol class="steps5">
+    <li><span><b>Ubiquen sus objetivos SMART</b> del taller 5 en la perspectiva que les toca (financiera, clientes, procesos o aprendizaje).</span></li>
+    <li><span><b>Para cada perspectiva</b> escriban qué van a hacer (la estrategia), con qué indicador la miden y cuál es la meta.</span></li>
+    <li><span><b>Revisen la conexión:</b> aprender → mejores procesos → clientes satisfechos → mejores resultados. Si una fila no ayuda a la de arriba, replantéenla.</span></li>
+    <li><span><b>Dibujen el mapa causa-efecto</b> en el papelógrafo, con flechas de abajo hacia arriba.</span></li>
+  </ol>
+  <div class="cta"><a class="act" href="../taller-plan-estrategico/" target="_blank" rel="noopener">Abrir el taller en la app →</a><span class="note">Taller 9 · Estrategias con Balanced Scorecard.</span></div>
+</section>
+
+<section class="slide" data-s="9" data-title="Socialización">
+  <div class="eyebrow">Socialización · 30 minutos</div>
+  <h2>Lista de chequeo antes de entregar</h2>
+  <div class="check" data-check="9"></div>
+  <div class="meter"><span data-bar="9"></span></div><p class="note" data-txt="9"></p>
+</section>
+
+<section class="slide" data-s="9" data-title="Cierre">
+  <div class="eyebrow">Cierre · 10 minutos</div>
+  <h2>Entrega y tarea para la clase 10</h2>
+  <div class="grid g2">
+    <div class="box"><h3>Entreguen hoy</h3><ol class="steps5" style="margin-top:10px"><li><span>En la app, al final del taller 9, revisen <b>¿Quién entrega?</b> y toquen <b>📤 Enviar al instructor</b>.</span></li><li><span>Descarguen el <b>respaldo .json</b> antes de cerrar.</span></li></ol></div>
+    <div class="box"><h3>Traigan el jueves 12 nov (clase 10 · costos)</h3><div class="bring" style="margin-top:10px"><div>Cuánto costaría aplicar cada estrategia y cuánto ahorra o deja al año</div><div>Cuánto cuestan al mes las actividades: comprar, recibir, almacenar, alistar, despachar</div><div>Qué envases o productos regresan a la empresa (reversa)</div><div>Qué herramienta tecnológica podrían usar (WhatsApp Business, factura electrónica…)</div></div></div>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+<!-- ================= CLASE 10 ================= -->
+
+<section class="slide cover" data-s="10" data-title="Portada">
+  <div class="eyebrow">Competencia 210101007 · Taller Plan Estratégico Logístico · Clase 10 de 12 · Evidencia 3.3.3</div>
+  <h1>Costos, reversa<br>y tecnología</h1>
+  <p class="lead">Una estrategia solo sirve si se paga sola. Hoy la probamos con costo-beneficio y costeo ABC por actividad, y sumamos logística de reversa y tecnología. Con esto se escribe el documento de estrategias.</p>
+  <div class="meta"><span>Jueves 12 nov · 1:00 – 4:00 pm</span><span>Fase: Estrategias</span><span>Entregable: costo-beneficio, costeo ABC, reversa y tecnología · doc. 3.3.3</span></div>
+  <div class="where" aria-label="Ruta del taller">
+    <span class="done">1–4 Diagnóstico</span><span class="done">5–6 Rumbo y compras</span><span class="done">7–8 Inventarios y distribución</span><span class="done">9 BSC</span><span class="on">10 Costos</span><span>11 Plan maestro</span><span>12 Indicadores</span>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+<section class="slide" data-s="10" data-title="Agenda">
+  <div class="eyebrow">Ruta de la tarde</div>
+  <h2>Agenda de hoy</h2>
+  <div class="agenda" data-ag="10"></div>
+  <p class="note">El bloque en curso se resalta solo, según la hora del computador, el día de la clase.</p>
+</section>
+
+<section class="slide" data-s="10" data-title="Retoma">
+  <div class="eyebrow">Retoma de la clase 9 · 10 minutos</div>
+  <h2>¿A qué perspectiva va este objetivo?</h2>
+  <p class="lead">Financiera, Clientes, Procesos o Aprendizaje.</p>
+  <div class="quiz" data-quiz="bscq"></div>
+</section>
+
+<section class="slide" data-s="10" data-title="¿Vale la pena?">
+  <div class="eyebrow">Fundamento · costo-beneficio</div>
+  <h2>¿La estrategia se paga sola?</h2>
+  <div class="formula"><span><b>Relación B/C</b>beneficio al año ÷ costo de implementar</span><i>→</i><span><b>B/C &gt; 1</b>se paga sola ✅</span><i>→</i><span><b>B/C &lt; 1</b>hay que replantearla</span></div>
+  <div class="grid g2">
+    <div class="box" style="border-top:6px solid var(--sena)"><h3>Beneficio</h3><p>Lo que ahorra (menos merma, menos agotados, menos urgencias) <b>más</b> lo que deja ganar (más ventas), en un año.</p></div>
+    <div class="box" style="border-top:6px solid var(--sun)"><h3>Costo de implementar</h3><p>Lo que cuesta ponerla en marcha: equipos, capacitación, estibas, contratos, horas de trabajo.</p></div>
+  </div>
+  <p class="note">No todo se mide en plata exacta: usen estimaciones con el dueño y expliquen de dónde salen.</p>
+</section>
+
+<section class="slide" data-s="10" data-title="Calculadora B/C">
+  <div class="eyebrow">Demostración · estrategias de La Esperanza</div>
+  <h2>Calculadora costo-beneficio</h2>
+  <div class="tw"><table class="mini" id="bcIn"><thead><tr><th>Estrategia</th><th>Costo implementar ($)</th><th>Beneficio al año ($)</th><th>B/C</th><th>¿Se paga?</th></tr></thead><tbody></tbody></table></div>
+  <div class="acts" style="margin-top:8px"><button class="tbtn" id="bcReset">Volver al ejemplo</button><span class="note">Cambien los valores y miren cuáles estrategias se pagan solas.</span></div>
+</section>
+
+<section class="slide" data-s="10" data-title="Costeo por actividad">
+  <div class="eyebrow">Fundamento + demostración · costeo ABC</div>
+  <h2>¿Cuánto cuesta cada actividad logística?</h2>
+  <p class="lead">El costeo ABC reparte el gasto entre las actividades y lo divide por las veces que se hacen: así sale el <b>costo por vez</b>.</p>
+  <div class="tw"><table class="mini" id="actIn"><thead><tr><th>Actividad</th><th>Costo mensual ($)</th><th>Inductor (qué se cuenta)</th><th>Veces/mes</th><th>Costo por vez ($)</th></tr></thead><tbody></tbody></table></div>
+  <div class="acts" style="margin-top:8px"><button class="tbtn" id="actReset">Volver al ejemplo</button><span class="note">La actividad más cara por vez es la primera candidata a mejorar.</span></div>
+</section>
+
+<section class="slide" data-s="10" data-title="Reversa">
+  <div class="eyebrow">Logística de reversa</div>
+  <h2>Lo que regresa a la empresa</h2>
+  <div class="rev">
+    <div><b>¿Qué regresa?</b><small>Canastas y estibas, pan devuelto por daño o vencimiento, envases, empaques, aceite usado.</small></div>
+    <div><b>¿Cómo se recoge?</b><small>El repartidor trae las canastas vacías; la tienda reporta el pan dañado con foto el mismo día.</small></div>
+    <div><b>¿Qué se hace con eso?</b><small>Canastas se lavan y reutilizan; el pan dañado se anota en la hoja de merma; el aceite se entrega a un gestor.</small></div>
+  </div>
+  <div class="box" style="background:var(--sena-soft)"><b>Conexión:</b> toda la reversa de pan alimenta la <b>hoja de merma</b> del taller 7. Sin ese registro, el objetivo de bajar la merma no se puede medir.</div>
+</section>
+
+<section class="slide" data-s="10" data-title="Tecnología">
+  <div class="eyebrow">Tecnología al alcance · EDI/ECR adaptado</div>
+  <h2>Herramientas que sí puede usar una pyme</h2>
+  <div class="tech">
+    <div style="--c:var(--sea)"><b>WhatsApp Business</b><small>Catálogo y pedidos de las tiendas hasta las 6:00 p. m.; respuestas automáticas.</small></div>
+    <div style="--c:var(--sena)"><b>Factura electrónica</b><small>Obligatoria y gratis en portales; ordena las ventas y las compras.</small></div>
+    <div style="--c:var(--sun)"><b>Hoja de cálculo compartida</b><small>Inventario y merma en Google Sheets, que ve el dueño desde el celular.</small></div>
+    <div style="--c:var(--violet)"><b>Código de barras simple</b><small>Para marcar lotes con fecha de llegada y proveedor (trazabilidad).</small></div>
+  </div>
+  <div class="box"><b>EDI/ECR para la vida real:</b> no hace falta un sistema caro. Compartir información a tiempo con el proveedor y el cliente <b>es</b> intercambio electrónico y respuesta eficiente al consumidor, en versión sencilla.</div>
+</section>
+
+<section class="slide" data-s="10" data-title="Así lo hizo La Esperanza">
+  <div class="eyebrow">Demostración · el taller 10 lleno con la empresa guía</div>
+  <h2>Así quedó el taller 10 de La Esperanza</h2>
+  <div class="steps" data-demo="d10"><div class="steplist"></div><div class="stage"></div></div>
+  <div class="demo-nav"><button class="navbtn ghost" data-dp="d10">← Paso</button><span class="foot" data-dn="d10"></span><button class="navbtn" data-dx="d10">Paso →</button><span class="note">Así se ve cada campo del taller 10 en la app, ya lleno.</span></div>
+</section>
+
+<section class="slide" data-s="10" data-title="Taller 10">
+  <div class="eyebrow">Trabajo en equipo · 1 h 30 min</div>
+  <h2>Taller 10 paso a paso</h2>
+  <ol class="steps5">
+    <li><span><b>Costo-beneficio:</b> estimen cuánto cuesta cada estrategia y cuánto ahorra o deja al año. La app calcula la relación B/C.</span></li>
+    <li><span><b>Costeo ABC:</b> para cada actividad (comprar, recibir, almacenar, alistar, despachar) anoten el costo mensual y cuántas veces se hace. La app calcula el costo por vez.</span></li>
+    <li><span><b>Reversa:</b> qué regresa, cómo se recoge y qué se hace con eso.</span></li>
+    <li><span><b>Tecnología:</b> escojan herramientas a su alcance (WhatsApp Business, factura electrónica, hoja compartida).</span></li>
+  </ol>
+  <div class="cta"><a class="act" href="../taller-plan-estrategico/" target="_blank" rel="noopener">Abrir el taller en la app →</a><span class="note">Taller 10 · Costos, reversa y tecnología.</span></div>
+</section>
+
+<section class="slide" data-s="10" data-title="Documento 3.3.3">
+  <div class="eyebrow">Tarea · evidencia 3.3.3</div>
+  <h2>Documento técnico de estrategias</h2>
+  <p class="lead">Une los talleres 9 y 10 en un documento de máximo 15 páginas, con normas ICONTEC.</p>
+  <div class="icsec">
+    <div><b>Introducción</b><br><small>De los objetivos a las estrategias</small></div>
+    <div><b>Cuadro de Mando Integral</b><br><small>Taller 9: 4 perspectivas con indicador y meta</small></div>
+    <div><b>Mapa causa-efecto</b><br><small>Taller 9: la foto del papelógrafo</small></div>
+    <div><b>Costo-beneficio</b><br><small>Taller 10: B/C de cada estrategia</small></div>
+    <div><b>Costeo ABC, reversa y tecnología</b><br><small>Taller 10</small></div>
+    <div><b>Conclusiones</b><br><small>Qué estrategias se pagan solas y cuáles replantear</small></div>
+  </div>
+  <p class="note">Truco: en la app, "📄 Mi plan" arma el documento con todo lo que llenaron; descárguenlo en Word, ajusten la redacción y guárdenlo como PDF.</p>
+</section>
+
+<section class="slide" data-s="10" data-title="Socialización">
+  <div class="eyebrow">Socialización · 30 minutos</div>
+  <h2>Lista de chequeo antes de entregar</h2>
+  <div class="check" data-check="10"></div>
+  <div class="meter"><span data-bar="10"></span></div><p class="note" data-txt="10"></p>
+</section>
+
+<section class="slide" data-s="10" data-title="Cierre">
+  <div class="eyebrow">Cierre · 10 minutos</div>
+  <h2>Entrega y tarea para la clase 11</h2>
+  <div class="grid g2">
+    <div class="box"><h3>Entreguen hoy</h3><ol class="steps5" style="margin-top:10px"><li><span>En la app, al final del taller 10, revisen <b>¿Quién entrega?</b> y toquen <b>📤 Enviar al instructor</b>.</span></li><li><span>Descarguen el <b>respaldo .json</b> actualizado.</span></li><li><span>Avancen el <b>documento de estrategias</b> (talleres 9 y 10) en PDF.</span></li></ol></div>
+    <div class="box"><h3>Traigan el miércoles 18 nov (clase 11 · plan maestro)</h3><div class="bring" style="margin-top:10px"><div>Cómo fluyen hoy los materiales, la información, el dinero y la energía</div><div>Cuánto cabe en el almacén y cuánto lleva el vehículo</div><div>Cuántos pedidos al día se pueden atender</div><div>Ingresos y egresos estimados de los próximos 6 meses (con el dueño)</div></div></div>
+  </div>
+  <p class="foot">By Carlos Barrios · Instructor</p>
+</section>
+
+</main>
+
+
+<nav class="nav">
+  <button class="navbtn ghost" id="prev" aria-label="Anterior">←</button>
+  <div class="dots" id="dots"></div>
+  <span class="foot" id="slideName"></span>
+  <button class="navbtn" id="next" aria-label="Siguiente">→</button>
+  <button class="tbtn" id="fs">Pantalla completa</button>
+  <a class="tbtn" href="../../" style="text-decoration:none">← Portal</a>
+  <span class="foot">LogiLab SENA · By Carlos Barrios · Instructor</span>
+</nav>
+
+<script>
+(function(){
+const LS='pe910-';
+function get(k){try{return localStorage.getItem(LS+k)}catch(e){return null}}
+function set(k,v){try{localStorage.setItem(LS+k,v)}catch(e){}}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>isFinite(n)?Math.round(n).toLocaleString('es-CO'):'—';
+const d1=n=>isFinite(n)?n.toLocaleString('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1}):'—';
+const num=v=>{const n=parseFloat(String(v??'').replace(/\./g,'').replace(',','.'));return isFinite(n)?n:NaN};
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+
+/* clase activa y navegación */
+const all=[...document.querySelectorAll('.slide')];
+let ses='9',slides=[],cur=0;const dots=document.getElementById('dots');
+function setSes(s,start){ses=s;set('ses',s);slides=all.filter(x=>x.dataset.s===s);
+ document.querySelectorAll('[data-ses]').forEach(b=>b.classList.toggle('on',b.dataset.ses===s));
+ dots.innerHTML='';slides.forEach((sl,i)=>{const b=document.createElement('button');b.className='dot';b.title=sl.dataset.title;b.setAttribute('aria-label',sl.dataset.title);b.onclick=()=>go(i);dots.appendChild(b)});
+ go(start||0);tick()}
+function go(i){cur=Math.max(0,Math.min(slides.length-1,i));all.forEach(x=>x.classList.remove('on'));slides[cur].classList.add('on');[...dots.children].forEach((d,k)=>d.classList.toggle('on',k===cur));document.getElementById('slideName').textContent='Clase '+ses+' · '+(cur+1)+'/'+slides.length+' · '+slides[cur].dataset.title;set('slide'+ses,cur);slides[cur].scrollTop=0}
+document.querySelectorAll('[data-ses]').forEach(b=>b.onclick=()=>setSes(b.dataset.ses,+get('slide'+b.dataset.ses)||0));
+document.getElementById('prev').onclick=()=>go(cur-1);document.getElementById('next').onclick=()=>go(cur+1);
+document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1)});
+document.getElementById('fs').onclick=()=>{try{if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen()}catch(e){}};
+
+/* agendas */
+const AG={
+ '9':{d:'2026-11-11',b:[
+  ['13:00','13:10','Retoma: ¿qué cerró la fase de políticas?','Inicio'],
+  ['13:10','13:35','Balanced Scorecard: las 4 perspectivas','Teoría'],
+  ['13:35','14:30','Taller: ubicar objetivos y escribir estrategias','Taller'],
+  ['14:30','14:45','Receso','—'],
+  ['14:45','15:20','Taller: mapa causa-efecto en papelógrafo','Taller'],
+  ['15:20','15:50','Socialización con lista de chequeo','3.3.3'],
+  ['15:50','16:00','Envío al instructor, respaldo y tarea','Cierre']]},
+ '10':{d:'2026-11-12',b:[
+  ['13:00','13:10','Retoma: ¿a qué perspectiva va?','Inicio'],
+  ['13:10','13:35','Costo-beneficio, costeo ABC, reversa y tecnología','Teoría'],
+  ['13:35','14:30','Taller: B/C y costeo por actividad','Taller'],
+  ['14:30','14:45','Receso','—'],
+  ['14:45','15:20','Taller: reversa y tecnología','Taller'],
+  ['15:20','15:50','Socialización con lista de chequeo','3.3.3'],
+  ['15:50','16:00','Envío, respaldo y documento de estrategias','Cierre']]}};
+function fmt(t){let[h,m]=t.split(':').map(Number);h=h>12?h-12:h;return h+':'+String(m).padStart(2,'0')}
+function mins(t){const[h,m]=t.split(':').map(Number);return h*60+m}
+document.querySelectorAll('[data-ag]').forEach(el=>{AG[el.dataset.ag].b.forEach(a=>{const d=document.createElement('div');d.className='ag';d.innerHTML=`<time>${fmt(a[0])}–${fmt(a[1])}</time><span>${a[2]}</span><span class="tag">${a[3]}</span>`;el.appendChild(d)})});
+function today(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
+function tick(){const n=new Date(),nm=n.getHours()*60+n.getMinutes();document.getElementById('clockNow').textContent=n.toLocaleTimeString('es-CO',{hour:'numeric',minute:'2-digit'});
+ const A=AG[ses];let f=-1;if(today()===A.d)A.b.forEach((a,i)=>{if(nm>=mins(a[0])&&nm<mins(a[1]))f=i});
+ const el=document.querySelector(`[data-ag="${ses}"]`);[...el.children].forEach((c,i)=>c.classList.toggle('live',i===f));
+ document.getElementById('nowBlock').textContent=f>=0?A.b[f][2]:'Fuera del horario de clase';document.getElementById('nowLeft').textContent=f>=0?(mins(A.b[f][1])-nm)+' min':''}
+setInterval(tick,15000);
+
+/* cronómetro */
+let left=0,run=false,iv=null;const clk=document.getElementById('clk'),play=document.getElementById('tPlay');
+function show(){clk.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');clk.classList.toggle('low',left>0&&left<=60)}
+function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();[0,.35,.7].forEach(t=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.2,c.currentTime+t);o.start(c.currentTime+t);o.stop(c.currentTime+t+.2)})}catch(e){}}
+document.querySelectorAll('[data-min]').forEach(b=>b.onclick=()=>{left=+b.dataset.min*60;show()});
+play.onclick=()=>{if(run){clearInterval(iv);run=false;play.textContent='Iniciar';return}if(left<=0)return;run=true;play.textContent='Pausar';iv=setInterval(()=>{left--;show();if(left<=0){clearInterval(iv);run=false;play.textContent='Iniciar';beep()}},1000)};
+document.getElementById('tReset').onclick=()=>{clearInterval(iv);run=false;left=0;play.textContent='Iniciar';show()};
+
+/* quizzes */
+const QZ={
+ distq:{o:[['V','Verdadero'],['F','Falso']],q:[
+  ['La política de distribución debe decir qué pasa con las devoluciones.','V','Sí: plazo, evidencia y qué se hace con lo devuelto (logística inversa).'],
+  ['Lo que importa es el costo por viaje, no el costo por unidad entregada.','F','Al revés: lo que manda es el costo por unidad = costo del mes ÷ unidades entregadas.'],
+  ['El pan devuelto que no se puede vender va a la hoja de merma.','V','Así se puede medir el objetivo de bajar la merma.']]},
+ bscq:{o:[['F','Financiera'],['C','Clientes'],['P','Procesos'],['A','Aprendizaje']],q:[
+  ['Capacitar al personal en manejo de inventarios.','A','Aprendizaje y crecimiento: lo que debe aprender o tener el personal.'],
+  ['Entregar el pan antes de las 7:00 a. m.','C','Clientes: lo que el cliente percibe.'],
+  ['Mantener el punto de reorden y la hoja de merma al día.','P','Procesos internos: lo que hacemos bien por dentro.'],
+  ['Aumentar las ventas y reducir las pérdidas por merma.','F','Financiera: el resultado en plata.']]}};
+document.querySelectorAll('[data-quiz]').forEach(el=>{const Z=QZ[el.dataset.quiz];Z.q.forEach((q,i)=>{const d=document.createElement('div');d.className='qi';d.innerHTML=`<span>${i+1}. ${esc(q[0])}</span><span class="opts">${Z.o.map(o=>`<button class="opt" data-v="${o[0]}">${o[1]}</button>`).join('')}</span><span class="fb" hidden></span>`;
+ d.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{d.querySelectorAll('.opt').forEach(x=>x.classList.remove('ok','bad'));const ok=b.dataset.v===q[1];b.classList.add(ok?'ok':'bad');if(!ok)d.querySelector(`.opt[data-v="${q[1]}"]`).classList.add('ok');const fb=d.querySelector('.fb');fb.hidden=false;fb.textContent=(ok?'✓ ':'✗ ')+q[2]});el.appendChild(d)})});
+
+/* calculadora costo-beneficio */
+const BC0=[['Capacitación en inventarios y rotación PVPS',400000,2400000],['Estibas, canastas con tapa y marcación de fechas',900000,1800000],['Hoja de merma y ajuste semanal de producción',150000,3600000]];
+let BC;try{BC=JSON.parse(get('bc')||'null')}catch(e){BC=null}if(!BC)BC=JSON.parse(JSON.stringify(BC0));
+const bcIn=document.querySelector('#bcIn tbody');
+function drawBc(){bcIn.innerHTML=BC.map((r,i)=>{const c=num(r[1]),b=num(r[2]);const rc=(isNaN(c)||isNaN(b)||c<=0)?NaN:b/c;const ok=rc>=1;
+  return `<tr><td><input data-r="${i}" data-c="0" value="${esc(r[0])}" aria-label="Estrategia ${i+1}"></td><td><input data-r="${i}" data-c="1" inputmode="decimal" value="${esc(r[1])}" style="text-align:right" aria-label="Costo ${i+1}"></td><td><input data-r="${i}" data-c="2" inputmode="decimal" value="${esc(r[2])}" style="text-align:right" aria-label="Beneficio ${i+1}"></td><td class="bcn"><b>${isNaN(rc)?'—':d1(rc)}</b></td><td>${isNaN(rc)?'—':`<span class="verd ${ok?'ok':'no'}">${ok?'Se paga sola':'Replantear'}</span>`}</td></tr>`}).join('');
+ bcIn.querySelectorAll('input').forEach(e=>e.oninput=()=>{BC[+e.dataset.r][+e.dataset.c]=e.value;set('bc',JSON.stringify(BC));drawBc()})}
+document.getElementById('bcReset').onclick=()=>{BC=JSON.parse(JSON.stringify(BC0));set('bc','');drawBc()};
+drawBc();
+
+/* costeo ABC por actividad */
+const AC0=[['Comprar',300000,'órdenes de compra',20],['Recibir',200000,'recepciones',20],['Almacenar',250000,'referencias en bodega',30],['Alistar',600000,'pedidos alistados',360],['Despachar',928000,'entregas',360]];
+let AC;try{AC=JSON.parse(get('act')||'null')}catch(e){AC=null}if(!AC)AC=JSON.parse(JSON.stringify(AC0));
+const actIn=document.querySelector('#actIn tbody');
+function drawAct(){let max=-1,maxi=-1;const vals=AC.map(r=>{const c=num(r[1]),v=num(r[3]);return (isNaN(c)||isNaN(v)||v<=0)?NaN:c/v});
+ vals.forEach((x,i)=>{if(!isNaN(x)&&x>max){max=x;maxi=i}});
+ actIn.innerHTML=AC.map((r,i)=>`<tr><td><input data-r="${i}" data-c="0" value="${esc(r[0])}"></td><td><input data-r="${i}" data-c="1" inputmode="decimal" value="${esc(r[1])}" style="text-align:right"></td><td><input data-r="${i}" data-c="2" value="${esc(r[2])}"></td><td><input data-r="${i}" data-c="3" inputmode="decimal" value="${esc(r[3])}" style="text-align:right"></td><td class="bcn"><b>${isNaN(vals[i])?'—':'$'+money(vals[i])}</b>${i===maxi?' <span class="verd no">la más cara</span>':''}</td></tr>`).join('');
+ actIn.querySelectorAll('input').forEach(e=>e.oninput=()=>{AC[+e.dataset.r][+e.dataset.c]=e.value;set('act',JSON.stringify(AC));drawAct()})}
+document.getElementById('actReset').onclick=()=>{AC=JSON.parse(JSON.stringify(AC0));set('act','');drawAct()};
+drawAct();
+
+/* demostraciones con la empresa guía */
+function fld(l,v){return `<div class="fld"><label>${l}</label><div>${v}</div></div>`}
+function tbl(h,rows){return `<div class="tw"><table class="ftable"><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`}
+const APP=t=>`<div class="applike">En la app · ${t}</div>`;
+const DM={
+ d9:[
+  ['Ubicar objetivos',APP('Cuadro de Mando Integral · perspectivas')+tbl(['Perspectiva','Objetivo estratégico'],[['Financiera','Más ventas y menos pérdidas por merma y agotados'],['Clientes','Pan disponible y entregado antes de las 7:00 a. m.'],['Procesos internos','Inventario controlado y rutas puntuales'],['Aprendizaje y crecimiento','Personal capacitado y con herramientas']])+`<div class="how"><b>De dónde salió:</b> son los objetivos SMART del taller 5, cada uno en su perspectiva.</div>`],
+  ['Estrategia, indicador y meta',APP('Cuadro de Mando Integral · lleno')+tbl(['Perspectiva','Estrategia','Indicador','Meta'],[['Financiera','Bajar merma y urgencias; vender más','% merma · ventas/mes','Merma 3 % · +15 %'],['Clientes','Dos rutas a las 5:00 y pedido anticipado','% entregas antes 7:00 · % días sin agotado','95 % · 90 %'],['Procesos','ABC + punto de reorden + hoja de merma','Exactitud de inventario','95 %'],['Aprendizaje','Capacitar en inventarios/PVPS; WhatsApp Business','Personas capacitadas','100 %']])],
+  ['Mapa causa-efecto',fld('Mapa causa-efecto en palabras','Capacitar al personal en inventarios y rotación (aprendizaje) → se controla el inventario y las rutas salen a tiempo (procesos) → el cliente encuentra el pan y lo recibe antes de las 7:00 (clientes) → aumentan las ventas y bajan las pérdidas por merma (financiera).')+`<div class="how"><b>Listo para entregar:</b> "¿Quién entrega?" lleno y <b>📤 Enviar al instructor</b>.</div>`]],
+ d10:[
+  ['Costo-beneficio',APP('Costo-beneficio de las estrategias')+tbl(['Estrategia','Costo ($)','Beneficio/año ($)','B/C'],[['Capacitación en inventarios y PVPS','400.000','2.400.000','6,0'],['Estibas, canastas y marcación','900.000','1.800.000','2,0'],['Hoja de merma y ajuste de producción','150.000','3.600.000','24,0']])+`<div class="how"><b>Lectura:</b> las tres se pagan solas (B/C &gt; 1). La hoja de merma es la de mayor retorno y casi no cuesta.</div>`],
+  ['Costeo por actividad',APP('Costeo ABC por actividad')+tbl(['Actividad','Costo/mes ($)','Veces/mes','Costo por vez ($)'],[['Comprar','300.000','20','15.000'],['Recibir','200.000','20','10.000'],['Almacenar','250.000','30','8.333'],['Alistar','600.000','360','1.667'],['Despachar','928.000','360','2.578']])+`<div class="how"><b>Lectura:</b> comprar cuesta $15.000 cada vez; conviene agrupar pedidos a proveedores para hacerlo menos veces.</div>`],
+  ['Reversa y tecnología',fld('Logística de reversa','Qué regresa: canastas, estibas y pan devuelto por daño. Cómo se recoge: el repartidor trae las canastas vacías y la tienda reporta el daño con foto el mismo día. Qué se hace: canastas lavadas y reutilizadas; el pan dañado va a la hoja de merma.')+fld('Tecnología (EDI/ECR adaptado)','WhatsApp Business con catálogo para pedidos hasta las 6:00 p. m.; factura electrónica; hoja compartida de inventario y merma que el dueño ve desde el celular.')+`<div class="how"><b>Listo para entregar:</b> taller 10 enviado y empezar el documento técnico de estrategias (talleres 9 y 10).</div>`]]};
+document.querySelectorAll('[data-demo]').forEach(el=>{const k=el.dataset.demo,D=DM[k],sl=el.querySelector('.steplist'),stg=el.querySelector('.stage');let di=0;
+ D.forEach((d,i)=>{const b=document.createElement('button');b.className='st';b.innerHTML=`<b>${i+1}</b>${d[0]}`;b.onclick=()=>show2(i);sl.appendChild(b)});
+ function show2(i){di=Math.max(0,Math.min(D.length-1,i));stg.innerHTML=D[di][1];[...sl.children].forEach((b,j)=>{b.classList.toggle('done',j<=di);b.classList.toggle('cur',j===di)});document.querySelector(`[data-dn="${k}"]`).textContent='Paso '+(di+1)+' de '+D.length}
+ document.querySelector(`[data-dp="${k}"]`).onclick=()=>show2(di-1);document.querySelector(`[data-dx="${k}"]`).onclick=()=>show2(di+1);show2(0)});
+
+/* listas de chequeo */
+const CK={
+ '9':['Los objetivos SMART del taller 5 están ubicados en la perspectiva correcta.','Cada perspectiva tiene estrategia, indicador y meta.','Las 4 perspectivas se conectan de abajo hacia arriba.','El mapa causa-efecto está dibujado con flechas de abajo hacia arriba.','Al menos una estrategia nace de las políticas de los talleres 6, 7 y 8.'],
+ '10':['Cada estrategia tiene costo de implementar y beneficio al año, con su B/C.','Se identifica cuáles estrategias se pagan solas (B/C ≥ 1) y cuáles replantear.','El costeo ABC tiene las 5 actividades con costo mensual, inductor y veces al mes.','La reversa dice qué regresa, cómo se recoge y qué se hace con eso.','Hay al menos 2 tecnologías al alcance de la empresa.','El documento de estrategias (talleres 9 y 10) está empezado.']};
+document.querySelectorAll('[data-check]').forEach(el=>{const k=el.dataset.check;CK[k].forEach((c,i)=>{const l=document.createElement('label');l.innerHTML=`<input type="checkbox" id="ck${k}-${i}"> <span>${esc(c)}</span>`;el.appendChild(l)});
+ const up=()=>{const n=el.querySelectorAll('input:checked').length;document.querySelector(`[data-bar="${k}"]`).style.width=(n/CK[k].length*100)+'%';document.querySelector(`[data-txt="${k}"]`).textContent=n+' de '+CK[k].length+' criterios cumplidos'};
+ el.querySelectorAll('input').forEach(cb=>{cb.checked=get(cb.id)==='1';cb.onchange=()=>{set(cb.id,cb.checked?'1':'0');up()}});up()});
+
+/* arranque: #c9 / #c10, luego la fecha, luego lo último usado */
+let s0=get('ses')||'9';const h=location.hash;if(h==='#c10'||h==='#clase10')s0='10';else if(h==='#c9'||h==='#clase9')s0='9';else if(today()==='2026-11-12')s0='10';else if(today()==='2026-11-11')s0='9';
+setSes(s0,+get('slide'+s0)||0);
+})();
+</script>
+</body></html>
