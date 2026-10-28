@@ -362,12 +362,14 @@ function gradeHtml(kind,boxId,e){
   <div class="gfoot"><button class="btn" id="gRef-${boxId}">🔄 Actualizar nota</button>${when}</div>`;
 }
 async function checkGrade(kind,boxId){boxId=boxId||'gradeBox';const box=document.getElementById(boxId);if(!box)return;
-  const sid=(S.csid||{})[kind];
-  if(!sid){box.hidden=true;box.innerHTML='';box.className='gstate';return}
+  const tid=S.tid;const yaEnvio=(S.csid&&S.csid[kind])||(S.cloud&&S.cloud[kind]);
+  if(!tid||!yaEnvio){box.hidden=true;box.innerHTML='';box.className='gstate';return}
   box.hidden=false;
   if(!box.innerHTML)box.innerHTML='<p class="gsub">🔄 Consultando la nota del instructor…</p>';
   let e=null,fail=false;
-  try{const r=await fetch(API+'?ev='+encodeURIComponent(sid));const j=await r.json();e=(j.ev||{})[sid]||null}
+  try{const r=await fetch(API+'?dev='+encodeURIComponent(tid));const j=await r.json();const evs=j.ev||{};
+    const pre=kind+'|'+tid+'|';let bt=-1;  // de este dispositivo, la última versión enviada de esta clase
+    for(const sid in evs){if(sid.indexOf(pre)===0){const ts=+sid.slice(pre.length)||0;if(ts>=bt){bt=ts;e=evs[sid]}}}}
   catch(err){fail=true}
   if(fail){box.className='gstate pend';box.innerHTML=`<div class="ghead"><span class="gico">📡</span><span class="gtit">No se pudo consultar ahora</span></div><p class="gsub">Sin conexión. Toquen 🔄 Actualizar nota cuando tengan internet.</p><div class="gfoot"><button class="btn" id="gRef-${boxId}">🔄 Actualizar nota</button></div>`}
   else{box.className='gstate '+gradeView(e).cls;box.innerHTML=gradeHtml(kind,boxId,e)}
