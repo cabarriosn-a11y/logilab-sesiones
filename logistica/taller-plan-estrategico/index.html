@@ -148,6 +148,22 @@ footer.f{color:var(--muted);font-size:.85rem;padding:16px;text-align:center;bord
 @media print{.top,nav.route,.noprint,footer.f{display:none!important}.wrap{display:block;padding:0}.card{border:0;padding:0}body{background:#fff;color:#000}}
 .ident{display:grid;gap:8px;padding:12px 14px;border-radius:12px;border:2px solid var(--sena);background:var(--sena-soft);margin-bottom:12px}
 .join{display:grid;gap:6px;padding:10px 12px;border-radius:10px;border:1px dashed var(--sun);margin:8px 0}
+.gstate{margin-top:12px;padding:14px 16px;border-radius:12px;border:2px solid var(--line);background:var(--card)}
+.gstate .ghead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gstate .gico{font-size:1.5rem;line-height:1}
+.gstate .gtit{font-weight:800;font-size:1.05rem}
+.gstate .gsub{margin:6px 0 0;color:var(--muted);font-size:.9rem}
+.gstate .gcrit{margin:10px 0 0;display:grid;gap:4px;font-size:.9rem}
+.gstate .gobs{margin:10px 0 0;padding:10px 12px;border-radius:9px;background:var(--sand);font-size:.92rem;white-space:pre-wrap}
+.gstate .gfoot{margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gstate.ok{border-color:var(--sena);background:var(--sena-soft)}
+.gstate.ok .gtit{color:var(--sena-deep)}
+.gstate.bad{border-color:var(--alert);background:var(--alert-soft)}
+.gstate.bad .gtit{color:var(--alert)}
+.gstate.rev{border-color:var(--sea)}
+.gstate.rev .gtit{color:var(--sea)}
+.gstate.pend{border-color:var(--sun)}
+.gstate.pend .gtit{color:var(--sun)}
 </style>
 </head>
 <body>
@@ -319,10 +335,43 @@ function bindSend(btnId,msgId,kind,getCode,check){const b=document.getElementByI
     try{const r=await fetch(API,{method:'POST',headers:{'content-type':'text/plain;charset=utf-8'},body:JSON.stringify({codigo:code,taller:kind,equipo:(val('T1','equipo')||'').trim(),empresa:empresa()})});
       let j={};try{j=await r.json()}catch(e){}
       if(!r.ok)throw new Error(j.error||('Error '+r.status));
-      S.cloud=S.cloud||{};S.cloud[kind]=Date.now();S.sent[kind]=Date.now();save();
-      m.innerHTML=`<span class="sent">✅ Recibido por el instructor: ${fdate(S.cloud[kind])}</span>`;toast('¡Entregado al instructor!')}
+      S.cloud=S.cloud||{};S.cloud[kind]=Date.now();S.sent[kind]=Date.now();
+      try{const x=readCode(code);if(x&&x.p){S.csid=S.csid||{};S.csid[kind]=kind+'|'+teamKey(x.p)+'|'+(x.p.ts||0)}}catch(e){}
+      save();
+      m.innerHTML=`<span class="sent">✅ Recibido por el instructor: ${fdate(S.cloud[kind])}</span>`;toast('¡Entregado al instructor!');
+      checkGrade(kind,kind==='PLAN'?'pGradeBox':'gradeBox')}
     catch(e){m.innerHTML=`<span class="warn">No se pudo enviar (${esc(e.message==='Failed to fetch'?'sin conexión':e.message)}). Usen Copiar código, WhatsApp o correo.</span>`}
     finally{b.disabled=false;b.textContent=old}};
+}
+/* ======== ESTADO DE LA ENTREGA (nota del instructor) ======== */
+/* El equipo consulta SOLO su propia entrega por el sid exacto que guardó al enviar (kind|dispositivo|ts).
+   No necesita la clave de docente: el backend (GET /api/plan?ev=<sid>) devuelve únicamente ese juicio. */
+function gradeView(e){
+  if(!e)return {cls:'pend',ico:'⏳',tit:'Enviado · falta la nota del instructor',sub:'Su entrega ya llegó. Cuando el instructor la califique, aquí verán el resultado y las observaciones. Toquen 🔄 Actualizar nota para revisar.',crit:false};
+  if(e.j==='A')return {cls:'ok',ico:'✅',tit:'Aprobado (A)',sub:'¡Bien hecho! Este entregable quedó aprobado.',crit:true};
+  if(e.j==='D')return {cls:'bad',ico:'❌',tit:'No aprobado (D) · corrijan y reenvíen',sub:'Lean las observaciones, corrijan el formato en esta misma clase y vuelvan a tocar 📤 Enviar al instructor: la versión corregida le llega de nuevo.',crit:true};
+  return {cls:'rev',ico:'🔎',tit:'En revisión',sub:'El instructor abrió su entrega y la está revisando.',crit:true};
+}
+function gradeHtml(kind,boxId,e){
+  const g=gradeView(e);
+  const crit=g.crit&&e&&e.cr?`<div class="gcrit">${CRIT.map(([k,l])=>`<div>${e.cr[k]?'✅':'⬜'} ${esc(l)}</div>`).join('')}</div>`:'';
+  const obs=e&&e.obs?`<div class="gobs"><b>Observaciones del instructor:</b>\n${esc(e.obs)}</div>`:'';
+  const when=e&&e.at?`<span class="note">Actualizado: ${fdate(e.at)}</span>`:'';
+  return `<div class="ghead"><span class="gico">${g.ico}</span><span class="gtit">${esc(g.tit)}</span></div>
+  <p class="gsub">${esc(g.sub)}</p>${crit}${obs}
+  <div class="gfoot"><button class="btn" id="gRef-${boxId}">🔄 Actualizar nota</button>${when}</div>`;
+}
+async function checkGrade(kind,boxId){boxId=boxId||'gradeBox';const box=document.getElementById(boxId);if(!box)return;
+  const sid=(S.csid||{})[kind];
+  if(!sid){box.hidden=true;box.innerHTML='';box.className='gstate';return}
+  box.hidden=false;
+  if(!box.innerHTML)box.innerHTML='<p class="gsub">🔄 Consultando la nota del instructor…</p>';
+  let e=null,fail=false;
+  try{const r=await fetch(API+'?ev='+encodeURIComponent(sid));const j=await r.json();e=(j.ev||{})[sid]||null}
+  catch(err){fail=true}
+  if(fail){box.className='gstate pend';box.innerHTML=`<div class="ghead"><span class="gico">📡</span><span class="gtit">No se pudo consultar ahora</span></div><p class="gsub">Sin conexión. Toquen 🔄 Actualizar nota cuando tengan internet.</p><div class="gfoot"><button class="btn" id="gRef-${boxId}">🔄 Actualizar nota</button></div>`}
+  else{box.className='gstate '+gradeView(e).cls;box.innerHTML=gradeHtml(kind,boxId,e)}
+  const rb=document.getElementById('gRef-'+boxId);if(rb)rb.onclick=()=>checkGrade(kind,boxId);
 }
 
 /* ======== RUTA ======== */
@@ -391,6 +440,7 @@ function taller(t){
   <div class="duo"><label class="field"><span class="lbl">WhatsApp del instructor (con indicativo, sin +)</span><input type="text" id="wa" inputmode="numeric" placeholder="57300XXXXXXX" value="${esc(S.wa)}"></label>
   <label class="field"><span class="lbl">Correo del instructor</span><input type="text" id="mailTo" inputmode="email" placeholder="correo@sena.edu.co" value="${esc(S.mail||'')}"></label></div>
   <div class="acts"><button class="btn pri" id="bSend">📤 Enviar al instructor</button><span class="note" id="sendMsg">${S.cloud&&S.cloud[t.id]?`<span class="sent">✅ Recibido por el instructor: ${fdate(S.cloud[t.id])}</span>`:''}</span></div>
+  <div class="gstate" id="gradeBox" hidden></div>
   <div class="acts"><button class="btn" id="bCopy">📋 Copiar código</button><a class="btn wa" id="bWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn mail" id="bMail">✉ Correo</button><button class="btn dl" id="bDl">⬇ Descargar .txt</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button><label class="btn" for="fImp">⬆ Cargar respaldo</label><input type="file" id="fImp" accept=".json,application/json" hidden></div>
   <p class="note">Si un botón no funciona en su dispositivo, use "Copiar código" y péguelo en un chat de WhatsApp o en un correo al instructor.${S.sent&&S.sent[t.id]?` <span class="sent">Último envío: ${fdate(S.sent[t.id])}</span>`:''}</p>
   <label style="display:flex;gap:10px;align-items:center;font-weight:700"><input type="checkbox" id="doneChk" ${S.done[t.id]?'checked':''} style="width:22px;height:22px;accent-color:var(--sena)"> Terminamos este taller</label>
@@ -491,6 +541,7 @@ function bindTaller(tid){
   let tm=null;document.getElementById('main').oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>{refresh();if(cb)cb.innerHTML=chainSvg(S.d[t.id]||{},empresa())},350)};
   document.querySelectorAll('#main [data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
   bindBackup();
+  checkGrade(t.id,'gradeBox');
 }
 
 /* ======== TEXTO Y DOCUMENTO ======== */
@@ -526,6 +577,7 @@ function plan(){
   <section class="card noprint"><h2>Entregar el plan completo</h2><p class="muted">Para el portafolio final (evidencias 3.3.5 y 3.4): un solo código con los 12 talleres.</p>
   <div class="codebox"><div class="codehead"><b>Código del plan completo</b><span class="note" id="pCodeMeta"></span></div><textarea id="pCodeOut" readonly aria-label="Código del plan completo"></textarea></div>
   <div class="acts"><button class="btn pri" id="pSend">📤 Enviar al instructor</button><span class="note" id="pSendMsg">${S.cloud&&S.cloud.PLAN?`<span class="sent">✅ Recibido por el instructor: ${fdate(S.cloud.PLAN)}</span>`:''}</span></div>
+  <div class="gstate" id="pGradeBox" hidden></div>
   <div class="acts"><button class="btn" id="pCopy">📋 Copiar código</button><a class="btn wa" id="pWa" href="#" target="_blank" rel="noopener">WhatsApp</a><button class="btn dl" id="pDl">⬇ Descargar .txt</button></div>
   <p class="note">El código del plan es largo. Si WhatsApp no lo abre completo, use "Copiar código" y péguelo en el chat, o envíe el .txt.</p></section>
   <section class="card">${planBody()}</section>`;
@@ -544,6 +596,7 @@ function bindPlan(){
   document.getElementById('pWa').onclick=e=>{lp=pc();if(lp.length>6000){e.preventDefault();copy(lp,'Código copiado: péguelo en el chat');window.open('https://wa.me/'+(S.wa||''),'_blank','noopener')}else e.currentTarget.href='https://wa.me/'+(S.wa||'')+'?text='+encodeURIComponent(pmsg(lp));S.sent.PLAN=Date.now();save()};
   document.getElementById('pDl').onclick=()=>{lp=pc();download(pmsg(lp),`entrega-PLAN-${slug()}.txt`,'text/plain');S.sent.PLAN=Date.now();save()};
   bindBackup();
+  checkGrade('PLAN','pGradeBox');
 }
 
 /* ======== CÓDIGO DE ENTREGA ======== */
