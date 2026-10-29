@@ -310,6 +310,14 @@ const T=[
   {k:'kpi',type:'table',l:'Fichas técnicas de indicadores',cols:['Indicador','Fórmula','Naturaleza','Frecuencia','Responsable','Rangos (verde · amarillo · rojo)'],rows:5},
   {k:'accion',type:'table',l:'Plan de acción',cols:['Acción','Responsable','Fecha','Presupuesto ($)','Indicador que la mide'],rows:6,num:[3]},
   {k:'resumen',type:'area',l:'Resumen ejecutivo del plan (media página)',ph:'La empresa … presenta problemas de … Por eso el plan propone … Con una inversión de … se espera …'}
+ ]},
+{id:'T13',dl:'2026-11-19',fase:'Indicadores y cierre',ev:'3.3.5',fecha:'Jue 19 nov',c:'var(--alert)',t:'Tablero de control: dashboard de KPI',
+ obj:'Convertir los indicadores del plan en un tablero de control (dashboard) que muestre, con datos reales de la empresa, qué procesos logísticos van bien y cuáles hay que mejorar.',
+ prod:'Dashboard de KPI logísticos con semáforo, ficha técnica de cada indicador y plan de acción para los indicadores en rojo o amarillo (evidencia 3.3.5).',
+ pasos:['Abrir el Generador de KPI (botón verde de abajo). El equipo y la empresa salen solos de este taller.','En el catálogo, leer para qué sirve cada KPI y escoger entre 6 y 10, de al menos 3 áreas logísticas distintas. Que midan los objetivos SMART y el Cuadro de Mando Integral de las clases 5 y 9.','Para cada KPI escribir los datos reales de la empresa (o estimados con el dueño, diciendo que son estimados), ajustar la meta y explicar por qué ese KPI le importa a la empresa.','Revisar el dashboard: semáforo, gráficas y ficha técnica. Escribir el plan de acción de los KPI en rojo o amarillo y la conclusión del equipo.','Volver a este taller con el botón del generador, revisar la tabla y tocar 📤 Enviar al instructor.'],
+ tip:'Un KPI sin meta no es un indicador, es un dato. Y un dato sin fuente no sirve para decidir: anoten de dónde sale cada número.',
+ campos:[
+  {k:'kpi',type:'kpidash',l:'Tablero de KPI logísticos (dashboard)'}
  ]}
 ];
 
@@ -389,13 +397,13 @@ function drawRoute(){
 function refreshTop(){const n=T.filter(t=>S.done[t.id]).length;document.getElementById('progBar').style.width=(n/T.length*100)+'%';document.getElementById('progTxt').textContent=n+'/'+T.length+' talleres';document.getElementById('coName').textContent=empresa()||'— escojan su empresa en la clase 1 —'}
 document.getElementById('goPlan').onclick=()=>go('PLAN');
 document.getElementById('fImpTop').onchange=loadBackupInput;
-function go(id){cur=id;try{localStorage.setItem(KEY+'-cur',id)}catch(e){}drawRoute();const m=document.getElementById('main');m.oninput=null;if(id==='INICIO')m.innerHTML=inicio();else if(id==='PLAN')m.innerHTML=plan();else{m.innerHTML=taller(T.find(t=>t.id===id));bindTaller(id)}if(id==='INICIO')bindInicio();if(id==='PLAN')bindPlan();window.scrollTo({top:0,behavior:'smooth'})}
+function go(id){if(id==='T13')syncT13();cur=id;try{localStorage.setItem(KEY+'-cur',id)}catch(e){}drawRoute();const m=document.getElementById('main');m.oninput=null;if(id==='INICIO')m.innerHTML=inicio();else if(id==='PLAN')m.innerHTML=plan();else{m.innerHTML=taller(T.find(t=>t.id===id));bindTaller(id)}if(id==='INICIO')bindInicio();if(id==='PLAN')bindPlan();window.scrollTo({top:0,behavior:'smooth'})}
 
 /* ======== INICIO ======== */
 function inicio(){
   return `<section class="card hero"><span class="eyebrow">Competencia 210101007 · Gestión Logística · Proyecto Plan Maestro de Riohacha</span>
   <h1>Taller: Plan Estratégico Logístico de una empresa real</h1>
-  <p class="muted" style="max-width:70ch">En 12 clases su equipo construye, paso a paso, el plan estratégico logístico de una empresa de Riohacha. Cada clase deja un entregable. Al terminar la clase 12, todos los entregables juntos son el plan completo y su portafolio de la competencia.</p>
+  <p class="muted" style="max-width:70ch">En 13 clases su equipo construye, paso a paso, el plan estratégico logístico de una empresa de Riohacha. Cada clase deja un entregable. Al terminar la clase 13 (tablero de KPI), todos los entregables juntos son el plan completo y su portafolio de la competencia.</p>
   <div class="acts"><button class="btn pri" data-go="T1">Empezar por la clase 1 →</button><button class="btn" data-go="PLAN">Ver mi plan</button></div></section>
   <section class="card"><h2>La ruta: qué se hace en cada clase</h2><div class="tw"><table class="maptbl"><thead><tr><th>Clase</th><th>Fecha sugerida</th><th>Taller</th><th>Entregable</th><th>Evidencia</th></tr></thead><tbody>
   ${T.map((t,i)=>`<tr><td><b>${i+1}</b></td><td>${t.fecha}</td><td>${t.t}</td><td>${t.prod}</td><td>${t.ev}</td></tr>`).join('')}</tbody></table></div></section>
@@ -455,6 +463,7 @@ function campo(tid,c){
   if(c.type==='table')return tableField(tid,c);
   if(c.type==='abc')return abcField(tid,c);
   if(c.type==='rop')return ropField(tid,c);
+  if(c.type==='kpidash')return `<div class="field"><span class="lbl">${c.l}</span><span class="help">Se arma en el Generador de KPI y se guarda solo en este taller (mismo dispositivo y navegador). Al volver, aquí aparece la tabla que va al instructor.</span><div class="acts"><a class="btn pri" href="./kpi/">📊 Abrir el Generador de KPI</a></div>${kpiDashHtml(val(tid,c.k))}</div>`;
   if(c.type==='chain')return `<div class="field"><span class="lbl">${c.l} <span class="chip">se dibuja solo</span></span><span class="help">Se arma con la tabla de eslabones y los 4 flujos. Cada cambio que escriban aparece aquí. Descárguenlo para el papelógrafo y el informe ICONTEC.</span><div class="chainwrap" id="chainBox">${chainSvg(S.d[tid]||{},empresa())}</div><div class="acts"><button class="btn pri" id="bPng">⬇ Diagrama en imagen (.png)</button><button class="btn" id="bSvg">⬇ Diagrama editable (.svg)</button></div></div>`;
   return '';
 }
@@ -552,6 +561,7 @@ function fieldText(tid,c){
   if(c.type==='text'||c.type==='area')return `${c.l}:\n${(v||'—').trim()}\n`;
   if(c.type==='table'){const n=rowsOf(c);let s=`${c.l}:\n`;for(let r=0;r<n;r++){const row=(v||[])[r]||[];const cells=c.cols.map((col,ci)=>{if(c.rl&&ci===0)return c.rowLabels[r];if(c.calc&&ci===c.calc.t)return calcRow(c,row);return row[ci]||''});if(cells.slice(c.rl?1:0).some(x=>x&&x!=='—'))s+='- '+c.cols.map((col,ci)=>`${col}: ${cells[ci]||'—'}`).join(' | ')+'\n'}return s}
   if(c.type==='abc'){const {items,tot}=abcCalc(v);return `${c.l}:\n`+(items.map(x=>`- ${x.p}: $${money(x.v)} (${x.pct.toFixed(1)} %, acum. ${x.acc.toFixed(1)} %) Clase ${x.cl}`).join('\n')||'—')+`\nTotal: $${money(tot)}\n`}
+  if(c.type==='kpidash'){const k=v||{};const R=k.res||[];return `${c.l}:\n`+(R.map((x,i)=>`${i+1}. ${x.n} (${x.s}) — ${x.area}: ${kpiFmt(x.r,x.u)} | Meta ${x.d==='max'?'≥':'≤'} ${kpiFmt(x.meta,x.u)} | ${KSEM[x.e]||''}${x.porque?'\n   Por qué: '+x.porque:''}${x.accion?'\n   Acción: '+x.accion:''}`).join('\n')||'—')+`\nConclusión: ${k.concl||'—'}\n`}
   if(c.type==='rop'){const r=ropCalc(v);const d=v||{};return `${c.l}:\nProducto: ${d.p||'—'} | Demanda diaria: ${d.dd||'—'} | Tiempo de entrega: ${d.lt||'—'} días | Días de protección: ${d.ds||'—'}\n`+(r?`Stock de seguridad: ${money(r.ss)} | Punto de reorden: ${money(r.rop)}\n`:'')}
   return '';
 }
@@ -563,10 +573,11 @@ function fieldHtml(tid,c,D,emp){
   if(c.type==='text'||c.type==='area')return `<h3>${c.l}</h3>`+(v&&v.trim()?`<p>${esc(v).replace(/\n/g,'<br>')}</p>`:E);
   if(c.type==='table'){const n=rowsOf(c);let body='',any=false;for(let r=0;r<n;r++){const row=(v||[])[r]||[];const cells=c.cols.map((col,ci)=>{if(c.rl&&ci===0)return `<th>${c.rowLabels[r]}</th>`;if(c.calc&&ci===c.calc.t)return `<td>${calcRow(c,row)}</td>`;if(row[ci])any=true;return `<td>${esc(row[ci]||'').replace(/\n/g,'<br>')}</td>`}).join('');if(c.rl||row.some(x=>x))body+=`<tr>${cells}</tr>`}return `<h3>${c.l}</h3>`+(any?`<table><thead><tr>${c.cols.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`:E)}
   if(c.type==='abc'){const {items,tot}=abcCalc(v);return `<h3>${c.l}</h3>`+(items.length?`<table><thead><tr><th>Producto</th><th>Valor al mes ($)</th><th>%</th><th>% acumulado</th><th>Clase</th></tr></thead><tbody>${items.map(x=>`<tr><td>${esc(x.p)}</td><td>${money(x.v)}</td><td>${x.pct.toFixed(1)} %</td><td>${x.acc.toFixed(1)} %</td><td>${x.cl}</td></tr>`).join('')}<tr><th>Total</th><th>${money(tot)}</th><td colspan="3"></td></tr></tbody></table>`:E)}
+  if(c.type==='kpidash')return `<h3>${c.l}</h3>`+kpiDashHtml(v);
   if(c.type==='rop'){const d=v||{};const r=ropCalc(d);return `<h3>${c.l}</h3>`+(r?`<table><tbody><tr><th>Producto</th><td>${esc(d.p||'')}</td></tr><tr><th>Demanda diaria</th><td>${esc(d.dd)}</td></tr><tr><th>Tiempo de entrega (días)</th><td>${esc(d.lt)}</td></tr><tr><th>Días de protección</th><td>${esc(d.ds)}</td></tr><tr><th>Stock de seguridad</th><td>${money(r.ss)}</td></tr><tr><th>Punto de reorden</th><td>${money(r.rop)}</td></tr></tbody></table>`:E)}
   return '';
 }
-const SECC=[['1. Diagnóstico de la situación logística',['T1','T2','T3','T4']],['2. Direccionamiento y políticas logísticas',['T5','T6','T7','T8']],['3. Estrategias logísticas',['T9','T10']],['4. Plan maestro',['T11']],['5. Indicadores y plan de acción',['T12']]];
+const SECC=[['1. Diagnóstico de la situación logística',['T1','T2','T3','T4']],['2. Direccionamiento y políticas logísticas',['T5','T6','T7','T8']],['3. Estrategias logísticas',['T9','T10']],['4. Plan maestro',['T11']],['5. Indicadores, tablero de control y plan de acción',['T12','T13']]];
 function planBody(DD){
   DD=DD||S.d;const emp=((DD.T1||{}).empresa||'').trim();
   return `<div class="doc"><p class="eyebrow">SENA · Gestión Logística · Competencia 210101007</p><h1>Plan Estratégico Logístico</h1><h2 style="border:0;margin-top:4px">${esc(emp||'Empresa sin definir')}</h2><p><b>Equipo:</b> ${esc((DD.T1||{}).equipo||'—')}</p><p class="muted">Proyecto formativo: Plan Maestro Modelo de Logística Comercial del Distrito de Riohacha · Instructor: Carlos Barrios</p>
@@ -574,9 +585,9 @@ function planBody(DD){
 }
 function plan(){
   const n=T.filter(t=>S.done[t.id]).length;
-  return `<section class="card noprint"><span class="eyebrow">Resultado de los 12 talleres</span><h1>Mi plan estratégico logístico</h1><p class="muted">Este documento se arma solo con lo que el equipo llenó en cada clase. Van ${n} de ${T.length} talleres terminados. Lo que dice <span style="color:var(--alert);font-style:italic">Pendiente</span> todavía falta.</p>
+  return `<section class="card noprint"><span class="eyebrow">Resultado de los ${T.length} talleres</span><h1>Mi plan estratégico logístico</h1><p class="muted">Este documento se arma solo con lo que el equipo llenó en cada clase. Van ${n} de ${T.length} talleres terminados. Lo que dice <span style="color:var(--alert);font-style:italic">Pendiente</span> todavía falta.</p>
   <div class="acts"><button class="btn pri" id="bWord">⬇ Descargar en Word (.doc)</button><button class="btn" id="bPrint">🖨 Imprimir o guardar PDF</button><button class="btn" id="bCopyAll">📋 Copiar todo</button><button class="btn dl" id="bExp">⬇ Respaldo .json</button><label class="btn" for="fImp">⬆ Cargar respaldo</label><input type="file" id="fImp" accept=".json,application/json" hidden></div></section>
-  <section class="card noprint"><h2>Entregar el plan completo</h2><p class="muted">Para el portafolio final (evidencias 3.3.5 y 3.4): un solo código con los 12 talleres.</p>
+  <section class="card noprint"><h2>Entregar el plan completo</h2><p class="muted">Para el portafolio final (evidencias 3.3.5 y 3.4): un solo código con los ${T.length} talleres.</p>
   <div class="codebox"><div class="codehead"><b>Código del plan completo</b><span class="note" id="pCodeMeta"></span></div><textarea id="pCodeOut" readonly aria-label="Código del plan completo"></textarea></div>
   <div class="acts"><button class="btn pri" id="pSend">📤 Enviar al instructor</button><span class="note" id="pSendMsg">${S.cloud&&S.cloud.PLAN?`<span class="sent">✅ Recibido por el instructor: ${fdate(S.cloud.PLAN)}</span>`:''}</span></div>
   <div class="gstate" id="pGradeBox" hidden></div>
@@ -632,8 +643,26 @@ function completeness(t,D){D=D||{};const parts=t.campos.filter(c=>c.type!=='chai
   if(c.type==='table'){const n=rowsOf(c);let tot=0,fil=0;for(let r=0;r<n;r++)c.cols.forEach((col,ci)=>{if(c.rl&&ci===0)return;if(c.calc&&ci===c.calc.t)return;tot++;const x=((v||[])[r]||[])[ci];if(x&&String(x).trim())fil++});return tot?fil/tot:0}
   if(c.type==='abc')return Math.min(1,abcCalc(v).items.length/c.rows);
   if(c.type==='rop')return ropCalc(v)?1:0;
+  if(c.type==='kpidash')return kpiChecks(v).filter(x=>x[0]).length/6;
   return 0});
   return parts.length?Math.round(parts.reduce((a,b)=>a+b,0)/parts.length*100):0}
+
+/* ======== TABLERO DE KPI (clase 13, lo llena ./kpi/) ======== */
+const KSEM={v:'🟢 Cumple',a:'🟡 Alerta',r:'🔴 No cumple',n:'⚪ Sin datos'};
+function kpiFmt(v,u){if(v==null||v===''||!isFinite(v))return '—';if(u==='$')return '$'+Math.round(v).toLocaleString('es-CO');const d=Math.abs(v)>=100?0:Math.abs(v)>=10?1:2;const t=Number(v).toLocaleString('es-CO',{maximumFractionDigits:d});return u==='%'?t+' %':t+' '+u}
+function kpiChecks(k){k=k||{};const R=k.res||[];const crit=R.filter(x=>x.e==='r'||x.e==='a');return [
+  [R.length>=6,`Mínimo 6 KPI (llevan ${R.length})`],[new Set(R.map(x=>x.area)).size>=3,'KPI de al menos 3 áreas'],[R.length>0&&R.every(x=>x.r!=null),'Todos los KPI con datos calculados'],
+  [R.length>0&&R.every(x=>String(x.porque||'').trim().length>=20),'Justificación de cada KPI'],[crit.every(x=>String(x.accion||'').trim().length>=15),'Plan de acción de los KPI en rojo o amarillo'],[String(k.concl||'').trim().length>=40,'Conclusión del equipo']]}
+function kpiDashHtml(k){const R=(k&&k.res)||[];if(!R.length)return '<p class="empty">Pendiente: abran el Generador de KPI y armen su tablero.</p>';
+  const cnt={v:0,a:0,r:0,n:0};R.forEach(x=>cnt[x.e||'n']++);
+  return `<p><b>Periodo medido:</b> ${esc(k.periodo||'—')} · <b>KPI:</b> ${R.length} · 🟢 ${cnt.v} · 🟡 ${cnt.a} · 🔴 ${cnt.r}${cnt.n?' · ⚪ '+cnt.n:''}</p>
+  <div class="tw"><table><thead><tr><th>KPI</th><th>Área</th><th>Fórmula</th><th>Datos</th><th>Resultado</th><th>Meta</th><th>Semáforo</th><th>Frecuencia · responsable · fuente</th><th>¿Por qué le importa a la empresa?</th><th>Acción de mejora</th></tr></thead><tbody>
+  ${R.map(x=>`<tr><td><b>${esc(x.n)}</b> (${esc(x.s)})</td><td>${esc(x.area)}</td><td>${esc(x.fx)}</td><td>${(x.datos||[]).map(d=>esc(d[0])+': <b>'+esc(d[1]||'—')+'</b>').join('<br>')}</td><td><b>${kpiFmt(x.r,x.u)}</b></td><td>${x.d==='max'?'≥':'≤'} ${kpiFmt(x.meta,x.u)}<br><small>tolerancia ${esc(x.tol)} %</small></td><td>${KSEM[x.e]||''}</td><td>${esc(x.frec||'—')} · ${esc(x.resp||'—')} · ${esc(x.fuente||'—')}</td><td>${esc(x.porque||'')||'<span class="empty">Pendiente</span>'}</td><td>${x.e==='r'||x.e==='a'?(esc(x.accion||'')||'<span class="empty">Pendiente</span>'):'—'}</td></tr>`).join('')}</tbody></table></div>
+  <h4>Conclusión del equipo</h4>${k.concl&&String(k.concl).trim()?`<p>${esc(k.concl).replace(/\n/g,'<br>')}</p>`:'<p class="empty">Pendiente</p>'}`}
+/* El generador escribe en este mismo almacenamiento: si se abrió en otra pestaña, se trae su tablero sin pisar lo demás. */
+function syncT13(){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o&&o.d){if(o.d.T13)S.d.T13=o.d.T13;if(o.d.T1&&!(S.d.T1&&S.d.T1.equipo&&S.d.T1.empresa)){S.d.T1=Object.assign({},S.d.T1||{},{equipo:o.d.T1.equipo,empresa:o.d.T1.empresa})}if(o.tid&&!S.tid)S.tid=o.tid}}catch(e){}}
+window.addEventListener('storage',ev=>{if(ev.key!==KEY)return;syncT13();if(cur==='T13')go('T13')});
+window.addEventListener('pageshow',()=>{syncT13();if(cur==='T13')go('T13')});
 
 /* ======== DIAGRAMA DE LA CADENA ======== */
 const CC={mat:'#2a7d00',info:'#0f6e8c',din:'#6b4fa3',ene:'#b86e00',alert:'#c2412d',ink:'#17201a',muted:'#56635a',line:'#b9c4b2',soft:'#e9f6df',paper:'#ffffff'};

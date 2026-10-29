@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de KPI Logísticos · LogiLab SENA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --sena:#39A900; --sena-d:#2a7d00; --sena-l:#eaf7e0;
+  --bg:#f4f6f3; --card:#fff; --tx:#1d2a1a; --mut:#5d6b59; --bd:#dde4d8;
+  --verde:#2e9d3a; --amar:#a87400; --rojo:#d93a2b;
+  --sh:0 2px 10px rgba(0,0,0,.07);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);font-size:15px;line-height:1.45}
+header{background:linear-gradient(135deg,var(--sena-d),var(--sena));color:#fff;padding:16px 16px 0}
+.brand{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;opacity:.9;font-weight:700}
+h1{margin:4px 0 6px;font-size:22px}
+.sub{margin:0 0 12px;opacity:.92;font-size:14px}
+nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav button{flex:0 0 auto;border:0;background:rgba(255,255,255,.18);color:#fff;padding:10px 14px;border-radius:10px 10px 0 0;font-weight:600;cursor:pointer;font-size:14px}
+nav button.on{background:var(--bg);color:var(--sena-d)}
+.badge{display:inline-block;background:#fff;color:var(--sena-d);border-radius:20px;padding:0 7px;font-size:12px;margin-left:4px}
+nav button.on .badge{background:var(--sena);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:16px}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:16px;margin-bottom:14px;border:1px solid var(--bd)}
+h2{margin:0 0 10px;font-size:19px;color:var(--sena-d)}
+h3{margin:0 0 8px;font-size:16px}
+label{display:block;font-weight:600;font-size:13px;margin:10px 0 4px;color:var(--mut)}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:9px;font:inherit;background:#fff;color:var(--tx)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--sena);border-color:transparent}
+textarea{min-height:64px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 12px}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}}
+.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer;font-size:14px;background:var(--sena);color:#fff;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--sena-d)}
+.btn.sec{background:#fff;color:var(--sena-d);border:1.5px solid var(--sena)}
+.btn.sec:hover{background:var(--sena-l)}
+.btn.red{background:#fff;color:var(--rojo);border:1.5px solid #f1c3be}
+.btn.sm{padding:6px 10px;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tip{background:var(--sena-l);border-left:4px solid var(--sena);padding:10px 12px;border-radius:8px;font-size:14px;margin:10px 0}
+.warn{background:#fff6e0;border-left:4px solid var(--amar)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{border:1.5px solid var(--bd);background:#fff;border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer;font-weight:600}
+.chip.on{background:var(--tx);color:#fff;border-color:var(--tx)}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.kcard{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px;border-top:5px solid var(--ac,#999);display:flex;flex-direction:column;gap:6px;box-shadow:var(--sh)}
+.kcard.sel{outline:2.5px solid var(--sena);background:#fbfff8}
+.ktag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ac)}
+.kname{font-weight:800;font-size:15px}
+.kp{font-size:13.5px;color:var(--mut);flex:1}
+.fx{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#f3f5f2;border-radius:7px;padding:7px 9px}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#eef1ec;color:var(--mut);margin-right:4px}
+.pill.rec{background:#fff3c4;color:#7a5b00}
+.sem{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:13px;padding:4px 10px;border-radius:20px;color:#fff}
+.sem.v{background:var(--verde)}.sem.a{background:var(--amar)}.sem.r{background:var(--rojo)}.sem.n{background:#9aa596}
+.panel{border:1px solid var(--bd);border-left:6px solid var(--ac);border-radius:12px;padding:14px;margin-bottom:12px;background:#fff}
+.phead{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:flex-start}
+.result{font-size:26px;font-weight:900;color:var(--tx)}
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+@media(max-width:800px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{background:#fff;border-radius:12px;padding:12px;text-align:center;border:1px solid var(--bd)}
+.tile b{display:block;font-size:26px}
+.tile span{font-size:12px;color:var(--mut);font-weight:600}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.dk{background:#fff;border-radius:12px;padding:12px;border:1px solid var(--bd);border-left:6px solid var(--st)}
+.dk .val{font-size:28px;font-weight:900;color:var(--st)}
+.bar{height:8px;background:#e8ece6;border-radius:6px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--st)}
+.charts{display:grid;grid-template-columns:3fr 2fr;gap:12px}
+@media(max-width:800px){.charts{grid-template-columns:1fr}}
+.chartbox{background:#fff;border-radius:12px;border:1px solid var(--bd);padding:10px;position:relative;min-height:300px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border:1px solid var(--bd);padding:7px;text-align:left;vertical-align:top}
+th{background:var(--sena);color:#fff}
+.tw{overflow-x:auto}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:14px;z-index:50}
+.modal.on{display:flex}
+.mbox{background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:90vh;overflow:auto;padding:20px;border-top:7px solid var(--ac)}
+.mbox h4{margin:14px 0 4px;color:var(--ac);font-size:14px;text-transform:uppercase;letter-spacing:.5px}
+.mbox p{margin:0}
+.empty{text-align:center;color:var(--mut);padding:30px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1d2a1a;color:#fff;padding:10px 18px;border-radius:30px;font-weight:600;opacity:0;transition:.3s;z-index:60;pointer-events:none}
+.toast.on{opacity:1}
+.check li{margin:4px 0}
+footer{text-align:center;color:var(--mut);font-size:13px;padding:20px 10px 30px}
+footer b{color:var(--sena-d)}
+@media print{header nav,.noprint,footer .noprint{display:none!important}section{display:block!important}body{background:#fff}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><a href="../" style="color:#fff">← Taller Plan Estratégico Logístico</a> · Clase 13</div>
+  <h1>📊 Generador de Indicadores de Gestión (KPI) Logísticos</h1>
+  <div id="demoBar" class="noprint" hidden style="background:#fff3c4;color:#5a4300;border-radius:10px;padding:8px 12px;margin:0 0 10px;font-weight:700">👁️ Están viendo el EJEMPLO resuelto (empresa ficticia). No se guarda ni se entrega. <button class="btn sm" style="margin-left:6px" onclick="salirEjemplo()">Volver a mi tablero</button></div>
+  <p class="sub">Arma el tablero de control de tu empresa o emprendimiento: elige los KPI, entiende para qué sirve cada uno, mídelos y presenta tu dashboard.</p>
+  <nav id="nav">
+    <button data-t="t1" class="on">1. Mi empresa</button>
+    <button data-t="t2">2. Catálogo de KPI</button>
+    <button data-t="t3">3. Mis KPI <span class="badge" id="bdg">0</span></button>
+    <button data-t="t4">4. Dashboard</button>
+    <button data-t="t5">5. Entregar</button>
+  </nav>
+</header>
+
+<main>
+<!-- 1 EMPRESA -->
+<section id="t1" class="on">
+  <div class="card">
+    <h2>1. Datos de la empresa y del equipo</h2>
+    <div class="tip"><b>El equipo y la empresa vienen del Taller del Plan Estratégico</b> (clase 1) de este mismo dispositivo: así el tablero le llega al instructor junto con el resto de sus entregas. Si los cambian aquí, también cambian en el taller. El tipo de negocio sirve para que el aplicativo les <b>recomiende</b> KPI.</div>
+    <div class="tip warn" id="sinTaller" hidden>⚠️ En este dispositivo no hay trabajo del Taller del Plan Estratégico. Escriban <b>exactamente</b> el mismo número de equipo y la misma empresa que usan en el taller, o carguen primero el respaldo .json del taller en <a href="../">la página del taller</a>.</div>
+    <div class="grid2">
+      <div><label>Empresa (la del taller) *</label><input id="e_nombre" placeholder="Ej: Minimarket La Primera"></div>
+      <div><label>Tipo de negocio *</label>
+        <select id="e_tipo">
+          <option value="">— Selecciona —</option>
+          <option value="com">Comercio minorista (tienda, minimarket, droguería, ferretería)</option>
+          <option value="dis">Distribuidora / comercio mayorista</option>
+          <option value="res">Restaurante / comidas rápidas / panadería</option>
+          <option value="man">Manufactura / artesanías / producción</option>
+          <option value="tra">Transporte de carga / mensajería</option>
+          <option value="eco">Tienda en línea / domicilios / e-commerce</option>
+          <option value="tur">Turismo / hotel / servicios</option>
+        </select></div>
+    </div>
+    <label>¿Qué hace la empresa? (breve)</label>
+    <textarea id="e_desc" placeholder="Ej: Venta de víveres y abarrotes al detal en el barrio Los Almendros; compra a 6 proveedores y hace domicilios en moto."></textarea>
+    <div class="grid3">
+      <div><label>Equipo e integrantes (con el número) *</label><input id="e_equipo" placeholder="Equipo 2: Ana Pérez, Luis Gómez"></div>
+      <div><label>Ficha</label><input id="e_ficha" value="3229854"></div>
+      <div><label>Periodo medido</label><input id="e_periodo" placeholder="Ej: Septiembre 2026"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" onclick="go('t2')">Siguiente: elegir KPI →</button>
+      <button class="btn sec" onclick="cargarEjemplo()">👁️ Ver ejemplo resuelto</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>¿Qué es un KPI y por qué importa?</h3>
+    <p style="margin:0 0 8px">Un <b>KPI</b> (<i>Key Performance Indicator</i> – indicador clave de desempeño) es un número que dice si un proceso va bien o mal frente a una <b>meta</b>. Lo que no se mide no se puede mejorar.</p>
+    <p style="margin:0">Todo buen KPI tiene: <b>nombre, objetivo, fórmula, unidad, meta, frecuencia, responsable y fuente de datos</b>. Eso es la <b>ficha técnica (hoja de vida) del indicador</b>, y este aplicativo te la arma automáticamente.</p>
+  </div>
+</section>
+
+<!-- 2 CATÁLOGO -->
+<section id="t2">
+  <div class="card">
+    <h2>2. Catálogo de KPI logísticos</h2>
+    <div class="tip">Lee <b>para qué sirve</b> cada indicador y agrega a tu tablero entre <b>6 y 10 KPI</b>, de al menos <b>3 áreas distintas</b>. Los marcados ⭐ son recomendados para tu tipo de negocio.</div>
+    <input id="q" placeholder="🔍 Buscar KPI (ej: inventario, entregas, costo)…">
+    <div class="chips" id="chips"></div>
+    <label style="display:flex;gap:8px;align-items:center;font-weight:600;color:var(--tx)"><input type="checkbox" id="soloRec" style="width:auto"> Mostrar solo los recomendados ⭐</label>
+  </div>
+  <div class="kgrid" id="kgrid"></div>
+</section>
+
+<!-- 3 MIS KPI -->
+<section id="t3">
+  <div class="card">
+    <h2>3. Mis KPI: datos, meta y ficha técnica</h2>
+    <div class="tip">Para cada KPI: escribe los datos reales (o estimados con el dueño) de la empresa, ajusta la <b>meta</b> a su realidad y explica <b>por qué es importante</b> para ese negocio. El semáforo se calcula solo.<br><b>Semáforo:</b> 🟢 cumple la meta · 🟡 está cerca (dentro de la tolerancia) · 🔴 no cumple.</div>
+  </div>
+  <div id="mis"></div>
+</section>
+
+<!-- 4 DASHBOARD -->
+<section id="t4">
+  <div class="card" id="dhead"></div>
+  <div class="tiles" id="tiles"></div>
+  <div class="card" style="margin-top:14px"><h3>Indicadores</h3><div class="dgrid" id="dgrid"></div></div>
+  <div class="charts">
+    <div class="chartbox"><canvas id="ch1"></canvas></div>
+    <div class="chartbox"><canvas id="ch2"></canvas></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>Ficha técnica de los indicadores</h3>
+    <div class="tw"><table id="ficha"></table></div>
+  </div>
+  <div class="card">
+    <h3>Plan de acción (KPI en 🔴 y 🟡)</h3>
+    <div id="plan"></div>
+    <label>Conclusión general del equipo sobre la gestión logística de la empresa *</label>
+    <textarea id="e_concl" placeholder="¿Qué dicen los indicadores de la empresa? ¿Cuál es el proceso más crítico y qué recomiendan?"></textarea>
+  </div>
+</section>
+
+<!-- 5 ENTREGAR -->
+<section id="t5">
+  <div class="card">
+    <h2>5. Entregar al instructor</h2>
+    <div id="checklist"></div>
+    <div class="card" style="border:2px solid var(--sena);background:var(--sena-l);margin:12px 0">
+      <h3>📤 Entrega oficial: Clase 13 del Plan Estratégico</h3>
+      <p style="margin:0 0 10px">El tablero ya quedó guardado en el taller. Toquen el botón, revisen la tabla de la clase 13 y allí toquen <b>📤 Enviar al instructor</b>. Le llega a su zona de calificación, en la fila de su equipo, y ahí mismo verán la nota y las observaciones.</p>
+      <div class="row"><button class="btn" onclick="irAEntregar()">📤 Ir a entregar en el taller (Clase 13) →</button><span id="estadoEnvio" style="font-weight:700;font-size:14px"></span></div>
+    </div>
+    <h3>Respaldos (si no hay internet o el envío falla)</h3>
+    <label>Correo del instructor (para el envío por email)</label>
+    <input id="e_correo" placeholder="correo@sena.edu.co">
+    
+    <div class="row">
+      <button class="btn" onclick="descargarReporte()">📄 Descargar reporte HTML</button>
+      <button class="btn" onclick="imprimir()">🖨️ Imprimir / Guardar PDF</button>
+      <button class="btn sec" onclick="whatsapp()">💬 Enviar por WhatsApp</button>
+      <button class="btn sec" onclick="correo()">✉️ Enviar por correo</button>
+      <button class="btn sec" onclick="copiar()">📋 Copiar resumen</button>
+    </div>
+    <div class="tip">El <b>reporte HTML</b> es la evidencia completa (dashboard con gráficos + ficha técnica + plan de acción). Adjúntalo en el correo o en el chat de WhatsApp del instructor. Si el correo no abre, usa <b>Copiar resumen</b> y pégalo donde sea.</div>
+  </div>
+  <div class="card">
+    <h3>💾 Guardar y continuar después</h3>
+    <p style="margin:0 0 10px">El tablero se guarda solo dentro del Taller del Plan Estratégico de este navegador, así que el <b>respaldo .json del taller</b> también lo incluye. Este archivo es un respaldo solo del tablero.</p>
+    <div class="row">
+      <button class="btn sec" onclick="guardarJSON()">⬇️ Descargar avance (.json)</button>
+      <label class="btn sec" style="margin:0;color:var(--sena-d)">⬆️ Cargar avance<input type="file" accept=".json" onchange="cargarJSON(event)" style="display:none"></label>
+      <button class="btn red" onclick="reiniciar()">🗑️ Borrar solo el tablero</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="modal" id="modal" onclick="if(event.target===this)cerrar()"><div class="mbox" id="mbox"></div></div>
+<div class="toast" id="toast"></div>
+
+<footer>
+  <b>LogiLab SENA</b> · Centro Industrial y de Energías Alternativas · Regional Guajira<br>
+  By Carlos Barrios · Instructor
+</footer>
+
+<script>
+/* ===================== CATÁLOGO DE KPI ===================== */
+const AREAS={
+ abast:{n:"Abastecimiento y compras",c:"#7b4bd1"},
+ inv:{n:"Inventarios",c:"#0b84c6"},
+ alm:{n:"Almacenamiento",c:"#d07a00"},
+ trans:{n:"Transporte y distribución",c:"#c2185b"},
+ serv:{n:"Servicio al cliente",c:"#2e9d3a"},
+ cost:{n:"Costos logísticos",c:"#455a64"},
+ prod:{n:"Producción y operación",c:"#8d6e00"}
+};
+const TIPOS={com:"Comercio minorista",dis:"Distribuidora",res:"Restaurante",man:"Manufactura",tra:"Transporte",eco:"E-commerce / domicilios",tur:"Turismo / servicios"};
+const pct=(a,b)=>b?a/b*100:null;
+const K=[
+/* ---- ABASTECIMIENTO ---- */
+{id:"otdp",a:"abast",n:"Entregas a tiempo de proveedores",s:"OTD-P",
+ q:"El porcentaje de pedidos de compra que los proveedores entregaron en la fecha acordada.",
+ p:"Sirve para evaluar y seleccionar proveedores confiables. Si los proveedores llegan tarde, la empresa se queda sin mercancía y pierde ventas.",
+ fx:"(Pedidos recibidos a tiempo ÷ Total de pedidos recibidos) × 100",
+ v:[["a","Pedidos recibidos a tiempo"],["b","Total de pedidos recibidos"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:95,
+ i:"Por encima de 95% el proveedor es confiable. Por debajo de 85% hay que negociar o buscar alternativas.",
+ e:"Una tienda recibió 20 pedidos en el mes y 17 llegaron a tiempo: 17 ÷ 20 × 100 = 85%.",
+ err:"Contar como 'a tiempo' pedidos que llegaron incompletos. Eso se mide aparte (cumplimiento en cantidad).",
+ t:["com","dis","res","man","eco"]},
+{id:"calp",a:"abast",n:"Calidad de pedidos recibidos",s:"CPR",
+ q:"El porcentaje de pedidos de compra que llegaron sin productos dañados, vencidos o equivocados.",
+ p:"Sirve para detectar proveedores que generan reprocesos, devoluciones y pérdidas. Un producto dañado que entra al inventario es plata perdida.",
+ fx:"(Pedidos recibidos conformes ÷ Total de pedidos recibidos) × 100",
+ v:[["a","Pedidos recibidos sin novedad"],["b","Total de pedidos recibidos"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:98,
+ i:"Lo ideal es estar sobre 98%. Cada novedad debe quedar registrada en el acta de recibo.",
+ e:"Un restaurante recibió 30 pedidos de verduras y carnes; 27 llegaron en buen estado: 90%.",
+ err:"No revisar la mercancía al recibirla: después no se puede reclamar al proveedor.",
+ t:["com","dis","res","man","eco","tur"]},
+{id:"ltp",a:"abast",n:"Tiempo de entrega del proveedor (lead time)",s:"LT",
+ q:"Los días promedio que pasan desde que se hace el pedido de compra hasta que la mercancía llega.",
+ p:"Sirve para calcular cuándo hacer el próximo pedido (punto de reorden) y cuánto inventario de seguridad tener. En La Guajira, con proveedores en Barranquilla o Maicao, este dato es clave.",
+ fx:"Suma de días de entrega de todos los pedidos ÷ Número de pedidos",
+ v:[["a","Suma total de días de entrega"],["b","Número de pedidos"]],c:v=>v.b?v.a/v.b:null,u:"días",d:"min",m:3,
+ i:"Entre menos días, menos inventario necesitas guardar. Si es muy variable, aumenta el stock de seguridad.",
+ e:"5 pedidos tardaron 2, 4, 3, 5 y 6 días: 20 ÷ 5 = 4 días promedio.",
+ err:"Medir desde que sale el camión y no desde que se hizo el pedido.",
+ t:["com","dis","res","man","eco"]},
+{id:"fillp",a:"abast",n:"Cumplimiento en cantidad del proveedor",s:"FR-P",
+ q:"Qué porcentaje de las unidades pedidas realmente entregó el proveedor.",
+ p:"Sirve para saber si el proveedor cumple completo. Los pedidos incompletos causan agotados aunque el pedido 'haya llegado'.",
+ fx:"(Unidades recibidas ÷ Unidades pedidas) × 100",
+ v:[["a","Unidades recibidas"],["b","Unidades pedidas"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:98,
+ i:"Sobre 98% es bueno. Si recibes más de lo pedido (más de 100%) también es una falla: inventario no planeado.",
+ e:"Se pidieron 500 unidades de arroz y llegaron 460: 92%.",
+ err:"Confundirlo con entregas a tiempo; un pedido puede llegar a tiempo pero incompleto.",
+ t:["com","dis","res","man"]},
+{id:"compv",a:"abast",n:"Costo de compras sobre ventas",s:"CCV",
+ q:"Qué parte de cada peso vendido se va en comprar la mercancía o materia prima.",
+ p:"Sirve para vigilar que los precios de compra no se coman el margen. Ayuda a negociar con proveedores y a fijar precios de venta.",
+ fx:"(Valor de las compras del periodo ÷ Ventas del periodo) × 100",
+ v:[["a","Valor de compras ($)"],["b","Ventas ($)"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:65,
+ i:"Depende del sector: en una tienda de víveres puede ser 75-85%; en un restaurante, el costo de alimentos ronda el 30-35%. Ajusta la meta a tu negocio.",
+ e:"Compras de $12.000.000 y ventas de $16.000.000: 75%.",
+ err:"Comparar compras de un mes con ventas de otro periodo.",
+ t:["com","dis","res","man","eco"]},
+/* ---- INVENTARIOS ---- */
+{id:"rot",a:"inv",n:"Rotación de inventario",s:"RI",
+ q:"Cuántas veces se vendió y se repuso el inventario completo durante el periodo.",
+ p:"Sirve para saber si la mercancía se mueve o se queda quieta. Inventario quieto es dinero dormido que no produce.",
+ fx:"Costo de la mercancía vendida ÷ Inventario promedio (a costo)",
+ v:[["a","Costo de la mercancía vendida ($)"],["b","Inventario promedio a costo ($)"]],c:v=>v.b?v.a/v.b:null,u:"veces",d:"max",m:2,
+ i:"Más rotación = el inventario se convierte rápido en ventas. Una rotación muy baja indica sobrestock o productos que no se venden. (Meta referencia mensual.)",
+ e:"Costo de ventas del mes $9.000.000 e inventario promedio $3.000.000: rota 3 veces al mes.",
+ err:"Usar el precio de venta en un lado y el costo en el otro. Todo debe ir a costo.",
+ t:["com","dis","res","man","eco"]},
+{id:"dinv",a:"inv",n:"Días de inventario",s:"DI",
+ q:"Para cuántos días alcanza el inventario actual al ritmo de ventas actual.",
+ p:"Sirve para planear compras: si tienes 60 días de inventario de algo que se vende rápido, estás inmovilizando caja; si tienes 2 días, puedes quedarte sin producto.",
+ fx:"(Inventario promedio ÷ Costo de la mercancía vendida) × Días del periodo",
+ v:[["a","Inventario promedio a costo ($)"],["b","Costo de la mercancía vendida ($)"],["c","Días del periodo"]],c:v=>v.b?v.a/v.b*v.c:null,u:"días",d:"min",m:15,
+ i:"Menos días = menos capital inmovilizado, pero con cuidado de no caer en agotados. Perecederos deberían tener muy pocos días.",
+ e:"Inventario $3.000.000, costo de ventas del mes $9.000.000, 30 días: 3/9 × 30 = 10 días.",
+ err:"Aplicar la misma meta a perecederos y no perecederos.",
+ t:["com","dis","res","man","eco"]},
+{id:"eri",a:"inv",n:"Exactitud del inventario",s:"ERI",
+ q:"Qué porcentaje de las referencias contadas coincide entre lo que dice el sistema/kárdex y lo que hay físicamente.",
+ p:"Sirve para confiar en los registros. Si el sistema dice que hay 10 y hay 4, se venden productos que no existen y se compra lo que no hace falta.",
+ fx:"(Referencias sin diferencia en el conteo ÷ Total de referencias contadas) × 100",
+ v:[["a","Referencias sin diferencia"],["b","Referencias contadas"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:97,
+ i:"Las empresas organizadas están sobre 97%. Por debajo de 90% hay problemas serios de control (robos, errores de registro, mermas no reportadas).",
+ e:"Se contaron 50 referencias y 44 cuadraron: 88%.",
+ err:"Hacer el conteo con la tienda abierta y vendiendo, sin congelar los movimientos.",
+ t:["com","dis","res","man","eco","tur"]},
+{id:"agot",a:"inv",n:"Nivel de agotados (quiebres de stock)",s:"AGT",
+ q:"Qué porcentaje de las referencias del portafolio estaba sin existencias al momento de medir.",
+ p:"Sirve para detectar ventas perdidas: un cliente que no encuentra el producto se va a la competencia y tal vez no vuelva.",
+ fx:"(Referencias agotadas ÷ Total de referencias del portafolio) × 100",
+ v:[["a","Referencias agotadas"],["b","Total de referencias"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:3,
+ i:"Por debajo de 3% es bueno. Si sube, revisar puntos de reorden y lead time de proveedores.",
+ e:"De 200 referencias, 14 estaban agotadas: 7%.",
+ err:"Medirlo un solo día; lo ideal es promediar varias mediciones en el periodo.",
+ t:["com","dis","res","eco","man"]},
+{id:"merma",a:"inv",n:"Mermas de inventario",s:"MER",
+ q:"El valor de la mercancía perdida (daño, vencimiento, robo, faltantes) frente al valor del inventario.",
+ p:"Sirve para cuantificar cuánta plata se pierde dentro de la bodega o el local. Es de los KPI que más impacto tienen en la utilidad de un pequeño negocio.",
+ fx:"(Valor de la mercancía perdida ÷ Valor total del inventario) × 100",
+ v:[["a","Valor perdido ($)"],["b","Valor total del inventario ($)"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:1,
+ i:"En comercio minorista se busca menos de 1-2%. En perecederos (frutas, carnes) es normal que sea más alto, pero se controla con PEPS/FEFO.",
+ e:"Se perdieron $180.000 de un inventario de $6.000.000: 3%.",
+ err:"No registrar las pérdidas pequeñas del día a día; al final del mes 'no cuadra' y nadie sabe por qué.",
+ t:["com","dis","res","man","eco"]},
+{id:"obso",a:"inv",n:"Inventario vencido u obsoleto",s:"OBS",
+ q:"Qué parte del inventario son productos vencidos, pasados de moda o que llevan mucho tiempo sin venderse.",
+ p:"Sirve para tomar decisiones a tiempo: promociones, combos, devolución al proveedor, antes de que se pierdan del todo.",
+ fx:"(Valor del inventario vencido/obsoleto ÷ Valor total del inventario) × 100",
+ v:[["a","Valor vencido u obsoleto ($)"],["b","Valor total del inventario ($)"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:2,
+ i:"Por debajo de 2% es sano. Un valor alto indica malas compras o falta de rotación PEPS/FEFO.",
+ e:"Una droguería tiene $400.000 en productos próximos a vencer en un inventario de $10.000.000: 4%.",
+ err:"Esperar a que se venza para reportarlo; el KPI sirve para actuar antes.",
+ t:["com","dis","man","eco"]},
+/* ---- ALMACENAMIENTO ---- */
+{id:"ocup",a:"alm",n:"Utilización de la capacidad de almacenamiento",s:"UCA",
+ q:"Qué porcentaje del espacio disponible de la bodega (posiciones, estanterías o m²) está ocupado.",
+ p:"Sirve para saber si la bodega está desaprovechada o saturada. Una bodega llena más allá del 85-90% se vuelve lenta, desordenada e insegura.",
+ fx:"(Espacio ocupado ÷ Espacio disponible) × 100",
+ v:[["a","Espacio ocupado (m², posiciones o estantes)"],["b","Espacio disponible total"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:80,
+ i:"Lo ideal es entre 75% y 85%. Más de 90% = saturación (hay que reorganizar o reducir inventario); menos de 50% = espacio pagado y desperdiciado.",
+ e:"Una bodega tiene 40 posiciones de estiba y 34 ocupadas: 85%.",
+ err:"Creer que 100% es lo mejor. Sin espacio libre no se puede recibir ni mover la mercancía.",
+ t:["com","dis","man","tra","eco"]},
+{id:"calm",a:"alm",n:"Costo de almacenamiento por unidad",s:"CAU",
+ q:"Cuánto cuesta guardar cada unidad (arriendo, servicios, personal de bodega, seguros) en el periodo.",
+ p:"Sirve para decidir si conviene tener bodega propia, tercerizar o reducir inventario. Ayuda a ver el costo oculto de tener mercancía guardada.",
+ fx:"Costo total de almacenamiento ÷ Unidades almacenadas (promedio)",
+ v:[["a","Costo total de almacenamiento ($)"],["b","Unidades almacenadas promedio"]],c:v=>v.b?v.a/v.b:null,u:"$",d:"min",m:500,
+ i:"Entre más bajo mejor. Compáralo mes a mes y contra el valor del producto: guardar algo barato con un costo alto no tiene sentido.",
+ e:"La bodega cuesta $2.500.000 al mes y guarda en promedio 5.000 unidades: $500 por unidad.",
+ err:"Olvidar costos como servicios públicos, vigilancia o el salario de quien atiende la bodega.",
+ t:["dis","man","com","eco"]},
+{id:"picking",a:"alm",n:"Exactitud en la preparación de pedidos (picking)",s:"EPP",
+ q:"Qué porcentaje de los pedidos se alistaron sin errores (producto, cantidad o referencia correcta).",
+ p:"Sirve para evitar devoluciones, reenvíos y clientes molestos. Un error de alistamiento cuesta doble: el transporte de ida y el de vuelta.",
+ fx:"(Pedidos alistados sin error ÷ Total de pedidos alistados) × 100",
+ v:[["a","Pedidos sin error"],["b","Total de pedidos alistados"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:99,
+ i:"Las empresas de referencia superan el 99%. Ayudan la codificación, la ubicación clara y la doble verificación.",
+ e:"Se alistaron 120 pedidos y 6 tuvieron errores: 114 ÷ 120 = 95%.",
+ err:"Detectar el error solo cuando el cliente reclama; hay que verificar antes de despachar.",
+ t:["dis","eco","com","man"]},
+{id:"prodpick",a:"alm",n:"Productividad en alistamiento",s:"UPH",
+ q:"Cuántas unidades (o líneas de pedido) prepara una persona por hora de trabajo.",
+ p:"Sirve para planear cuánto personal se necesita en temporada alta (diciembre, regreso a clases) y para medir mejoras en la organización de la bodega.",
+ fx:"Unidades alistadas ÷ Horas-hombre trabajadas en alistamiento",
+ v:[["a","Unidades alistadas"],["b","Horas-hombre trabajadas"]],c:v=>v.b?v.a/v.b:null,u:"und/h",d:"max",m:60,
+ i:"Más es mejor, siempre que no suban los errores. Compara antes y después de reorganizar la bodega (ABC).",
+ e:"2 auxiliares trabajaron 8 horas cada uno (16 h) y alistaron 1.120 unidades: 70 und/h.",
+ err:"Medir velocidad sin mirar la exactitud: rápido pero con errores no sirve.",
+ t:["dis","eco","man"]},
+/* ---- TRANSPORTE ---- */
+{id:"otd",a:"trans",n:"Entregas a tiempo al cliente",s:"OTD",
+ q:"El porcentaje de entregas o domicilios que llegaron al cliente en la fecha u hora prometida.",
+ p:"Sirve para medir la puntualidad de la distribución, que es lo que el cliente más percibe. Es la base de la confianza y la recompra.",
+ fx:"(Entregas a tiempo ÷ Total de entregas) × 100",
+ v:[["a","Entregas a tiempo"],["b","Total de entregas"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:95,
+ i:"Sobre 95% es un buen servicio. Si baja, revisar rutas, horarios, número de vehículos o la promesa que se le hace al cliente.",
+ e:"Una distribuidora hizo 300 entregas y 270 fueron puntuales: 90%.",
+ err:"Prometer tiempos imposibles. A veces el problema no es el transporte sino la promesa de venta.",
+ t:["dis","eco","tra","res","com"]},
+{id:"ctv",a:"trans",n:"Costo de transporte sobre ventas",s:"CTV",
+ q:"Qué porcentaje de las ventas se gasta en transportar y entregar la mercancía.",
+ p:"Sirve para saber si los domicilios o fletes son rentables. Si el transporte se come la ganancia, hay que cobrar el envío, consolidar cargas o cambiar de medio.",
+ fx:"(Costo total de transporte ÷ Ventas) × 100",
+ v:[["a","Costo total de transporte ($)"],["b","Ventas ($)"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:6,
+ i:"En distribución suele estar entre 4% y 10%. Más alto puede indicar rutas mal planeadas o vehículos medio vacíos.",
+ e:"Fletes y domicilios por $1.400.000 con ventas de $20.000.000: 7%.",
+ err:"No incluir gasolina, peajes, mantenimiento o el pago del domiciliario.",
+ t:["dis","eco","tra","com","man"]},
+{id:"cxe",a:"trans",n:"Costo por entrega",s:"CxE",
+ q:"Cuánto cuesta, en promedio, cada entrega o domicilio realizado.",
+ p:"Sirve para fijar el valor del domicilio, definir un pedido mínimo y comparar si es mejor moto propia, mensajería tercerizada o plataforma.",
+ fx:"Costo total de transporte ÷ Número de entregas",
+ v:[["a","Costo total de transporte ($)"],["b","Número de entregas"]],c:v=>v.b?v.a/v.b:null,u:"$",d:"min",m:4000,
+ i:"Compáralo con lo que cobras por domicilio y con el valor promedio del pedido. Si una entrega cuesta $6.000 y el pedido deja $5.000 de ganancia, se pierde plata.",
+ e:"Costo de domicilios $1.500.000 al mes con 400 entregas: $3.750 por entrega.",
+ err:"Calcularlo solo con la gasolina.",
+ t:["eco","res","dis","com","tra"]},
+{id:"ucv",a:"trans",n:"Utilización de la capacidad del vehículo",s:"UCV",
+ q:"Qué tan lleno sale el vehículo frente a su capacidad (en kg, m³ o canastas).",
+ p:"Sirve para no pagar viajes medio vacíos. Consolidar carga reduce el costo por unidad transportada y las emisiones.",
+ fx:"(Carga transportada ÷ Capacidad del vehículo) × 100",
+ v:[["a","Carga transportada (kg o m³)"],["b","Capacidad total del vehículo (misma unidad)"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:85,
+ i:"Lo ideal es sobre 85%, sin pasar el límite legal de peso. Si es bajo, agrupa pedidos por zonas o días.",
+ e:"Un camión de 3.500 kg salió con 2.450 kg: 70%.",
+ err:"Medir solo peso cuando la carga es liviana y voluminosa (ahí manda el volumen).",
+ t:["tra","dis","man"]},
+{id:"nov",a:"trans",n:"Entregas con novedad",s:"ENV",
+ q:"El porcentaje de entregas con algún problema: mercancía dañada, dirección errada, cliente ausente o devolución en ruta.",
+ p:"Sirve para encontrar las causas que hacen fallar la última milla y corregirlas (embalaje, confirmación de dirección, horarios).",
+ fx:"(Entregas con novedad ÷ Total de entregas) × 100",
+ v:[["a","Entregas con novedad"],["b","Total de entregas"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:2,
+ i:"Por debajo de 2% es bueno. Clasifica las novedades por tipo para atacar la más frecuente (Pareto).",
+ e:"De 250 entregas, 10 tuvieron novedad: 4%.",
+ err:"Registrar la novedad sin la causa; así no se puede mejorar.",
+ t:["tra","eco","dis","res"]},
+{id:"ckm",a:"trans",n:"Costo por kilómetro recorrido",s:"CxKm",
+ q:"Cuánto cuesta en promedio cada kilómetro que recorre la flota.",
+ p:"Sirve para cotizar fletes, comparar vehículos y detectar consumos anormales de combustible o mantenimientos costosos.",
+ fx:"Costo total de operación de la flota ÷ Kilómetros recorridos",
+ v:[["a","Costo total de la flota ($)"],["b","Kilómetros recorridos"]],c:v=>v.b?v.a/v.b:null,u:"$",d:"min",m:1500,
+ i:"Entre más bajo mejor. Si un vehículo tiene un costo por km muy superior a los demás, revisa su mantenimiento o el estilo de conducción.",
+ e:"La flota costó $6.000.000 y recorrió 4.000 km: $1.500 por km.",
+ err:"Dejar por fuera la depreciación, seguros (SOAT) y llantas.",
+ t:["tra","dis"]},
+/* ---- SERVICIO ---- */
+{id:"otif",a:"serv",n:"Pedido perfecto (OTIF)",s:"OTIF",
+ q:"El porcentaje de pedidos entregados completos, a tiempo, sin daños y con la documentación correcta, todo al mismo tiempo.",
+ p:"Es el KPI 'rey' del servicio logístico: resume en un solo número si la cadena completa funcionó bien para el cliente.",
+ fx:"(Pedidos perfectos ÷ Total de pedidos entregados) × 100",
+ v:[["a","Pedidos perfectos (completos + a tiempo + sin daño)"],["b","Total de pedidos entregados"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:90,
+ i:"Sobre 90% es un nivel de clase mundial. Es más exigente que cada KPI por separado: basta una falla para que el pedido no sea perfecto.",
+ e:"De 200 pedidos, 168 llegaron completos, a tiempo y sin daño: 84%.",
+ err:"Contar como perfecto un pedido que llegó a tiempo pero incompleto.",
+ t:["dis","eco","com","man","res","tra"]},
+{id:"fill",a:"serv",n:"Nivel de servicio (fill rate)",s:"FR",
+ q:"Qué porcentaje de las unidades que pidieron los clientes se les pudo entregar.",
+ p:"Sirve para medir si el inventario está respondiendo a la demanda. Cada unidad no entregada es una venta perdida.",
+ fx:"(Unidades entregadas ÷ Unidades solicitadas por los clientes) × 100",
+ v:[["a","Unidades entregadas"],["b","Unidades solicitadas"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:97,
+ i:"Sobre 97% es bueno. Si baja, revisar agotados y pronóstico de demanda.",
+ e:"Los clientes pidieron 2.000 unidades y se entregaron 1.880: 94%.",
+ err:"No registrar lo que el cliente pidió y no se tenía; sin ese dato el KPI siempre da 100%.",
+ t:["dis","com","eco","man"]},
+{id:"dev",a:"serv",n:"Devoluciones de clientes",s:"DEV",
+ q:"El porcentaje de unidades vendidas que los clientes devolvieron.",
+ p:"Sirve para detectar problemas de calidad, errores de despacho o mala información de venta. Las devoluciones generan costos de logística inversa.",
+ fx:"(Unidades devueltas ÷ Unidades vendidas) × 100",
+ v:[["a","Unidades devueltas"],["b","Unidades vendidas"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:2,
+ i:"Por debajo de 2% es sano. En e-commerce de ropa es normal que sea más alto (tallas).",
+ e:"Se vendieron 1.500 unidades y devolvieron 45: 3%.",
+ err:"No preguntar el motivo de la devolución.",
+ t:["com","dis","eco","man"]},
+{id:"ciclo",a:"serv",n:"Tiempo de ciclo del pedido",s:"TCP",
+ q:"Las horas promedio que pasan desde que el cliente hace el pedido hasta que lo recibe.",
+ p:"Sirve para competir por rapidez. Hoy el cliente compara con las grandes plataformas; saber el tiempo real ayuda a hacer promesas que se puedan cumplir.",
+ fx:"Suma de horas de todos los pedidos (pedido → entrega) ÷ Número de pedidos",
+ v:[["a","Suma total de horas"],["b","Número de pedidos"]],c:v=>v.b?v.a/v.b:null,u:"horas",d:"min",m:24,
+ i:"Entre menos, mejor. En domicilios de comida se mide en minutos (usa horas con decimales, ej. 0,75 h = 45 min).",
+ e:"10 pedidos sumaron 300 horas: 30 horas promedio por pedido.",
+ err:"Medir solo el tiempo del transporte y no el de alistamiento y facturación.",
+ t:["eco","dis","res","com","man","tra"]},
+{id:"pqrs",a:"serv",n:"Reclamos de clientes (PQRS)",s:"REC",
+ q:"Cuántos reclamos o quejas llegan por cada 100 pedidos atendidos.",
+ p:"Sirve para escuchar al cliente de forma medible y priorizar qué corregir primero.",
+ fx:"(Número de reclamos ÷ Total de pedidos) × 100",
+ v:[["a","Número de reclamos"],["b","Total de pedidos"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:2,
+ i:"Menos de 2 reclamos por cada 100 pedidos es bueno. Clasifícalos por causa (demora, daño, error, atención).",
+ e:"Un hotel atendió 400 reservas y recibió 12 quejas: 3%.",
+ err:"No tener un canal para recibir reclamos y creer que 'no hay quejas'.",
+ t:["com","dis","res","eco","tur","tra"]},
+{id:"sat",a:"serv",n:"Satisfacción del cliente",s:"CSAT",
+ q:"El porcentaje de clientes encuestados que califican el servicio como bueno o excelente (4 o 5 de 5).",
+ p:"Sirve para medir la percepción del cliente, que no siempre coincide con los números internos. Clientes satisfechos recompran y recomiendan.",
+ fx:"(Clientes que califican 4 o 5 ÷ Total de clientes encuestados) × 100",
+ v:[["a","Clientes satisfechos (4-5)"],["b","Clientes encuestados"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:85,
+ i:"Sobre 85% es bueno. Encuesta a una muestra significativa (mínimo 30 clientes) para que el dato sea confiable.",
+ e:"Se encuestaron 50 clientes y 41 calificaron 4 o 5: 82%.",
+ err:"Encuestar solo a los clientes amigos o frecuentes.",
+ t:["com","res","eco","tur","dis","tra","man"]},
+/* ---- COSTOS ---- */
+{id:"clt",a:"cost",n:"Costo logístico total sobre ventas",s:"CLT",
+ q:"Qué porcentaje de las ventas se gasta en toda la logística: compras, almacenamiento, transporte y administración logística.",
+ p:"Sirve para tener la foto completa del costo de mover el producto. En Colombia el costo logístico es alto frente a otros países, por eso controlarlo da ventaja competitiva.",
+ fx:"(Costo logístico total ÷ Ventas) × 100",
+ v:[["a","Costo logístico total ($)"],["b","Ventas ($)"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:12,
+ i:"Según las encuestas nacionales de logística, en Colombia este costo ronda entre el 12% y el 15% de las ventas. Estar por debajo es una ventaja.",
+ e:"Costos logísticos de $2.600.000 con ventas de $20.000.000: 13%.",
+ err:"Sumar costos que no son logísticos (publicidad, impuestos).",
+ t:["dis","com","man","eco","tra"]},
+{id:"margen",a:"cost",n:"Margen bruto",s:"MB",
+ q:"Qué porcentaje de las ventas queda después de descontar el costo de la mercancía vendida.",
+ p:"Sirve para saber cuánto deja cada venta para cubrir arriendo, nómina, transporte y ganancia. Las decisiones logísticas (compras, mermas) lo afectan directamente.",
+ fx:"((Ventas − Costo de la mercancía vendida) ÷ Ventas) × 100",
+ v:[["a","Ventas ($)"],["b","Costo de la mercancía vendida ($)"]],c:v=>v.a?(v.a-v.b)/v.a*100:null,u:"%",d:"max",m:25,
+ i:"Varía por sector: tiendas de barrio 15-25%, restaurantes 60-70%, artesanías aún más. Ajusta la meta a tu negocio.",
+ e:"Ventas de $16.000.000 y costo de ventas de $12.000.000: 25%.",
+ err:"Confundir margen con utilidad neta: al margen todavía le faltan los gastos fijos.",
+ t:["com","dis","res","man","eco","tur"]},
+{id:"vperd",a:"cost",n:"Ventas perdidas por agotados",s:"VPA",
+ q:"El valor de las ventas que no se pudieron hacer porque no había el producto, frente a las ventas totales.",
+ p:"Sirve para ponerle precio a los agotados y convencer al dueño de invertir en mejor planeación de inventario.",
+ fx:"(Valor de ventas perdidas ÷ Ventas totales) × 100",
+ v:[["a","Valor de ventas perdidas ($)"],["b","Ventas totales ($)"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:2,
+ i:"Menos de 2% es bueno. Requiere anotar cada vez que un cliente pide algo que no hay.",
+ e:"Se dejaron de vender $500.000 en un mes de $20.000.000: 2,5%.",
+ err:"No llevar el registro de 'lo que pidieron y no había'.",
+ t:["com","dis","res","eco"]},
+/* ---- PRODUCCIÓN ---- */
+{id:"efic",a:"prod",n:"Cumplimiento del plan de producción",s:"CPP",
+ q:"Qué porcentaje de lo que se planeó producir realmente se produjo.",
+ p:"Sirve para saber si la operación cumple lo programado y si se puede confiar en las fechas que se le dan al cliente.",
+ fx:"(Producción real ÷ Producción programada) × 100",
+ v:[["a","Unidades producidas"],["b","Unidades programadas"]],c:v=>pct(v.a,v.b),u:"%",d:"max",m:95,
+ i:"Sobre 95% es bueno. Si es bajo, revisar faltantes de materia prima, paradas o ausentismo.",
+ e:"Un taller de mochilas programó 60 y terminó 51: 85%.",
+ err:"Cambiar el plan a mitad de mes para que el indicador 'dé bien'.",
+ t:["man","res"]},
+{id:"desp",a:"prod",n:"Desperdicio de materia prima",s:"DMP",
+ q:"Qué porcentaje de la materia prima o insumos usados se desperdició.",
+ p:"Sirve para reducir costos y el impacto ambiental. En restaurantes y talleres, el desperdicio es una de las fugas de dinero más grandes.",
+ fx:"(Materia prima desperdiciada ÷ Materia prima utilizada) × 100",
+ v:[["a","Materia prima desperdiciada (kg, m, $)"],["b","Materia prima utilizada (misma unidad)"]],c:v=>pct(v.a,v.b),u:"%",d:"min",m:5,
+ i:"Por debajo de 5% es bueno en la mayoría de procesos. Mide por tipo de insumo para encontrar el más crítico.",
+ e:"Un restaurante usó 200 kg de alimentos y botó 18 kg: 9%.",
+ err:"No pesar ni anotar lo que se bota.",
+ t:["res","man"]},
+{id:"pmo",a:"prod",n:"Productividad de la mano de obra",s:"PMO",
+ q:"Cuántas unidades se producen (o servicios se atienden) por cada hora trabajada.",
+ p:"Sirve para planear personal, calcular costos por unidad y medir el efecto de capacitaciones o mejoras en el puesto de trabajo.",
+ fx:"Unidades producidas o atendidas ÷ Horas-hombre trabajadas",
+ v:[["a","Unidades producidas / atendidas"],["b","Horas-hombre trabajadas"]],c:v=>v.b?v.a/v.b:null,u:"und/h",d:"max",m:10,
+ i:"Más es mejor, siempre que no se sacrifique la calidad. Compara contra el mismo proceso en meses anteriores.",
+ e:"Una panadería produjo 2.400 panes con 160 horas-hombre: 15 und/h.",
+ err:"Comparar productividades de productos muy distintos.",
+ t:["man","res","tur"]}
+];
+const KM=Object.fromEntries(K.map(k=>[k.id,k]));
+
+/* ===================== ESTADO ===================== */
+/* El tablero vive dentro del estado del Taller Plan Estratégico (localStorage 'pel-v1', mismo sitio):
+   identidad = S.d.T1.equipo / S.d.T1.empresa y S.tid; tablero = S.d.T13.kpi. La entrega se hace desde la clase 13 del taller. */
+const PKEY="pel-v1";let DEMO=false;
+let S={e:{nombre:"",tipo:"",desc:"",equipo:"",ficha:"3229854",periodo:"",concl:"",correo:""},sel:[]};
+let fArea="todas";
+function pRead(){try{const r=localStorage.getItem(PKEY);return r?JSON.parse(r):null}catch(e){return null}}
+function pWrite(fn){const P=pRead()||{v:1,d:{},done:{},wa:"",mail:"",sent:{},tid:""};P.d=P.d||{};P.done=P.done||{};P.sent=P.sent||{};
+  if(!P.tid)P.tid=Math.random().toString(36).slice(2,8);fn(P);try{localStorage.setItem(PKEY,JSON.stringify(P))}catch(e){toast("No se pudo guardar: descarguen el respaldo")}return P}
+function snapshot(){return datos().map(d=>({id:d.k.id,n:d.k.n,s:d.k.s,area:AREAS[d.k.a].n,fx:d.k.fx,u:d.k.u,d:d.k.d,
+  datos:d.k.v.map(([key,lab])=>[lab,String(d.s.vals[key]??"")]),r:d.r==null?null:+d.r.toFixed(4),meta:numRaw(d.s.meta),tol:d.s.tol,e:d.e,
+  frec:d.s.frec,resp:d.s.resp,fuente:d.s.fuente,porque:d.s.porque,accion:d.s.accion}))}
+function guardar(){if(DEMO)return;pWrite(P=>{P.d.T1=P.d.T1||{};P.d.T1.equipo=S.e.equipo;P.d.T1.empresa=S.e.nombre;
+  const o={tipo:S.e.tipo,desc:S.e.desc,periodo:S.e.periodo,concl:S.e.concl,correo:S.e.correo,ficha:S.e.ficha,sel:S.sel,res:snapshot()};
+  P.d.T13=Object.assign({},P.d.T13||{},{kpi:o});})}
+function cargarDelTaller(){const P=pRead();const T1=(P&&P.d&&P.d.T1)||{},k=(P&&P.d&&P.d.T13&&P.d.T13.kpi)||{};
+  S={e:{nombre:T1.empresa||"",tipo:k.tipo||"",desc:k.desc||"",equipo:T1.equipo||"",ficha:k.ficha||"3229854",periodo:k.periodo||"",concl:k.concl||"",correo:k.correo||""},
+     sel:Array.isArray(k.sel)?k.sel.filter(s=>KM[s.id]):[]};
+  $("sinTaller").hidden=!!(P&&P.d&&P.d.T1&&(P.d.T1.equipo||P.d.T1.empresa));
+  const env=P&&P.cloud&&P.cloud.T13;$("estadoEnvio").innerHTML=env?"✅ Recibido por el instructor: "+new Date(env).toLocaleString("es-CO"):""}
+function irAEntregar(){if(DEMO){toast("Están en el ejemplo: vuelvan a su tablero");return}
+  if(!S.e.nombre.trim()||!/\d/.test(S.e.equipo)){toast("Escriban la empresa y el número de equipo");go("t1");return}
+  guardar();try{localStorage.setItem(PKEY+"-cur","T13")}catch(e){}location.href="../"}
+["visibilitychange","pagehide","blur"].forEach(ev=>window.addEventListener(ev,guardar));
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function num(x){if(x===""||x==null)return NaN;return parseFloat(String(x).replace(/\./g,"").replace(",","."))}
+function numRaw(x){if(x===""||x==null)return NaN;const s=String(x).trim();
+  // admite 1.500.000 / 1500000 / 0,75 / 0.75
+  if(/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s))return num(s);
+  return parseFloat(s.replace(",","."))}
+function fmt(v,u){if(v==null||!isFinite(v))return "—";
+  if(u==="$")return "$"+Math.round(v).toLocaleString("es-CO");
+  const d=Math.abs(v)>=100?0:(Math.abs(v)>=10?1:2);
+  const t=v.toLocaleString("es-CO",{maximumFractionDigits:d});
+  return u==="%"?t+"%":t+" "+u}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2200)}
+
+/* ===================== NAVEGACIÓN ===================== */
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>go(b.dataset.t));
+function go(t){
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===t));
+  if(t==="t2")renderCat(); if(t==="t3")renderMis(); if(t==="t4")renderDash(); if(t==="t5")renderCheck();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ===================== EMPRESA ===================== */
+const EF=["nombre","tipo","desc","equipo","ficha","periodo","concl","correo"];
+function syncEmpresaUI(){EF.forEach(f=>{const el=$("e_"+f);if(el)el.value=S.e[f]||""})}
+EF.forEach(f=>{const el=$("e_"+f);if(el)el.addEventListener("input",()=>{S.e[f]=el.value;guardar()})});
+
+/* ===================== CATÁLOGO ===================== */
+function renderChips(){
+  const h=['<button class="chip '+(fArea==="todas"?"on":"")+'" data-a="todas">Todas</button>']
+   .concat(Object.entries(AREAS).map(([k,a])=>`<button class="chip ${fArea===k?"on":""}" data-a="${k}" style="${fArea===k?"background:"+a.c+";border-color:"+a.c:""}">${a.n}</button>`));
+  $("chips").innerHTML=h.join("");
+  $("chips").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{fArea=c.dataset.a;renderCat()});
+}
+function isSel(id){return S.sel.some(s=>s.id===id)}
+function renderCat(){
+  renderChips();
+  const q=$("q").value.toLowerCase().trim(), solo=$("soloRec").checked, tp=S.e.tipo;
+  let list=K.filter(k=>(fArea==="todas"||k.a===fArea)&&(!solo||k.t.includes(tp))&&(!q||(k.n+k.p+k.q+k.s).toLowerCase().includes(q)));
+  if(tp)list.sort((x,y)=>(y.t.includes(tp))-(x.t.includes(tp)));
+  $("kgrid").innerHTML=list.length?list.map(k=>{const a=AREAS[k.a],sel=isSel(k.id),rec=tp&&k.t.includes(tp);
+   return `<div class="kcard ${sel?"sel":""}" style="--ac:${a.c}">
+    <div class="ktag">${a.n}</div>
+    <div class="kname">${esc(k.n)} <span style="color:var(--mut);font-weight:600">(${k.s})</span></div>
+    <div>${rec?'<span class="pill rec">⭐ Recomendado</span>':""}<span class="pill">${k.d==="max"?"↑ Más es mejor":"↓ Menos es mejor"}</span><span class="pill">${k.u}</span></div>
+    <div class="kp"><b>Para qué sirve:</b> ${esc(k.p)}</div>
+    <div class="fx">${esc(k.fx)}</div>
+    <div class="row"><button class="btn sec sm" onclick="explicar('${k.id}')">📖 Explicación completa</button>
+    ${sel?`<button class="btn red sm" onclick="quitar('${k.id}')">✖ Quitar</button>`:`<button class="btn sm" onclick="agregar('${k.id}')">➕ Agregar</button>`}</div>
+   </div>`}).join(""):'<div class="empty card">No hay KPI con ese filtro.</div>';
+}
+$("q").addEventListener("input",renderCat);$("soloRec").addEventListener("change",renderCat);
+
+function explicar(id){const k=KM[id],a=AREAS[k.a];
+  $("mbox").style.setProperty("--ac",a.c);
+  $("mbox").innerHTML=`<div class="ktag" style="--ac:${a.c}">${a.n}</div>
+   <h2 style="color:${a.c};margin:4px 0">${esc(k.n)} (${k.s})</h2>
+   <div><span class="pill">${k.d==="max"?"↑ Más es mejor":"↓ Menos es mejor"}</span><span class="pill">Unidad: ${k.u}</span><span class="pill">Meta referencia: ${fmt(k.m,k.u)}</span></div>
+   <h4>🎯 ¿Qué mide?</h4><p>${esc(k.q)}</p>
+   <h4>💡 ¿Para qué sirve?</h4><p>${esc(k.p)}</p>
+   <h4>🧮 ¿Cómo se calcula?</h4><div class="fx">${esc(k.fx)}</div>
+   <h4>📈 ¿Cómo se interpreta?</h4><p>${esc(k.i)}</p>
+   <h4>✏️ Ejemplo resuelto</h4><p>${esc(k.e)}</p>
+   <h4>⚠️ Error común</h4><p>${esc(k.err)}</p>
+   <h4>🏪 Aplica especialmente a</h4><p>${k.t.map(t=>TIPOS[t]).join(" · ")}</p>
+   <div class="row" style="margin-top:16px">${isSel(id)?`<button class="btn red" onclick="quitar('${id}');cerrar()">✖ Quitar de mi tablero</button>`:`<button class="btn" onclick="agregar('${id}');cerrar()">➕ Agregar a mi tablero</button>`}
+   <button class="btn sec" onclick="cerrar()">Cerrar</button></div>`;
+  $("modal").classList.add("on")}
+function cerrar(){$("modal").classList.remove("on")}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")cerrar()});
+
+function agregar(id){if(isSel(id))return;const k=KM[id];
+  S.sel.push({id,vals:{},meta:k.m,tol:10,frec:"Mensual",resp:"",fuente:"",porque:"",accion:""});
+  guardar();upd();renderCat();toast("Agregado: "+k.n)}
+function quitar(id){S.sel=S.sel.filter(s=>s.id!==id);guardar();upd();renderCat();if($("t3").classList.contains("on"))renderMis()}
+function upd(){$("bdg").textContent=S.sel.length}
+
+/* ===================== CÁLCULO Y SEMÁFORO ===================== */
+function calc(s){const k=KM[s.id];const v={};let ok=true;
+  k.v.forEach(([key])=>{const n=numRaw(s.vals[key]);if(!isFinite(n))ok=false;v[key]=n});
+  if(!ok)return null;const r=k.c(v);return (r==null||!isFinite(r))?null:r}
+function estado(s,r){const k=KM[s.id];if(r==null)return "n";const m=numRaw(s.meta),t=(numRaw(s.tol)||0)/100;if(!isFinite(m))return "n";
+  if(k.d==="max"){if(r>=m)return "v";if(r>=m*(1-t))return "a";return "r"}
+  else{if(r<=m)return "v";if(r<=m*(1+t))return "a";return "r"}}
+function cumpl(s,r){const k=KM[s.id];const m=numRaw(s.meta);if(r==null||!isFinite(m)||m===0)return null;
+  let c=k.d==="max"?r/m*100:(r===0?150:m/r*100);return Math.max(0,Math.min(150,c))}
+const SEMT={v:"🟢 Cumple",a:"🟡 Alerta",r:"🔴 No cumple",n:"⚪ Sin datos"};
+const SEMC={v:"var(--verde)",a:"var(--amar)",r:"var(--rojo)",n:"#9aa596"};
+const SEMH={v:"#2e9d3a",a:"#a87400",r:"#d93a2b",n:"#9aa596"};
+
+/* ===================== MIS KPI ===================== */
+function renderMis(){
+  if(!S.sel.length){$("mis").innerHTML='<div class="card empty">Todavía no has agregado KPI.<br><br><button class="btn" onclick="go(\'t2\')">Ir al catálogo</button></div>';return}
+  $("mis").innerHTML=S.sel.map((s,i)=>{const k=KM[s.id],a=AREAS[k.a];
+   return `<div class="panel" style="--ac:${a.c}" id="p_${s.id}">
+    <div class="phead"><div><div class="ktag" style="--ac:${a.c}">${i+1}. ${a.n}</div><h3 style="margin:2px 0">${esc(k.n)} (${k.s})</h3>
+     <div class="fx" style="display:inline-block">${esc(k.fx)}</div></div>
+     <div style="text-align:right"><div class="result" id="r_${s.id}">—</div><div id="s_${s.id}"></div></div></div>
+    <div class="grid${k.v.length===3?3:2}">${k.v.map(([key,lab])=>`<div><label>${esc(lab)}</label><input inputmode="decimal" data-id="${s.id}" data-v="${key}" value="${esc(s.vals[key]??"")}" placeholder="0"></div>`).join("")}</div>
+    <div class="grid3">
+     <div><label>Meta (${k.d==="max"?"mínimo aceptable":"máximo aceptable"}) en ${k.u}</label><input inputmode="decimal" data-id="${s.id}" data-f="meta" value="${esc(s.meta)}"></div>
+     <div><label>Tolerancia para 🟡 (%)</label><input inputmode="decimal" data-id="${s.id}" data-f="tol" value="${esc(s.tol)}"></div>
+     <div><label>Frecuencia de medición</label><select data-id="${s.id}" data-f="frec">${["Diaria","Semanal","Quincenal","Mensual","Trimestral"].map(o=>`<option ${s.frec===o?"selected":""}>${o}</option>`).join("")}</select></div>
+    </div>
+    <div class="grid2">
+     <div><label>Responsable (cargo)</label><input data-id="${s.id}" data-f="resp" value="${esc(s.resp)}" placeholder="Ej: Jefe de bodega"></div>
+     <div><label>Fuente de los datos</label><input data-id="${s.id}" data-f="fuente" value="${esc(s.fuente)}" placeholder="Ej: Kárdex, facturas, planilla de entregas"></div>
+    </div>
+    <label>¿Por qué este KPI es importante para ${esc(S.e.nombre||"la empresa")}? *</label>
+    <textarea data-id="${s.id}" data-f="porque" placeholder="Explica con tus palabras qué problema o decisión de la empresa ayuda a controlar.">${esc(s.porque)}</textarea>
+    <div class="row" style="margin-top:8px"><button class="btn sec sm" onclick="explicar('${s.id}')">📖 ¿Para qué sirve?</button><button class="btn red sm" onclick="quitar('${s.id}')">✖ Quitar</button></div>
+   </div>`}).join("")+`<div class="row"><button class="btn sec" onclick="go('t2')">➕ Agregar más KPI</button><button class="btn" onclick="go('t4')">Ver mi dashboard →</button></div>`;
+  $("mis").querySelectorAll("[data-id]").forEach(el=>el.addEventListener("input",()=>{
+    const s=S.sel.find(x=>x.id===el.dataset.id);if(el.dataset.v)s.vals[el.dataset.v]=el.value;else s[el.dataset.f]=el.value;guardar();pintaRes(s)}));
+  S.sel.forEach(pintaRes);
+}
+function pintaRes(s){const k=KM[s.id],r=calc(s),e=estado(s,r);
+  const R=$("r_"+s.id),Se=$("s_"+s.id);if(!R)return;R.textContent=fmt(r,k.u);R.style.color=SEMC[e];
+  Se.innerHTML=`<span class="sem ${e}">${SEMT[e]}</span>`}
+
+/* ===================== DASHBOARD ===================== */
+let ch1,ch2;
+function datos(){return S.sel.map(s=>{const k=KM[s.id],r=calc(s);return{s,k,r,e:estado(s,r),c:cumpl(s,r)}})}
+function renderDash(){
+  const D=datos(),cnt={v:0,a:0,r:0,n:0};D.forEach(d=>cnt[d.e]++);
+  const cs=D.filter(d=>d.c!=null).map(d=>Math.min(100,d.c));const ig=cs.length?cs.reduce((a,b)=>a+b,0)/cs.length:null;
+  $("dhead").innerHTML=`<h2 style="margin:0">Tablero de control logístico · ${esc(S.e.nombre||"(sin nombre)")}</h2>
+   <div style="color:var(--mut);font-size:14px">${S.e.tipo?TIPOS[S.e.tipo]+" · ":""}${esc(S.e.periodo||"Periodo sin definir")} · Equipo: ${esc(S.e.equipo||"—")} · Ficha ${esc(S.e.ficha)}</div>`;
+  $("tiles").innerHTML=`<div class="tile"><b>${D.length}</b><span>KPI medidos</span></div>
+   <div class="tile"><b style="color:var(--verde)">${cnt.v}</b><span>🟢 Cumplen</span></div>
+   <div class="tile"><b style="color:var(--amar)">${cnt.a}</b><span>🟡 En alerta</span></div>
+   <div class="tile"><b style="color:var(--rojo)">${cnt.r}</b><span>🔴 No cumplen</span></div>
+   <div class="tile"><b>${ig==null?"—":ig.toFixed(0)+"%"}</b><span>Índice global de cumplimiento</span></div>`;
+  $("dgrid").innerHTML=D.length?D.map(d=>`<div class="dk" style="--st:${SEMH[d.e]}">
+    <div class="ktag" style="--ac:${AREAS[d.k.a].c}">${AREAS[d.k.a].n}</div>
+    <div style="font-weight:800">${esc(d.k.n)}</div>
+    <div class="val">${fmt(d.r,d.k.u)}</div>
+    <div style="font-size:12.5px;color:var(--mut)">Meta: ${d.k.d==="max"?"≥":"≤"} ${fmt(numRaw(d.s.meta),d.k.u)} · ${SEMT[d.e]}</div>
+    <div class="bar"><i style="width:${Math.min(100,d.c||0)}%"></i></div></div>`).join(""):'<div class="empty">Agrega KPI en el catálogo para ver tu dashboard.</div>';
+  // gráficos
+  if(typeof Chart!=="undefined"){
+    if(ch1)ch1.destroy();if(ch2)ch2.destroy();
+    ch1=new Chart($("ch1"),{type:"bar",data:{labels:D.map(d=>d.k.s),datasets:[{label:"% de cumplimiento de la meta",data:D.map(d=>d.c==null?0:+d.c.toFixed(1)),backgroundColor:D.map(d=>SEMH[d.e])}]},
+      options:{indexAxis:"y",maintainAspectRatio:false,animation:false,plugins:{title:{display:true,text:"Cumplimiento por KPI (100% = meta)"},legend:{display:false},tooltip:{callbacks:{afterLabel:c=>D[c.dataIndex].k.n}}},scales:{x:{min:0,max:150}}}});
+    const ar=Object.keys(AREAS).filter(a=>D.some(d=>d.k.a===a));
+    const av=ar.map(a=>{const x=D.filter(d=>d.k.a===a&&d.c!=null).map(d=>Math.min(100,d.c));return x.length?+(x.reduce((p,q)=>p+q,0)/x.length).toFixed(1):0});
+    ch2=new Chart($("ch2"),{type:ar.length>=3?"radar":"bar",data:{labels:ar.map(a=>AREAS[a].n),datasets:[{label:"Cumplimiento promedio %",data:av,backgroundColor:"rgba(57,169,0,.25)",borderColor:"#39A900",pointBackgroundColor:"#39A900"}]},
+      options:{maintainAspectRatio:false,animation:false,plugins:{title:{display:true,text:"Desempeño por área logística"}},scales:ar.length>=3?{r:{min:0,max:100}}:{y:{min:0,max:100}}}});
+  }
+  // ficha técnica
+  $("ficha").innerHTML=`<tr><th>KPI</th><th>Objetivo (qué mide)</th><th>Fórmula</th><th>Unidad</th><th>Meta</th><th>Semáforo</th><th>Frecuencia</th><th>Responsable</th><th>Fuente</th><th>Resultado</th></tr>`+
+   D.map(d=>{const m=numRaw(d.s.meta),t=numRaw(d.s.tol)||0,u=d.k.u;
+    const sem=d.k.d==="max"?`🟢 ≥ ${fmt(m,u)}<br>🟡 ${fmt(m*(1-t/100),u)} a ${fmt(m,u)}<br>🔴 &lt; ${fmt(m*(1-t/100),u)}`:`🟢 ≤ ${fmt(m,u)}<br>🟡 ${fmt(m,u)} a ${fmt(m*(1+t/100),u)}<br>🔴 &gt; ${fmt(m*(1+t/100),u)}`;
+    return `<tr><td><b>${esc(d.k.n)}</b> (${d.k.s})</td><td>${esc(d.k.q)}</td><td>${esc(d.k.fx)}</td><td>${u}</td><td>${d.k.d==="max"?"≥":"≤"} ${fmt(m,u)}</td><td style="white-space:nowrap">${sem}</td><td>${esc(d.s.frec)}</td><td>${esc(d.s.resp||"—")}</td><td>${esc(d.s.fuente||"—")}</td><td style="color:${SEMH[d.e]};font-weight:800">${fmt(d.r,u)}</td></tr>`}).join("");
+  // plan de acción
+  const crit=D.filter(d=>d.e==="r"||d.e==="a");
+  $("plan").innerHTML=crit.length?crit.map(d=>`<label>${d.e==="r"?"🔴":"🟡"} ${esc(d.k.n)} — resultado ${fmt(d.r,d.k.u)} vs meta ${fmt(numRaw(d.s.meta),d.k.u)}: ¿qué acción de mejora proponen? *</label>
+    <textarea data-pa="${d.s.id}" placeholder="Acción concreta, responsable y plazo. Ej: Implementar PEPS en la bodega de lácteos – Administrador – 2 semanas.">${esc(d.s.accion)}</textarea>`).join("")
+    :'<div class="tip">Ningún KPI está en 🔴 o 🟡. Revisa si las metas son suficientemente retadoras.</div>';
+  $("plan").querySelectorAll("[data-pa]").forEach(el=>el.addEventListener("input",()=>{S.sel.find(x=>x.id===el.dataset.pa).accion=el.value;guardar()}));
+}
+
+/* ===================== ENTREGA ===================== */
+function revisar(){const D=datos(),areas=new Set(D.map(d=>d.k.a));
+  return[
+   [!!S.e.nombre.trim(),"Nombre de la empresa"],[!!S.e.tipo,"Tipo de negocio"],[/\d/.test(S.e.equipo),"Número de equipo e integrantes (igual que en el taller)"],
+   [D.length>=6,`Mínimo 6 KPI (llevas ${D.length})`],[areas.size>=3,`KPI de al menos 3 áreas (llevas ${areas.size})`],
+   [D.length>0&&D.every(d=>d.r!=null),"Todos los KPI tienen datos calculados"],
+   [D.length>0&&D.every(d=>d.s.porque.trim().length>=20),"Todos los KPI tienen la justificación '¿por qué es importante?'"],
+   [D.filter(d=>d.e==="r"||d.e==="a").every(d=>d.s.accion.trim().length>=15),"Plan de acción para los KPI en 🔴/🟡"],
+   [S.e.concl.trim().length>=40,"Conclusión general del equipo"]]}
+function renderCheck(){const R=revisar(),ok=R.filter(r=>r[0]).length;
+  $("checklist").innerHTML=`<div class="tip ${ok<R.length?"warn":""}"><b>Lista de chequeo: ${ok}/${R.length}</b><ul class="check" style="margin:6px 0 0;padding-left:18px">${R.map(r=>`<li>${r[0]?"✅":"⬜"} ${r[1]}</li>`).join("")}</ul>${ok<R.length?"<div style='margin-top:6px'>Puedes entregar igual, pero lo incompleto afecta la calificación.</div>":""}</div>`}
+function resumen(){const D=datos();
+  let t=`📊 TABLERO DE KPI LOGÍSTICOS – LogiLab SENA\nEmpresa: ${S.e.nombre}\nTipo: ${TIPOS[S.e.tipo]||"—"}\nPeriodo: ${S.e.periodo||"—"}\nEquipo: ${S.e.equipo}\nFicha: ${S.e.ficha}\n\n`;
+  D.forEach((d,i)=>{t+=`${i+1}. ${d.k.n} (${d.k.s}): ${fmt(d.r,d.k.u)} | Meta ${d.k.d==="max"?"≥":"≤"} ${fmt(numRaw(d.s.meta),d.k.u)} | ${SEMT[d.e]}\n`;
+    if(d.s.porque)t+=`   Importancia: ${d.s.porque}\n`; if(d.s.accion)t+=`   Acción: ${d.s.accion}\n`});
+  t+=`\nConclusión: ${S.e.concl||"—"}`;return t}
+function copiar(){const t=resumen();
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(()=>toast("Resumen copiado ✅")).catch(()=>copiaVieja(t));else copiaVieja(t)}
+function copiaVieja(t){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");toast("Resumen copiado ✅")}catch(e){prompt("Copia este texto:",t)}a.remove()}
+function whatsapp(){window.open("https://wa.me/?text="+encodeURIComponent(resumen()+"\n\n(Adjunto el reporte HTML del dashboard)"),"_blank")}
+function correo(){const to=S.e.correo||"",su=`KPI Logísticos – ${S.e.nombre} – Ficha ${S.e.ficha}`;
+  const a=document.createElement("a");a.href=`mailto:${to}?subject=${encodeURIComponent(su)}&body=${encodeURIComponent(resumen().slice(0,1800)+"\n\nAdjunto el reporte HTML completo.")}`;
+  a.target="_top";document.body.appendChild(a);a.click();a.remove();toast("Si no abre el correo, usa 📋 Copiar resumen")}
+function bajar(nombre,contenido,tipo){const b=new Blob([contenido],{type:tipo}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=nombre;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500)}
+const slug=()=>(S.e.nombre||"empresa").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/gi,"_").toLowerCase();
+function guardarJSON(){bajar(`avance_kpi_${slug()}.json`,JSON.stringify(S,null,1),"application/json");toast("Avance descargado")}
+function cargarJSON(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.e||!Array.isArray(d.sel))throw 0;
+  if(DEMO)salirEjemplo();d.sel=d.sel.filter(s=>KM[s.id]);d.e=Object.assign({},S.e,d.e,{nombre:S.e.nombre||d.e.nombre||"",equipo:S.e.equipo||d.e.equipo||""});S=d;guardar();syncEmpresaUI();upd();toast("Avance cargado ✅");go("t1")}catch(e){alert("El archivo no es un avance válido de este aplicativo.")}};r.readAsText(f);ev.target.value=""}
+function reiniciar(){if(DEMO){salirEjemplo();return}if(!confirm("¿Borrar el tablero de KPI? El equipo, la empresa y los demás talleres no se tocan."))return;
+  S.sel=[];S.e.tipo="";S.e.desc="";S.e.periodo="";S.e.concl="";guardar();syncEmpresaUI();upd();go("t1")}
+function imprimir(){go("t4");setTimeout(()=>window.print(),600)}
+function descargarReporte(){go("t4");setTimeout(()=>{
+  const D=datos(),img1=ch1?ch1.toBase64Image():"",img2=ch2?ch2.toBase64Image():"";
+  const css=`body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:1000px;margin:auto;padding:20px;color:#1d2a1a}h1{color:#2a7d00;margin-bottom:0}h2{color:#2a7d00;border-bottom:3px solid #39A900;padding-bottom:4px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccc;padding:6px;vertical-align:top}th{background:#39A900;color:#fff}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}.k{border:1px solid #ddd;border-left:6px solid;border-radius:10px;padding:10px}.v{font-size:26px;font-weight:900}img{max-width:100%}footer{text-align:center;color:#666;margin-top:30px;font-size:13px}`;
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KPI ${esc(S.e.nombre)}</title><style>${css}</style></head><body>
+  <div style="font-size:12px;letter-spacing:1px;color:#39A900;font-weight:700">LOGILAB SENA · PLAN ESTRATÉGICO LOGÍSTICO</div>
+  <h1>Tablero de KPI logísticos – ${esc(S.e.nombre)}</h1>
+  <p><b>Tipo:</b> ${TIPOS[S.e.tipo]||"—"} · <b>Periodo:</b> ${esc(S.e.periodo||"—")} · <b>Ficha:</b> ${esc(S.e.ficha)}<br><b>Equipo:</b> ${esc(S.e.equipo)}<br><b>Descripción:</b> ${esc(S.e.desc||"—")}</p>
+  <h2>Dashboard</h2><div class="g">${D.map(d=>`<div class="k" style="border-left-color:${SEMH[d.e]}"><small>${AREAS[d.k.a].n}</small><div><b>${esc(d.k.n)}</b></div><div class="v" style="color:${SEMH[d.e]}">${fmt(d.r,d.k.u)}</div><small>Meta ${d.k.d==="max"?"≥":"≤"} ${fmt(numRaw(d.s.meta),d.k.u)} · ${SEMT[d.e]}</small></div>`).join("")}</div>
+  ${img1?`<p><img src="${img1}"></p>`:""}${img2?`<p><img src="${img2}" style="max-width:520px"></p>`:""}
+  <h2>Ficha técnica de los indicadores</h2>${$("ficha").outerHTML}
+  <h2>Justificación de los KPI</h2><table><tr><th>KPI</th><th>Para qué sirve</th><th>¿Por qué es importante para la empresa? (equipo)</th></tr>${D.map(d=>`<tr><td><b>${esc(d.k.n)}</b></td><td>${esc(d.k.p)}</td><td>${esc(d.s.porque||"—")}</td></tr>`).join("")}</table>
+  <h2>Plan de acción</h2><table><tr><th>KPI</th><th>Resultado</th><th>Acción de mejora</th></tr>${D.filter(d=>d.e==="r"||d.e==="a").map(d=>`<tr><td>${SEMT[d.e]} ${esc(d.k.n)}</td><td>${fmt(d.r,d.k.u)}</td><td>${esc(d.s.accion||"—")}</td></tr>`).join("")||"<tr><td colspan=3>Sin KPI críticos</td></tr>"}</table>
+  <h2>Conclusión del equipo</h2><p>${esc(S.e.concl||"—").replace(/\n/g,"<br>")}</p>
+  <footer><b>LogiLab SENA</b> · Centro Industrial y de Energías Alternativas · Regional Guajira<br>By Carlos Barrios · Instructor<br>Generado: ${new Date().toLocaleString("es-CO")}</footer></body></html>`;
+  bajar(`reporte_kpi_${slug()}.html`,html,"text/html");toast("Reporte descargado ✅")},700)}
+
+/* ===================== EJEMPLO ===================== */
+function cargarEjemplo(){
+  guardar();DEMO=true;$("demoBar").hidden=false;
+  S={e:{nombre:"Minimarket El Ejemplo (empresa ficticia)",tipo:"com",desc:"Venta de víveres, aseo y bebidas al detal en Riohacha. Compra a 6 proveedores (2 locales y 4 de Barranquilla) y hace domicilios en 2 motos.",
+    equipo:"Equipo demostración",ficha:"3229854",periodo:"Septiembre 2026",correo:"",
+    concl:"El minimarket tiene buen servicio en mostrador pero pierde dinero en inventario: la exactitud del kárdex y las mermas están fuera de meta y los agotados le hacen perder ventas. La prioridad es implementar conteos cíclicos semanales y PEPS en perecederos."},
+   sel:[
+    {id:"otdp",vals:{a:17,b:20},meta:95,tol:10,frec:"Mensual",resp:"Administrador",fuente:"Órdenes de compra y facturas",porque:"Los proveedores de Barranquilla se retrasan y eso deja la tienda sin productos de alta rotación.",accion:"Pedir con 2 días más de anticipación y conseguir un segundo proveedor local de bebidas – Administrador – 1 mes."},
+    {id:"rot",vals:{a:9000000,b:3000000},meta:2,tol:10,frec:"Mensual",resp:"Dueño",fuente:"Contabilidad y kárdex",porque:"Permite saber si el dinero invertido en mercancía se recupera rápido o se queda quieto en la estantería.",accion:""},
+    {id:"eri",vals:{a:44,b:50},meta:97,tol:10,frec:"Semanal",resp:"Auxiliar de bodega",fuente:"Conteo físico vs kárdex",porque:"Si el kárdex no cuadra, se compra lo que no se necesita y faltan productos que sí se venden.",accion:"Conteos cíclicos semanales de las 20 referencias A – Auxiliar de bodega – inicia ya."},
+    {id:"agot",vals:{a:14,b:200},meta:3,tol:10,frec:"Semanal",resp:"Administrador",fuente:"Revisión de góndola",porque:"Cada producto agotado es un cliente que se va a la tienda de la esquina.",accion:"Definir punto de reorden para los 30 productos más vendidos – Administrador – 2 semanas."},
+    {id:"merma",vals:{a:180000,b:6000000},meta:1,tol:10,frec:"Mensual",resp:"Auxiliar de bodega",fuente:"Planilla de bajas",porque:"Las pérdidas de lácteos y frutas se están comiendo la poca ganancia de esos productos.",accion:"Aplicar PEPS/FEFO en nevera y exhibir con fecha visible – Auxiliar – 1 semana."},
+    {id:"otd",vals:{a:270,b:300},meta:95,tol:10,frec:"Semanal",resp:"Domiciliarios",fuente:"Planilla de domicilios",porque:"Los domicilios son el 30% de las ventas y el cliente compara con las apps.",accion:"Agrupar domicilios por sector y prometer 45 min en vez de 30 – Administrador – inmediato."},
+    {id:"cxe",vals:{a:1500000,b:400},meta:4000,tol:10,frec:"Mensual",resp:"Dueño",fuente:"Gastos de motos y nómina",porque:"Sirve para saber si el domicilio gratis es sostenible o hay que fijar un pedido mínimo.",accion:""},
+    {id:"sat",vals:{a:41,b:50},meta:85,tol:10,frec:"Trimestral",resp:"Cajera",fuente:"Encuesta en caja (Google Forms)",porque:"Mide si los clientes del barrio sienten que el servicio mejora y vuelven a comprar.",accion:"Capacitar a cajeras en atención y crear grupo de WhatsApp de ofertas – Dueño – 1 mes."}
+   ]};
+  syncEmpresaUI();upd();toast("Ejemplo cargado: su tablero quedó guardado aparte");go("t4")}
+function salirEjemplo(){DEMO=false;$("demoBar").hidden=true;cargarDelTaller();syncEmpresaUI();upd();go("t1");toast("De vuelta a su tablero")}
+
+/* ===================== INICIO ===================== */
+(function(){cargarDelTaller();
+  syncEmpresaUI();upd();$("e_concl").addEventListener("input",()=>{S.e.concl=$("e_concl").value;guardar()})})();
+window.addEventListener("storage",ev=>{if(ev.key!==PKEY||DEMO)return;const P=pRead();const T1=(P&&P.d&&P.d.T1)||{};if(T1.empresa!==undefined&&T1.empresa!==S.e.nombre||T1.equipo!==undefined&&T1.equipo!==S.e.equipo){S.e.nombre=T1.empresa||"";S.e.equipo=T1.equipo||"";syncEmpresaUI()}});
+</script>
+</body>
+</html>
