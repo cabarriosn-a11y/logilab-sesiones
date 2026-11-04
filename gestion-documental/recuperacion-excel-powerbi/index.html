@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taller de Recuperación · Excel y Power BI · Gestión Documental | LogiLab SENA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--sena:#39A900;--sena-d:#2b7f00;--sena-l:#eaf6e2;--pbi:#F2C811;--xl:#1D6F42;
+--ink:#1c2321;--muted:#5d6763;--line:#dfe5e1;--bg:#f6f8f6;--card:#fff;--field:#fff;
+--info:#0b6bcb;--info-l:#e6f0fb;--warn:#9a5b00;--warn-l:#fff4e0;--bad:#c62828;--bad-l:#fdecea;--ok-l:#e3f4e6;--r:14px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e7ece9;--muted:#a1aca6;--line:#2c3430;--bg:#121614;--card:#1b201d;--field:#141816;--sena-l:#1d2e15;--info-l:#14243a;--warn-l:#33270f;--bad-l:#3a1a17;--ok-l:#17301e}}
+:root[data-theme="dark"]{--ink:#e7ece9;--muted:#a1aca6;--line:#2c3430;--bg:#121614;--card:#1b201d;--field:#141816;--sena-l:#1d2e15;--info-l:#14243a;--warn-l:#33270f;--bad-l:#3a1a17;--ok-l:#17301e}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:16px}
+code,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em;background:var(--sena-l);padding:1px 5px;border-radius:5px}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+header.hero{background:linear-gradient(135deg,#1e3d12 0%,#2b7f00 60%,#39A900 100%);color:#fff;padding:26px 0 22px}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;opacity:.92}
+.brand a{color:#fff;text-decoration:none}
+.brand button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit}
+h1{font-size:clamp(1.5rem,4.5vw,2.3rem);line-height:1.15;margin:10px 0 6px}
+.hero p{margin:0;opacity:.92;max-width:720px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{background:rgba(255,255,255,.16);border-radius:999px;padding:4px 12px;font-size:.85rem;font-weight:600}
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+nav.tabs button{border:0;background:none;padding:13px 14px;font:600 .92rem Inter,sans-serif;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent}
+nav.tabs button.on{color:var(--sena-d);border-bottom-color:var(--sena)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) nav.tabs button.on{color:#7fd34d}}
+:root[data-theme="dark"] nav.tabs button.on{color:#7fd34d}
+main{padding:20px 0 40px}
+.view{display:none}.view.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.card h2{margin:0 0 8px;font-size:1.3rem}.card h3{margin:16px 0 6px;font-size:1.05rem}
+.kicker{display:inline-block;font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--sena-d);margin-bottom:4px}
+.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+label.f{display:block;font-weight:600;font-size:.92rem;margin-bottom:4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--field);border:2px solid var(--line);border-radius:10px;padding:10px 12px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--sena)}
+textarea{min-height:76px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:.88rem}
+textarea.prose{font-family:Inter,sans-serif;font-size:.95rem}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:11px 18px;font:700 .95rem Inter,sans-serif;cursor:pointer;background:var(--sena);color:#fff}
+.btn:hover{background:var(--sena-d)}.btn.s{background:var(--sena-l);color:var(--sena-d)}.btn:disabled{opacity:.55;cursor:not-allowed}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.box{border-radius:12px;padding:12px 14px;margin:12px 0;font-size:.95rem}
+.box .h{display:block;margin-bottom:2px}
+.info{background:var(--info-l)}.warn{background:var(--warn-l)}.bad{background:var(--bad-l)}.ok{background:var(--ok-l)}
+ol.steps{padding-left:22px;margin:8px 0}ol.steps li{margin:6px 0}
+.q{border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0;background:var(--card)}
+.q .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.q .n{font-weight:800;color:var(--sena-d)}.q .pts{font-size:.8rem;color:var(--muted);white-space:nowrap}
+.q p{margin:4px 0 10px}
+.q.done{border-color:var(--sena)}
+.part-x{border-left:5px solid var(--xl)}.part-p{border-left:5px solid var(--pbi)}
+table.t{width:100%;border-collapse:collapse;font-size:.9rem}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left}
+table.t th{background:var(--sena-l)}
+.prog{height:8px;background:rgba(255,255,255,.25);border-radius:9px;margin-top:14px;overflow:hidden}
+.prog div{height:100%;width:0;background:var(--pbi);transition:width .3s}
+.muted{color:var(--muted);font-size:.88rem}
+.lock{opacity:.5;pointer-events:none}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{background:var(--card);color:var(--ink);border-radius:16px;max-width:440px;width:100%;padding:22px;max-height:90vh;overflow:auto}
+.modal h3{margin:0 0 6px}.modal .btn{width:100%;justify-content:center;margin-top:8px}
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:24px 16px;border-top:1px solid var(--line)}
+@media print{nav.tabs,.btns,header .brand button{display:none}.view{display:block!important}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <div class="brand"><a href="../../">← LogiLab SENA</a><button id="tema" type="button" aria-label="Cambiar tema">◐ Tema</button></div>
+  <h1>Taller de Recuperación<br>Excel y Power BI para Gestión Documental</h1>
+  <p>Fichas 3538385, 3410084 y 3326720 · Tecnólogo en Gestión Documental. Trabajas con <b>tu propia base de datos</b> de una ventanilla única: nadie más tiene los mismos números que tú.</p>
+  <div class="chips"><span class="chip">📊 Parte A · Excel (50 pts)</span><span class="chip">📈 Parte B · Power BI (40 pts)</span><span class="chip">📎 Evidencias (10 pts)</span><span class="chip">✅ Aprueba con 70/100</span></div>
+  <div class="prog"><div id="progFill"></div></div>
+  <div class="muted" style="color:#fff;opacity:.85;margin-top:4px" id="progLabel">0 de 18 respuestas</div>
+</div></header>
+
+<nav class="tabs"><div class="wrap" id="tabs"></div></nav>
+
+<main><div class="wrap">
+
+<!-- ============ INICIO ============ -->
+<section class="view" data-tab="1 · Inicio">
+  <div class="card">
+    <span class="kicker">Paso 1</span>
+    <h2>Identifícate y descarga tus datos</h2>
+    <p>Con estos datos te califica el instructor. Escríbelos bien: tu documento <b>genera tu base de datos personal</b> y es el que se valida al entregar.</p>
+    <div class="grid g3">
+      <div><label class="f" for="doc">Número de documento</label><input id="doc" inputmode="numeric" autocomplete="off" placeholder="Sin puntos ni espacios"></div>
+      <div><label class="f" for="ficha">Ficha</label><select id="ficha"><option value="">Elige tu ficha…</option><option>3538385</option><option>3410084</option><option>3326720</option></select></div>
+      <div><label class="f" for="nombre">Nombre completo</label><input id="nombre" autocomplete="name" placeholder="Nombres y apellidos"></div>
+    </div>
+    <div class="btns"><button class="btn" id="btnGen" type="button">⬇️ Generar y descargar mi archivo Excel</button></div>
+    <div id="genMsg"></div>
+  </div>
+
+  <div class="card">
+    <span class="kicker">El caso</span>
+    <h2>Ventanilla única de Aguas del Cardón S.A. E.S.P.</h2>
+    <p>Eres auxiliar de gestión documental. La jefa de archivo te entrega la exportación del sistema de radicación de <b>julio a octubre de 2026</b>. Viene con errores (filas repetidas, textos escritos de distintas formas) y necesita dos cosas: un <b>informe en Excel</b> y un <b>tablero en Power BI</b> que diga si se está respondiendo a tiempo.</p>
+    <h3>Qué trae tu archivo <span class="mono">Recuperacion_GD_tudocumento.xlsx</span></h3>
+    <table class="t">
+      <tr><th>Hoja</th><th>Columnas</th></tr>
+      <tr><td><b>Radicados</b></td><td>ID_Radicado, Fecha_Radicacion, Medio, Cod_Dependencia, Cod_Tipo, Estado, Fecha_Respuesta (vacía si sigue en trámite), Folios</td></tr>
+      <tr><td><b>Dependencias</b></td><td>Cod_Dependencia, Dependencia, Responsable</td></tr>
+      <tr><td><b>Tipos_Documentales</b></td><td>Cod_Tipo, Tipo_Documental, Plazo_Dias</td></tr>
+    </table>
+    <div class="box warn"><b class="h">⚠️ Regla de este taller</b>Los plazos se cuentan en <b>días calendario</b> (resta simple de fechas), no en días hábiles. Un radicado es <b>"A tiempo"</b> si los días de respuesta son <b>menores o iguales</b> al plazo de su tipo documental.</div>
+  </div>
+
+  <div class="card">
+    <h2>Cómo se califica</h2>
+    <table class="t">
+      <tr><th>Parte</th><th>Qué se revisa</th><th>Puntos</th></tr>
+      <tr><td>A · Excel</td><td>Limpieza, CONTAR.SI, SUMAR.SI, BUSCARV, SI anidado, PROMEDIO.SI, tabla dinámica</td><td>50</td></tr>
+      <tr><td>B · Power BI</td><td>Power Query, relaciones, medida DAX, tablero</td><td>40</td></tr>
+      <tr><td>Evidencias</td><td>Enlace con tu .xlsx, tu .pbix y captura del tablero + reflexión</td><td>10</td></tr>
+    </table>
+    <p class="muted">Las respuestas numéricas se comparan contra <b>tu</b> base de datos. Si copias los números de un compañero, no van a coincidir con los tuyos.</p>
+    <div class="box info"><b class="h">💾 Tu avance se guarda solo</b>en este navegador mientras escribes. Si cambias de computador, usa <b>Descargar respaldo</b> en la pestaña Entrega y luego <b>Cargar respaldo</b>.</div>
+  </div>
+</section>
+
+<!-- ============ PARTE A ============ -->
+<section class="view" data-tab="2 · Excel">
+  <div class="card part-x">
+    <span class="kicker">Parte A · 50 puntos</span>
+    <h2>Informe en Excel</h2>
+    <h3>A.0 Limpia la hoja Radicados</h3>
+    <ol class="steps">
+      <li>Haz clic dentro de la tabla y ve a <b>Datos → Quitar duplicados</b>. Deja marcadas todas las columnas y acepta. Anota cuántos quedaron.</li>
+      <li>La columna <b>Medio</b> y la columna <b>Estado</b> tienen textos con mayúsculas raras y espacios de más. Crea columnas auxiliares con <code>=NOMPROPIO(ESPACIOS(C2))</code> (para Medio) y <code>=ESPACIOS(F2)</code> + corrige mayúsculas, copia y pega como <b>valores</b> encima de las originales.</li>
+      <li>Revisa con un filtro que Medio solo tenga 4 valores: Ventanilla, Correo, Web, Mensajería. Y Estado solo 2: <b>Respondido</b> y <b>En trámite</b>.</li>
+    </ol>
+    <div class="box info"><b class="h">💡 Pista</b><code>=NOMPROPIO(ESPACIOS(F2))</code> convierte "EN TRÁMITE " en "En Trámite". Con <b>Buscar y reemplazar</b> (Ctrl+L) déjalo como "En trámite".</div>
+
+    <h3>A.1 Columnas calculadas (agrega a la derecha de Radicados)</h3>
+    <ol class="steps">
+      <li><b>Dependencia</b>: trae el nombre desde la hoja Dependencias con BUSCARV o BUSCARX.</li>
+      <li><b>Plazo</b>: trae Plazo_Dias desde Tipos_Documentales con BUSCARV.</li>
+      <li><b>Dias_Respuesta</b>: <code>=SI(G2="";"";G2-B2)</code> y dale formato de número general.</li>
+      <li><b>Cumplimiento</b>: con un SI anidado devuelve <b>"Pendiente"</b> si está En trámite, <b>"A tiempo"</b> si Dias_Respuesta ≤ Plazo, y <b>"Vencido"</b> en otro caso.</li>
+    </ol>
+    <div class="box warn"><b class="h">⚠️ Error común</b>Si BUSCARV devuelve <b>#N/D</b>, revisa que uses <b>FALSO</b> (coincidencia exacta) como último argumento y que fijaste el rango con <b>$</b>.</div>
+  </div>
+  <div id="qA"></div>
+</section>
+
+<!-- ============ PARTE B ============ -->
+<section class="view" data-tab="3 · Power BI">
+  <div class="card part-p">
+    <span class="kicker">Parte B · 40 puntos</span>
+    <h2>Tablero en Power BI Desktop</h2>
+    <div class="box warn"><b class="h">⚠️ Usa el archivo ORIGINAL</b>Carga en Power BI el .xlsx que descargaste (sucio), no el que limpiaste en Excel. La limpieza se hace aquí con Power Query.</div>
+    <ol class="steps">
+      <li><b>Inicio → Obtener datos → Libro de Excel</b>. Marca las 3 hojas y elige <b>Transformar datos</b>.</li>
+      <li>En <b>Radicados</b>: selecciona todas las columnas → <b>Quitar filas → Quitar duplicados</b>. En Medio y Estado: <b>Transformar → Formato → Recortar</b> y luego <b>Poner En Mayúsculas Cada Palabra</b>; corrige "En Trámite" con <b>Reemplazar valores</b>.</li>
+      <li>Revisa que las fechas sean tipo <b>Fecha</b> (ícono de calendario) y Folios tipo <b>Número entero</b>. <b>Cerrar y aplicar</b>.</li>
+      <li>En la vista <b>Modelo</b>, crea las relaciones: Radicados[Cod_Dependencia] → Dependencias[Cod_Dependencia] y Radicados[Cod_Tipo] → Tipos_Documentales[Cod_Tipo] (varios a uno, *:1).</li>
+      <li>Crea columnas en Radicados:<br><code>Dias_Respuesta = IF(ISBLANK(Radicados[Fecha_Respuesta]), BLANK(), DATEDIFF(Radicados[Fecha_Radicacion], Radicados[Fecha_Respuesta], DAY))</code><br><code>Cumplimiento = IF(Radicados[Estado]="En trámite","Pendiente", IF(Radicados[Dias_Respuesta] &lt;= RELATED(Tipos_Documentales[Plazo_Dias]),"A tiempo","Vencido"))</code></li>
+      <li>Crea la <b>medida</b> <b>% Oportunidad</b> = radicados "A tiempo" ÷ radicados "Respondido". Escríbela tú (usa CALCULATE, COUNTROWS y DIVIDE) y dale formato de porcentaje.</li>
+      <li>Arma el tablero: 4 tarjetas (Total radicados, En trámite, % Oportunidad, Promedio Dias_Respuesta), un gráfico de columnas por mes, un gráfico de barras por dependencia, un gráfico por tipo documental filtrado a Vencido y 2 segmentadores (Medio y Dependencia).</li>
+      <li>Ponle título al tablero con tu nombre y ficha. Guarda el archivo como <b>Recuperacion_PBI_tudocumento.pbix</b> y toma una captura.</li>
+    </ol>
+    <div class="box info"><b class="h">💡 Comprueba</b>Las filas que te quedan después de quitar duplicados en Power Query deben ser <b>las mismas</b> que te quedaron en Excel. Si no coinciden, una de las dos limpiezas está mal.</div>
+  </div>
+  <div id="qB"></div>
+</section>
+
+<!-- ============ ENTREGA ============ -->
+<section class="view" data-tab="4 · Entrega">
+  <div class="card">
+    <span class="kicker">Evidencias · 10 puntos</span>
+    <h2>Sube tus archivos y entrega</h2>
+    <ol class="steps">
+      <li>Crea una carpeta en <b>Google Drive o OneDrive</b> con: tu <b>.xlsx</b> resuelto, tu <b>.pbix</b> y la <b>captura del tablero</b>.</li>
+      <li>Compártela como <b>"Cualquier persona con el enlace puede ver"</b> y pega el enlace abajo. Si el instructor no puede abrirla, no hay puntos de evidencia.</li>
+    </ol>
+  </div>
+  <div id="qE"></div>
+  <div class="card">
+    <h2>Revisión antes de enviar</h2>
+    <div id="resumen"></div>
+    <div class="btns">
+      <button class="btn" id="btnEnviar" type="button">📤 Enviar al instructor</button>
+      <button class="btn s" id="btnBk" type="button">💾 Descargar respaldo</button>
+      <label class="btn s" style="cursor:pointer">📂 Cargar respaldo<input type="file" id="fileBk" accept=".json" hidden></label>
+    </div>
+    <p class="muted">Puedes reenviar si corriges algo: el instructor califica tu <b>última</b> entrega. Guarda la captura del recibo.</p>
+  </div>
+</section>
+
+</div></main>
+<footer>LogiLab SENA · Centro Industrial y de Energías Alternativas · Regional Guajira<br>By Carlos Barrios · Instructor</footer>
+
+<script>
+// ── Generador de datos personalizados (mismo código en el taller y en el solucionario) ──
+const GEN = (() => {
+  function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function rng(seed) { let a = seed; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const DEPS = [
+    ['100', 'Gerencia', 'Laura Pimienta'], ['110', 'Jurídica', 'Andrés Ipuana'], ['120', 'Talento Humano', 'Marta Brito'],
+    ['130', 'Financiera', 'José Cotes'], ['140', 'Atención al Usuario', 'Yuranis Epiayu'], ['150', 'Archivo Central', 'Rafael Mendoza']];
+  const TIPOS = [['PET', 'Petición', 15], ['QUE', 'Queja', 15], ['REC', 'Reclamo', 15], ['CON', 'Consulta', 30], ['SOL', 'Solicitud de información', 10], ['SUG', 'Sugerencia', 15]];
+  const MEDIOS = ['Ventanilla', 'Correo', 'Web', 'Mensajería'];
+  const MESES = ['Julio', 'Agosto', 'Septiembre', 'Octubre'];
+  const DIAS_MES = [31, 31, 30, 31];
+  // serial de Excel (1 = 01/01/1900) en UTC
+  const serial = (y, m, d) => Math.round((Date.UTC(y, m, d) - Date.UTC(1899, 11, 30)) / 86400000);
+  const ensuciar = (txt, r) => { const x = r(); if (x < .14) return txt.toUpperCase(); if (x < .26) return txt.toLowerCase(); if (x < .38) return txt + ' '; if (x < .44) return ' ' + txt; return txt; };
+  const pick = (arr, w, r) => { let t = w.reduce((a, b) => a + b, 0), x = r() * t; for (let i = 0; i < arr.length; i++) { x -= w[i]; if (x < 0) return arr[i]; } return arr[arr.length - 1]; };
+
+  function generar(documento) {
+    const doc = String(documento).replace(/\D/g, '');
+    const r = rng(hash('RECUP-GD-2026|' + doc));
+    const wDep = DEPS.map(() => 1 + r() * 3), wTipo = TIPOS.map(() => 1 + r() * 3), wMed = MEDIOS.map(() => 1 + r() * 3), wMes = MESES.map(() => 1 + r() * 2);
+    const N = 150 + Math.floor(r() * 21); // 150..170 radicados únicos
+    const base = [];
+    for (let i = 0; i < N; i++) {
+      const mi = MESES.indexOf(pick(MESES, wMes, r)), dia = 1 + Math.floor(r() * DIAS_MES[mi]);
+      const fr = serial(2026, 6 + mi, dia);
+      const tipo = pick(TIPOS, wTipo, r), dep = pick(DEPS, wDep, r);
+      const tramite = r() < 0.18 + (mi === 3 ? 0.2 : 0);
+      const dias = 1 + Math.floor(Math.pow(r(), 1.3) * (tipo[2] + 18));
+      base.push({ id: 'RAD-' + doc.slice(-3) + '-' + String(i + 1).padStart(4, '0'), fr, medio: pick(MEDIOS, wMed, r), dep: dep[0], tipo: tipo[0], estado: tramite ? 'En trámite' : 'Respondido', fresp: tramite ? null : fr + dias, folios: 1 + Math.floor(r() * 12) });
+    }
+    const filas = base.map(b => ({ ...b, medioSucio: ensuciar(b.medio, r), estadoSucio: ensuciar(b.estado, r) }));
+    const nDup = 6 + Math.floor(r() * 5);
+    for (let k = 0; k < nDup; k++) filas.push({ ...filas[Math.floor(r() * N)] });
+    for (let i = filas.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [filas[i], filas[j]] = [filas[j], filas[i]]; }
+    const depPregunta = DEPS[Math.floor(r() * DEPS.length)];
+    const medioPregunta = MEDIOS[Math.floor(r() * MEDIOS.length)];
+    return { doc, N, nDup, base, filas, depPregunta, medioPregunta, DEPS, TIPOS, MEDIOS, MESES, serial };
+  }
+  return { generar };
+})();
+
+</script>
+<script>
+const API = 'https://logilab-notas.cabarriosn.workers.dev';
+const EMAIL = 'cabarrios@uniguajira.edu.co';
+const VERSION = 'RECUP-GD-EXCEL-PBI-v1';
+const LS = 'llRecupGD';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = { get(){ try { return JSON.parse(localStorage.getItem(LS) || '{}'); } catch { return {}; } }, set(v){ try { localStorage.setItem(LS, JSON.stringify(v)); } catch {} } };
+let S = Object.assign({ doc:'', ficha:'', nombre:'', r:{} }, store.get());
+let D = null; // datos generados
+
+// ---------- tema ----------
+$('#tema').onclick = () => { const r = document.documentElement, oscuro = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = oscuro ? 'light' : 'dark'; };
+
+// ---------- pestañas ----------
+const views = [...document.querySelectorAll('.view')];
+$('#tabs').innerHTML = views.map((v, i) => `<button type="button" data-i="${i}">${v.dataset.tab}</button>`).join('');
+function ir(i){ views.forEach((v,k)=>v.classList.toggle('on',k===i)); [...$('#tabs').children].forEach((b,k)=>b.classList.toggle('on',k===i)); if (i===3) resumen(); const y=document.querySelector('nav.tabs').offsetTop; if (scrollY>y) window.scrollTo({top:y}); }
+$('#tabs').onclick = e => { if (e.target.dataset.i) ir(+e.target.dataset.i); };
+
+// ---------- preguntas ----------
+const MESES = ['Julio','Agosto','Septiembre','Octubre'];
+const DEPN = ['Gerencia','Jurídica','Talento Humano','Financiera','Atención al Usuario','Archivo Central'];
+const TIPN = ['Petición','Queja','Reclamo','Consulta','Solicitud de información','Sugerencia'];
+function preguntas(){
+  const dep = D ? D.depPregunta[1] : '(genera tu archivo)';
+  const med = D ? D.medioPregunta : '(genera tu archivo)';
+  return {
+    qA: [
+      ['A1',5,'num','Después de <b>quitar duplicados</b>, ¿cuántos radicados quedan en la hoja Radicados?'],
+      ['A2',5,'num',`¿Cuántos radicados llegaron por el medio <b>${esc(med)}</b>? (CONTAR.SI, después de limpiar)`],
+      ['A3',5,'num','¿Cuántos radicados están <b>En trámite</b>?'],
+      ['A4',7,'num',`¿Cuál es el <b>total de folios</b> radicados para la dependencia <b>${esc(dep)}</b>? (BUSCARV + SUMAR.SI)`],
+      ['A5',7,'num','¿Cuántos radicados quedaron <b>"A tiempo"</b> en la columna Cumplimiento?'],
+      ['A6',5,'num','¿Cuántos radicados quedaron <b>"Vencido"</b>?'],
+      ['A7',6,'num','¿Cuál es el <b>promedio de Dias_Respuesta</b> de los radicados respondidos? Escríbelo con 2 decimales (PROMEDIO.SI).'],
+      ['A8',5,'sel','Con una <b>tabla dinámica</b> (filas: Dependencia, valores: recuento de ID_Radicado), ¿qué dependencia recibió <b>más</b> radicados?', DEPN],
+      ['A9',3,'txt','Copia aquí la fórmula <b>SI anidada</b> que usaste en la columna Cumplimiento (la de la fila 2).'],
+      ['A10',2,'txt','Copia aquí la fórmula <b>BUSCARV</b> que usaste para traer el Plazo (la de la fila 2).']
+    ],
+    qB: [
+      ['B1',5,'num','En Power Query, después de <b>Quitar duplicados</b>, ¿cuántas filas tiene Radicados? (Se ve abajo a la izquierda en el Editor o con una tarjeta de recuento).'],
+      ['B2',10,'num','¿Qué valor muestra tu medida <b>% Oportunidad</b>? Escríbelo como porcentaje con 1 decimal (ejemplo: 63,5).'],
+      ['B3',7,'sel','Según tu gráfico por mes, ¿en qué <b>mes</b> hubo más radicados?', MESES],
+      ['B4',8,'sel','Filtrando Cumplimiento = <b>Vencido</b>, ¿qué <b>tipo documental</b> tiene más radicados vencidos?', TIPN],
+      ['B5',5,'txt','Copia aquí tu medida DAX <b>% Oportunidad</b> completa.'],
+      ['B6',5,'num','¿Cuántas <b>relaciones</b> creaste en la vista Modelo?']
+    ],
+    qE: [
+      ['E1',7,'url','Enlace a tu carpeta de Drive/OneDrive con el <b>.xlsx</b>, el <b>.pbix</b> y la <b>captura del tablero</b>.'],
+      ['E2',3,'prose','En 3 a 5 líneas: ¿qué le recomendarías a la jefa de archivo según tus resultados? (cita al menos un número de tu tablero).']
+    ]
+  };
+}
+const TOTAL_Q = 18;
+function pintarPreguntas(){
+  const P = preguntas();
+  for (const [cont, lista] of Object.entries(P)) {
+    $('#'+cont).innerHTML = lista.map(([id,pts,tipo,txt,ops]) => {
+      const v = esc(S.r[id] ?? '');
+      let campo;
+      if (tipo==='sel') campo = `<select data-q="${id}"><option value="">Elige…</option>${ops.map(o=>`<option${S.r[id]===o?' selected':''}>${o}</option>`).join('')}</select>`;
+      else if (tipo==='txt'||tipo==='prose') campo = `<textarea data-q="${id}" class="${tipo==='prose'?'prose':''}" placeholder="${tipo==='txt'?'= …':''}">${v}</textarea>`;
+      else if (tipo==='url') campo = `<input data-q="${id}" type="url" value="${v}" placeholder="https://drive.google.com/…">`;
+      else campo = `<input data-q="${id}" inputmode="decimal" value="${v}" placeholder="Solo el número">`;
+      return `<div class="q${v?' done':''} ${D?'':'lock'}"><div class="top"><span class="n">${id}</span><span class="pts">${pts} pts</span></div><p>${txt}</p>${campo}</div>`;
+    }).join('') + (D ? '' : '<div class="box warn">🔒 Primero genera tu archivo en la pestaña <b>1 · Inicio</b>. Las preguntas usan tus propios datos.</div>');
+  }
+  progreso();
+}
+document.addEventListener('input', e => {
+  const q = e.target.dataset.q; if (!q) return;
+  S.r[q] = e.target.value; store.set(S);
+  e.target.closest('.q')?.classList.toggle('done', !!e.target.value.trim()); progreso();
+});
+function progreso(){ const n = Object.values(S.r).filter(v=>String(v).trim()).length; $('#progFill').style.width = (n/TOTAL_Q*100)+'%'; $('#progLabel').textContent = `${n} de ${TOTAL_Q} respuestas`; }
+
+// ---------- identificación + archivo ----------
+['doc','ficha','nombre'].forEach(k => { const el = $('#'+k); el.value = S[k] || ''; el.addEventListener('input', () => { S[k] = el.value; store.set(S); }); el.addEventListener('change', () => { S[k] = el.value; store.set(S); }); });
+const docLimpio = () => String($('#doc').value).replace(/\D/g,'');
+function validarId(){
+  const doc = docLimpio(), ficha = $('#ficha').value, nombre = $('#nombre').value.trim();
+  if (doc.length < 6) return 'Escribe tu número de documento completo (sin puntos).';
+  if (!ficha) return 'Elige tu ficha.';
+  if (nombre.split(/\s+/).length < 2) return 'Escribe tu nombre completo (nombres y apellidos).';
+  return '';
+}
+function prepararDatos(){ const doc = docLimpio(); if (doc.length >= 6) { D = GEN.generar(doc); } else D = null; }
+$('#btnGen').onclick = () => {
+  const err = validarId();
+  if (err) { $('#genMsg').innerHTML = `<div class="box bad">${err}</div>`; return; }
+  if (S.docDatos && S.docDatos !== docLimpio() && Object.keys(S.r).length && !confirm('Cambiaste el documento. Tus datos y respuestas anteriores eran de otro documento. ¿Continuar y borrar las respuestas?')) return;
+  if (S.docDatos && S.docDatos !== docLimpio()) S.r = {};
+  S.doc = docLimpio(); S.docDatos = S.doc; S.ficha = $('#ficha').value; S.nombre = $('#nombre').value.trim(); store.set(S);
+  prepararDatos(); descargarXlsx(); pintarPreguntas();
+  $('#genMsg').innerHTML = `<div class="box ok"><b class="h">✅ Archivo generado para ${esc(S.nombre)}</b>Busca <span class="mono">Recuperacion_GD_${S.doc}.xlsx</span> en tus Descargas. Ahora ve a la pestaña <b>2 · Excel</b>.</div>`;
+};
+function descargarXlsx(){
+  if (typeof XLSX === 'undefined') { $('#genMsg').innerHTML = '<div class="box bad">No cargó la librería de Excel. Revisa tu internet y recarga la página.</div>'; return; }
+  const fmt = 'dd/mm/yyyy';
+  const rows = [['ID_Radicado','Fecha_Radicacion','Medio','Cod_Dependencia','Cod_Tipo','Estado','Fecha_Respuesta','Folios']];
+  D.filas.forEach(f => rows.push([f.id, f.fr, f.medioSucio, Number(f.dep), f.tipo, f.estadoSucio, f.fresp ?? null, f.folios]));
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  for (let i = 2; i <= rows.length; i++) { ['B','G'].forEach(c => { const cel = ws[c+i]; if (cel && cel.t === 'n') cel.z = fmt; }); }
+  ws['!cols'] = [{wch:16},{wch:16},{wch:14},{wch:16},{wch:10},{wch:13},{wch:16},{wch:8}];
+  const wsD = XLSX.utils.aoa_to_sheet([['Cod_Dependencia','Dependencia','Responsable'], ...D.DEPS.map(d => [Number(d[0]), d[1], d[2]])]);
+  wsD['!cols'] = [{wch:16},{wch:22},{wch:18}];
+  const wsT = XLSX.utils.aoa_to_sheet([['Cod_Tipo','Tipo_Documental','Plazo_Dias'], ...D.TIPOS.map(t => [t[0], t[1], t[2]])]);
+  wsT['!cols'] = [{wch:10},{wch:26},{wch:11}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Radicados'); XLSX.utils.book_append_sheet(wb, wsD, 'Dependencias'); XLSX.utils.book_append_sheet(wb, wsT, 'Tipos_Documentales');
+  XLSX.writeFile(wb, `Recuperacion_GD_${D.doc}.xlsx`);
+}
+
+// ---------- resumen y entrega ----------
+function paquete(){
+  return { version: VERSION, documento: S.doc, ficha: S.ficha, nombre: S.nombre, respuestas: { ...S.r }, enviado: new Date().toISOString() };
+}
+function resumen(){
+  const P = preguntas(), todas = [...P.qA, ...P.qB, ...P.qE];
+  const faltan = todas.filter(([id]) => !String(S.r[id] ?? '').trim()).map(([id]) => id);
+  const err = validarId();
+  $('#resumen').innerHTML = `<table class="t"><tr><th>Documento</th><td>${esc(S.doc||'—')}</td></tr><tr><th>Ficha</th><td>${esc(S.ficha||'—')}</td></tr><tr><th>Nombre</th><td>${esc(S.nombre||'—')}</td></tr></table>`
+    + (err ? `<div class="box bad">${err} (pestaña 1 · Inicio)</div>` : '')
+    + (!D ? '<div class="box bad">Aún no generas tu archivo de datos.</div>' : '')
+    + (faltan.length ? `<div class="box warn">Te faltan <b>${faltan.length}</b> respuestas: ${faltan.join(', ')}. Puedes enviar así, pero esas valen 0.</div>` : '<div class="box ok">✅ Todas las preguntas tienen respuesta.</div>');
+}
+function textoPlano(p){
+  let t = `TALLER RECUPERACIÓN EXCEL + POWER BI · GESTIÓN DOCUMENTAL\nDocumento: ${p.documento}\nFicha: ${p.ficha}\nNombre: ${p.nombre}\nFecha: ${new Date().toLocaleString('es-CO')}\n\n`;
+  for (const [k,v] of Object.entries(p.respuestas)) t += `${k}: ${v}\n`;
+  return t;
+}
+function modal(html){ let bg = $('.modal-bg'); if (!bg) { bg = document.createElement('div'); bg.className = 'modal-bg'; document.body.appendChild(bg); } bg.innerHTML = `<div class="modal">${html}<p class="muted" style="text-align:center;margin-top:12px">LogiLab SENA · By Carlos Barrios · Instructor</p></div>`; return bg; }
+const cerrar = () => $('.modal-bg')?.remove();
+function bajar(nombre, contenido, tipo){ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([contenido], {type: tipo})); a.download = nombre; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 2000); }
+function respaldos(p, motivo){
+  const t = textoPlano(p);
+  const bg = modal(`<h3>No se pudo enviar en línea</h3><div class="box bad">${esc(motivo)}</div><p>Tu trabajo no se pierde. Usa uno de estos respaldos:</p>
+    <button class="btn" data-a="wa">📱 Enviar por WhatsApp</button><button class="btn" data-a="em">✉️ Enviar por correo</button>
+    <button class="btn s" data-a="cp">📋 Copiar entrega</button><button class="btn s" data-a="dl">⬇️ Descargar archivo de entrega</button>
+    <button class="btn s" data-a="re">↻ Reintentar en línea</button><button class="btn s" data-a="x">Cerrar</button>`);
+  bg.onclick = async ev => {
+    const a = ev.target.dataset.a; if (!a) return;
+    if (a==='wa') window.open('https://wa.me/?text=' + encodeURIComponent(t.slice(0, 3500)), '_blank');
+    if (a==='em') location.href = `mailto:${EMAIL}?subject=${encodeURIComponent('Recuperación Excel-Power BI · Ficha ' + p.ficha + ' · ' + p.documento + ' · ' + p.nombre)}&body=${encodeURIComponent(t.slice(0, 1800))}`;
+    if (a==='cp') { try { await navigator.clipboard.writeText(t); ev.target.textContent = '✓ Copiado'; } catch { prompt('Copia este texto:', t); } }
+    if (a==='dl') bajar(`entrega_recuperacion_${p.ficha}_${p.documento}.json`, JSON.stringify(p, null, 2), 'application/json');
+    if (a==='re') enviar();
+    if (a==='x') cerrar();
+  };
+}
+async function post(ruta, data){
+  const r = await fetch(API + ruta, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(data) });
+  const j = await r.json().catch(() => ({ ok:false, error:'Sin respuesta del servidor' }));
+  if (!j.ok) { const e = new Error(j.error || 'Error'); e.status = r.status; throw e; }
+  return j;
+}
+async function enviar(){
+  const err = validarId(); if (err || !D) { ir(0); $('#genMsg').innerHTML = `<div class="box bad">${err || 'Genera tu archivo antes de entregar.'}</div>`; return; }
+  const p = paquete();
+  const actividad = `GD${p.ficha}-RECUP-EXCEL-PBI`;
+  const btn = $('#btnEnviar'); btn.disabled = true; btn.textContent = 'Verificando…';
+  try {
+    const v = await post('/api/verificar', { documento: p.documento, actividad });
+    btn.textContent = `Enviando como ${v.nombre}…`;
+    const r = await post('/api/entregar', { documento: p.documento, actividad, contenido: p });
+    S.recibo = r.recibo; store.set(S);
+    modal(`<h3>¡Entrega recibida, ${esc(r.nombre)}! ✅</h3><div class="box ok">Recibo: <b>${esc(r.recibo)}</b><br>Ficha ${esc(p.ficha)} · Documento ${esc(p.documento)}</div><p>Toma captura de este recibo. Si corriges algo puedes volver a enviar.</p><button class="btn" data-a="x">Cerrar</button>`).onclick = e => { if (e.target.dataset.a) cerrar(); };
+  } catch (e) {
+    let msg = e.message;
+    if (e.status === 404) msg = 'Tu documento no aparece en la ficha que elegiste. Revisa el número y la ficha. Si están bien, avisa al instructor y envía por un respaldo.';
+    if (e.status === 429) msg = 'Muchos envíos desde la misma red. Espera 10 minutos y reintenta, o usa un respaldo.';
+    if (e.status === 403 && /no recibe/.test(e.message)) msg = 'El taller ya cerró la recepción en línea. Envía por un respaldo y avisa al instructor.';
+    if (!e.status) msg = 'Sin conexión con el servidor de entregas.';
+    respaldos(p, msg);
+  } finally { btn.disabled = false; btn.textContent = '📤 Enviar al instructor'; }
+}
+$('#btnEnviar').onclick = enviar;
+$('#btnBk').onclick = () => bajar(`respaldo_recuperacion_${S.doc || 'sin-doc'}.json`, JSON.stringify(S, null, 2), 'application/json');
+$('#fileBk').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const j = JSON.parse(await f.text()); if (!j || typeof j.r !== 'object') throw 0; S = Object.assign({ doc:'', ficha:'', nombre:'', r:{} }, j); store.set(S);
+    ['doc','ficha','nombre'].forEach(k => $('#'+k).value = S[k] || ''); prepararDatos(); pintarPreguntas(); resumen(); alert('Respaldo cargado.'); }
+  catch { alert('Ese archivo no es un respaldo válido de este taller.'); }
+  e.target.value = '';
+};
+
+// ---------- arranque ----------
+if (S.docDatos) { $('#doc').value = S.docDatos; prepararDatos(); }
+pintarPreguntas(); ir(0);
+</script>
+</body>
+</html>
