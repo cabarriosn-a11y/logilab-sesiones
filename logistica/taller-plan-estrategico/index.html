@@ -733,6 +733,11 @@ const IKEY='pel-instr-v1';
 const CRIT=[['c1','Formato completo: llenó todas las tablas y campos'],['c2','Datos reales con fuente (observación, entrevista o fuente oficial)'],['c3','Coherencia técnica con la empresa y con los talleres anteriores'],['c4','Redacción clara, sin nombres ni teléfonos de terceros']];
 const KINDS=[...T.map(t=>t.id),'PLAN'];
 let I={subs:{},ev:{},alias:{}},isel=null;
+/* nota de la exposición del equipo (0 a 100): una por equipo, se guarda junto a las evaluaciones */
+const expoK=k=>'EXPO|'+k+'|0';
+function expoGet(k){const e=I.ev[expoK(k)];return e&&typeof e.expo==='number'?e.expo:null}
+function expoSet(k,raw){const s=String(raw??'').trim();let v=null;if(s!==''){v=Math.round(Number(s));if(!isFinite(v))v=null;else v=Math.max(0,Math.min(100,v))}
+  I.ev[expoK(k)]={expo:v,at:Date.now()};isave();cloudPush();return v}
 function iload(){try{const r=localStorage.getItem(IKEY);if(r)I=Object.assign({subs:{},ev:{},alias:{}},JSON.parse(r));I.alias=I.alias||{}}catch(e){}}
 function isave(){try{localStorage.setItem(IKEY,JSON.stringify(I))}catch(e){toast('No se pudo guardar: descargue el respaldo')}}
 function kindName(k){if(k==='PLAN')return 'Plan completo';const i=T.findIndex(t=>t.id===k);return `Clase ${i+1} · ${T[i].t}`}
@@ -840,8 +845,9 @@ function instrHash(){if(!location.hash.startsWith('#c='))return;let c=location.h
 function renderBoard(){const box=document.getElementById('iBoard');if(!box)return;const ts=teams();
   document.getElementById('iSum').textContent=`${ts.length} equipo${ts.length===1?'':'s'} · ${Object.keys(I.subs).length} entregas recibidas · ${pendingList().length} por evaluar`;
   if(!ts.length){box.innerHTML='<p class="note" style="padding:14px">Aún no hay entregas. Pegue arriba los códigos que le enviaron.</p>';return}
-  box.innerHTML=`<table class="mx"><thead><tr><th>Equipo · Empresa</th>${T.map((t,i)=>`<th title="${esc(t.t)}">${i+1}</th>`).join('')}<th>Plan</th></tr></thead><tbody>${ts.map(t=>`<tr><td class="tm" title="${esc(t.q)}"><b>${esc(teamShort(t.q)||'Equipo sin nombre')}</b><small>${esc(t.e||'Empresa sin definir')}</small></td>${KINDS.map(k=>{const a=t.by[k];if(!a)return `<td><span class="cell" style="display:grid;place-items:center">·</span></td>`;const s=cellState(a);return `<td><button class="cell ${s.c}${a.some(x=>x.sid===isel)?' on':''}" data-sid="${esc(a[0].sid)}" title="${esc(kindName(k))}${a.length>1?' · '+a.length+' versiones':''}">${s.t}</button></td>`}).join('')}</tr>`).join('')}</tbody></table>`;
-  box.querySelectorAll('[data-sid]').forEach(b=>b.onclick=()=>openSub(b.dataset.sid))}
+  box.innerHTML=`<table class="mx"><thead><tr><th>Equipo · Empresa</th>${T.map((t,i)=>`<th title="${esc(t.t)}">${i+1}</th>`).join('')}<th>Plan</th><th title="Nota de la exposición del equipo, de 0 a 100">Exposición<br><small style="font-weight:400">0 – 100</small></th></tr></thead><tbody>${ts.map(t=>`<tr><td class="tm" title="${esc(t.q)}"><b>${esc(teamShort(t.q)||'Equipo sin nombre')}</b><small>${esc(t.e||'Empresa sin definir')}</small></td>${KINDS.map(k=>{const a=t.by[k];if(!a)return `<td><span class="cell" style="display:grid;place-items:center">·</span></td>`;const s=cellState(a);return `<td><button class="cell ${s.c}${a.some(x=>x.sid===isel)?' on':''}" data-sid="${esc(a[0].sid)}" title="${esc(kindName(k))}${a.length>1?' · '+a.length+' versiones':''}">${s.t}</button></td>`}).join('')}<td><input type="number" class="expo" min="0" max="100" step="1" inputmode="numeric" placeholder="—" data-tk="${esc(t.key)}" value="${expoGet(t.key)??''}" aria-label="Exposición de ${esc(teamShort(t.q)||'equipo')} (0 a 100)" style="width:72px;height:34px;text-align:center;font-weight:800;font-family:var(--mono);border:1px solid var(--line);border-radius:6px;background:var(--bg);color:inherit;padding:0 4px"></td></tr>`).join('')}</tbody></table>`;
+  box.querySelectorAll('[data-sid]').forEach(b=>b.onclick=()=>openSub(b.dataset.sid));
+  box.querySelectorAll('input.expo').forEach(f=>f.onchange=()=>{const v=expoSet(f.dataset.tk,f.value);f.value=v??'';const d=document.getElementById('iExpo');if(d&&d.dataset.tk===f.dataset.tk)d.value=v??'';toast(v===null?'Nota de exposición borrada':'Exposición: '+v+'/100')})}
 /* Reconstruye el respaldo .json del EQUIPO (shape de la app del aprendiz) a partir de lo recibido,
    para devolvérselo si perdieron el suyo: trae todos los talleres, su identidad (tid) y deja
    visibles las notas ya puestas (csid/cloud) para que puedan corregir y reenviar. */
@@ -876,6 +882,7 @@ function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();co
   ${CRIT.map(([k,l])=>`<label class="ck"><input type="checkbox" data-cr="${k}"${ev.cr&&ev.cr[k]?' checked':''}><span>${l}</span></label>`).join('')}
   <span style="font-weight:700">Juicio evaluativo</span>
   <div class="jz"><button data-j="A" title="Aprobado">✓ A</button><button data-j="D" title="No aprobado">✗ D</button><button data-j="" title="Sin juicio todavía">Pendiente</button></div><span class="note">A = aprobado · D = no aprobado (corrigen y reenvían)</span>
+  <label class="field"><span class="lbl">Exposición del equipo (0 a 100)</span><input type="number" id="iExpo" min="0" max="100" step="1" inputmode="numeric" placeholder="Sin nota" data-tk="${esc(gk(s))}" value="${expoGet(gk(s))??''}"><span class="note">Una sola nota por equipo. También se ve en la columna Exposición del tablero.</span></label>
   <label class="field"><span class="lbl">Observaciones para el equipo</span><textarea id="iObs" placeholder="Qué está bien, qué deben corregir y para cuándo">${esc(ev.obs||'')}</textarea></label>
   <div class="acts"><button class="btn" id="iFbCopy">📋 Copiar retroalimentación</button><a class="btn wa" id="iFbWa" href="#" target="_blank" rel="noopener">WhatsApp</a></div>
   <div class="acts"><button class="btn dl" id="iTeamJson">⬇ Respaldo .json para el equipo</button></div>
@@ -888,8 +895,9 @@ function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();co
   det.querySelectorAll('[data-cr]').forEach(c=>c.onchange=()=>{const e=E();e.cr=e.cr||{};e.cr[c.dataset.cr]=c.checked;upd()});
   const jb=det.querySelectorAll('.jz button');const markJ=j=>jb.forEach(b=>b.classList.toggle('sel',b.dataset.j===j));markJ(ev.j||'');
   jb.forEach(b=>b.onclick=()=>{E().j=b.dataset.j;markJ(b.dataset.j);upd()});
+  const ex=document.getElementById('iExpo');ex.onchange=()=>{const v=expoSet(ex.dataset.tk,ex.value);ex.value=v??'';renderBoard();toast(v===null?'Nota de exposición borrada':'Exposición: '+v+'/100')};
   const ob=document.getElementById('iObs');ob.oninput=()=>{const e=E();e.obs=ob.value;e.at=Date.now();isave();cloudPush()};
-  const fb=()=>{const e=I.ev[sid]||{};return `Retroalimentación LogiLab · ${kindName(s.kind)}\nEmpresa: ${s.e||'—'}\nEquipo: ${teamShort(s.q)||'—'}\nEntrega del ${fdate(s.ts)}\n\nJuicio: ${e.j==='A'?'A · Aprobado':e.j==='D'?'D · No aprobado: corrijan y reenvíen el código':'En revisión'}\n${CRIT.map(([k,l])=>`${e.cr&&e.cr[k]?'✅':'⬜'} ${l}`).join('\n')}\n\nObservaciones: ${e.obs||'—'}\n\nCarlos Barrios · Instructor SENA`};
+  const fb=()=>{const e=I.ev[sid]||{};return `Retroalimentación LogiLab · ${kindName(s.kind)}\nEmpresa: ${s.e||'—'}\nEquipo: ${teamShort(s.q)||'—'}\nEntrega del ${fdate(s.ts)}\n\nJuicio: ${e.j==='A'?'A · Aprobado':e.j==='D'?'D · No aprobado: corrijan y reenvíen el código':'En revisión'}\n${CRIT.map(([k,l])=>`${e.cr&&e.cr[k]?'✅':'⬜'} ${l}`).join('\n')}${expoGet(gk(s))!==null?`\n\nExposición del equipo: ${expoGet(gk(s))}/100`:''}\n\nObservaciones: ${e.obs||'—'}\n\nCarlos Barrios · Instructor SENA`};
   document.getElementById('iTeamJson').onclick=()=>{const b=teamBackup(sid);if(!b){toast('No pude armar el respaldo');return}
     const nom=slugOf((b.d.T1&&b.d.T1.empresa)||teamShort(s.q)||'equipo');
     download(JSON.stringify(b,null,1),'respaldo-equipo-'+nom+'.json','application/json')};
@@ -900,9 +908,9 @@ function openSub(sid){const s=I.subs[sid];if(!s)return;isel=sid;renderBoard();co
   const vs=document.getElementById('iVer');if(vs)vs.onchange=()=>openSub(vs.value);
   det.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function exportCsv(){const rows=[['Equipo','Integrantes','Empresa','Entrega','Evidencia','Enviado','Oportunidad','Formato lleno %','Versiones','Juicio','Criterios cumplidos','Observaciones']];
+function exportCsv(){const rows=[['Equipo','Integrantes','Empresa','Entrega','Evidencia','Enviado','Oportunidad','Formato lleno %','Versiones','Juicio','Criterios cumplidos','Exposición (0-100)','Observaciones']];
   teams().forEach(t=>KINDS.forEach(k=>{const a=t.by[k];if(!a)return;const s=a[0];const tt=T.find(x=>x.id===k);const e=I.ev[s.sid]||{};const li=lateInfo(k,s.ts);
-    rows.push([teamShort(s.q),s.q,s.e,kindName(k),tt?tt.ev:'3.3.5 · 3.4',fdate(s.ts),li?li.txt:'',subComp(s),a.length,e.j||'Pendiente',CRIT.filter(([c])=>e.cr&&e.cr[c]).length+'/'+CRIT.length,e.obs||''])}));
+    rows.push([teamShort(s.q),s.q,s.e,kindName(k),tt?tt.ev:'3.3.5 · 3.4',fdate(s.ts),li?li.txt:'',subComp(s),a.length,e.j||'Pendiente',CRIT.filter(([c])=>e.cr&&e.cr[c]).length+'/'+CRIT.length,expoGet(t.key)??'',e.obs||''])}));
   if(rows.length<2){toast('Aún no hay entregas para exportar');return}
   download(rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""').replace(/\r?\n/g,' ')+'"').join(';')).join('\r\n'),'evaluacion-plan-estrategico.csv','text/csv')}
 
