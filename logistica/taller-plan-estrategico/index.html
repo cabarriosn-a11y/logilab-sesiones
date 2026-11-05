@@ -355,7 +355,7 @@ function bindSend(btnId,msgId,kind,getCode,check){const b=document.getElementByI
 /* El equipo consulta SOLO su propia entrega por el sid exacto que guardó al enviar (kind|dispositivo|ts).
    No necesita la clave de docente: el backend (GET /api/plan?ev=<sid>) devuelve únicamente ese juicio. */
 function gradeView(e){
-  if(!e)return {cls:'pend',ico:'⏳',tit:'Enviado · falta la nota del instructor',sub:'Su entrega ya llegó. Cuando el instructor la califique, aquí verán el resultado y las observaciones. Toquen 🔄 Actualizar nota para revisar.',crit:false};
+  if(!e||(!e.j&&!e.obs&&!(e.cr&&Object.values(e.cr).some(Boolean))))return {cls:'pend',ico:'⏳',tit:'Enviado · falta la nota del instructor',sub:'Su entrega ya llegó. Cuando el instructor la califique, aquí verán el resultado y las observaciones. Toquen 🔄 Actualizar nota para revisar.',crit:false};
   if(e.j==='A')return {cls:'ok',ico:'✅',tit:'Aprobado (A)',sub:'¡Bien hecho! Este entregable quedó aprobado.',crit:true};
   if(e.j==='D')return {cls:'bad',ico:'❌',tit:'No aprobado (D) · corrijan y reenvíen',sub:'Lean las observaciones, corrijan el formato en esta misma clase y vuelvan a tocar 📤 Enviar al instructor: la versión corregida le llega de nuevo.',crit:true};
   return {cls:'rev',ico:'🔎',tit:'En revisión',sub:'El instructor abrió su entrega y la está revisando.',crit:true};
@@ -365,8 +365,9 @@ function gradeHtml(kind,boxId,e){
   const crit=g.crit&&e&&e.cr?`<div class="gcrit">${CRIT.map(([k,l])=>`<div>${e.cr[k]?'✅':'⬜'} ${esc(l)}</div>`).join('')}</div>`:'';
   const obs=e&&e.obs?`<div class="gobs"><b>Observaciones del instructor:</b>\n${esc(e.obs)}</div>`:'';
   const when=e&&e.at?`<span class="note">Actualizado: ${fdate(e.at)}</span>`:'';
+  const expo=e&&typeof e.expo==='number'?`<div class="gobs" style="white-space:normal"><b>🎤 Nota de la exposición del equipo:</b> <span style="font-family:var(--mono);font-weight:800;font-size:1.1em">${e.expo}/100</span></div>`:'';
   return `<div class="ghead"><span class="gico">${g.ico}</span><span class="gtit">${esc(g.tit)}</span></div>
-  <p class="gsub">${esc(g.sub)}</p>${crit}${obs}
+  <p class="gsub">${esc(g.sub)}</p>${crit}${expo}${obs}
   <div class="gfoot"><button class="btn" id="gRef-${boxId}">🔄 Actualizar nota</button>${when}</div>`;
 }
 async function checkGrade(kind,boxId){boxId=boxId||'gradeBox';const box=document.getElementById(boxId);if(!box)return;
@@ -737,7 +738,12 @@ let I={subs:{},ev:{},alias:{}},isel=null;
 const expoK=k=>'EXPO|'+k+'|0';
 function expoGet(k){const e=I.ev[expoK(k)];return e&&typeof e.expo==='number'?e.expo:null}
 function expoSet(k,raw){const s=String(raw??'').trim();let v=null;if(s!==''){v=Math.round(Number(s));if(!isFinite(v))v=null;else v=Math.max(0,Math.min(100,v))}
-  I.ev[expoK(k)]={expo:v,at:Date.now()};isave();cloudPush();return v}
+  I.ev[expoK(k)]={expo:v,at:Date.now()};expoSync();isave();cloudPush();return v}
+/* copia la nota de exposición dentro de la evaluación de cada entrega del equipo:
+   así el aprendiz la ve al tocar 🔄 Actualizar nota (consulta solo sus entregas) */
+function expoSync(){let n=0;Object.values(I.subs).forEach(s=>{const v=expoGet(gk(s));const e=I.ev[s.sid];if(e&&e.del)return;
+  const cur=e&&typeof e.expo==='number'?e.expo:null;if(cur===v)return;
+  const x=I.ev[s.sid]=e||{j:'',cr:{},obs:''};if(v===null)delete x.expo;else x.expo=v;x.at=Date.now();n++});return n}
 function iload(){try{const r=localStorage.getItem(IKEY);if(r)I=Object.assign({subs:{},ev:{},alias:{}},JSON.parse(r));I.alias=I.alias||{}}catch(e){}}
 function isave(){try{localStorage.setItem(IKEY,JSON.stringify(I))}catch(e){toast('No se pudo guardar: descargue el respaldo')}}
 function kindName(k){if(k==='PLAN')return 'Plan completo';const i=T.findIndex(t=>t.id===k);return `Clase ${i+1} · ${T[i].t}`}
@@ -778,7 +784,7 @@ async function cloudPull(ask){setCloud('☁ Trayendo entregas…');
     Object.entries(j.ev||{}).forEach(([sid,e])=>{const l=I.ev[sid];if(!l||(l.at||0)<(e.at||0)){I.ev[sid]=e;ne++}});
     I.alias=I.alias||{};Object.entries(j.alias||{}).forEach(([k,a])=>{const l=I.alias[k];if(!l||(l.at||0)<(a.at||0))I.alias[k]=a});
     const had=new Set(Object.keys(I.subs)),before=had.size;const r=importText((j.entregas||[]).map(x=>x.codigo).join('\n'));
-    Object.keys(I.subs).forEach(sid=>{if(!had.has(sid)&&I.ev[sid]&&I.ev[sid].del)delete I.subs[sid]});isave();
+    Object.keys(I.subs).forEach(sid=>{if(!had.has(sid)&&I.ev[sid]&&I.ev[sid].del)delete I.subs[sid]});expoSync();isave();
     const nu=Math.max(0,Object.keys(I.subs).length-before);renderBoard();
     setCloud(`☁ Al día ${hhmm()} · <b>${nu} entrega${nu===1?'':'s'} nueva${nu===1?'':'s'}</b>`+(ne?` · ${ne} evaluación${ne===1?'':'es'} de otro dispositivo`:'')+(r.bad?` · <span class="warn">${r.bad} dañada${r.bad===1?'':'s'}</span>`:''));
     cloudPush(true)}
