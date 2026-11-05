@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Transpaleta Manual 3D</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="../motor-3d.js"></script>
+<script>
+const FX=0.27,FTOP=0.085,FL=1.12,UP=[0,0.115,0];
+const PIV=[0,0.27,-0.25],TILT=[-0.36,0,0],L=1.0;
+LogiLab3D.mount({
+  portal:'../', portalText:'Volver a Equipos 3D',
+  title:'Transpaleta manual',accent:'en piezas',
+  specs:[['2 500 kg','Capacidad nominal'],['1 150 mm','Largo de horquillas'],['85 → 200 mm','Altura de elevación']],
+  intro:{title:'Transpaleta manual',text:'Equipo para levantar y trasladar estibas a ras de piso. Al bombear con el timón, la bomba hidráulica eleva el chasis; las varillas de empuje bajan los rodillos de carga y la estiba queda suspendida.'},
+  motion:{label:'Elevación',from:85,to:200,unit:'mm'},
+  camera:{pos:[2.15,1.35,2.45],target:[0,0.42,0.3]},
+  parts:[
+  ...[['Horquilla izquierda',-1],['Horquilla derecha',1]].map(([nm,s])=>({name:nm,sw:'#f2b316',move:UP,ex:[0.36*s,0.04,0.28],
+    fn:'Brazo de acero en perfil U que entra bajo la estiba y la soporta. La ventana en la punta deja pasar los rodillos de carga.',
+    mat:'Acero estructural doblado en frío, pintura electrostática con laca',
+    build:(g,K)=>{const pm=K.M.paint();
+      g.add(K.extrude([[-0.08,0],[0.08,0],[0.08,0.98],[0.07,1.06],[0.045,FL],[-0.045,FL],[-0.07,1.06],[-0.08,0.98]],0.012,pm,{plane:'xz',y:FTOP-0.012,holes:[[[-0.042,0.86],[-0.042,1.0],[0.042,1.0],[0.042,0.86]]]}));
+      const wall=[[0,0.02],[0.96,0.02],[1.1,0.045],[1.1,FTOP-0.008],[0,FTOP-0.008]];
+      g.add(K.extrude(wall,0.008,pm,{plane:'zy',x:-0.076}));g.add(K.extrude(wall,0.008,pm,{plane:'zy',x:0.076}));
+      g.add(K.rbox(0.16,0.065,0.02,pm,0,0.052,0.01,0.004));g.position.x=FX*s;}})),
+  {name:'Chasis / Estructura',move:UP,ex:[0,0.18,0.12],fn:'Armazón de acero que une las horquillas y recibe el empuje del pistón para elevar toda la carga.',mat:'Placa de acero soldada de alta resistencia',
+   build:(g,K)=>{const pm=K.M.paint();
+     g.add(K.extrude([[-0.13,0.06],[0.34,0.06],[0.3,0.12],[0.0,0.45],[-0.13,0.45]],0.16,pm,{plane:'zy',bevel:0.008}));
+     g.add(K.rbox(0.2,0.04,0.3,pm,0,0.465,-0.13,0.01));g.add(K.rbox(0.7,0.075,0.12,pm,0,0.05,-0.05,0.01));
+     [-1,1].forEach(x=>{g.add(K.cyl(0.018,0.012,K.M.dark(),x*0.083,0.17,0.02,'x',20));g.add(K.cyl(0.012,0.014,K.M.chrome(),x*0.088,0.17,0.02,'x',16));});}},
+  {name:'Varillas de empuje',sw:'#e8eef2',move:UP,ex:[0,0.36,0.32],fn:'Barras que corren dentro de cada horquilla. Al subir el chasis empujan las bielas que bajan los rodillos de carga.',mat:'Barra de acero calibrada',
+   build:(g,K)=>[-1,1].forEach(s=>{g.add(K.cyl(0.01,0.9,K.M.chrome(),FX*s,0.06,0.45,'z',14));g.add(K.rbox(0.04,0.02,0.04,K.M.dark(),FX*s,0.06,0.02,0.004));})},
+  {name:'Rodillos de carga',ex:[0,0,0.55],fn:'Pares de ruedas en tándem bajo la punta de cada horquilla. Soportan casi todo el peso de la estiba sobre el piso.',mat:'Poliuretano sobre núcleo de acero, rodamientos sellados',
+   build:(g,K)=>[-1,1].forEach(s=>{[0.89,0.97].forEach(z=>{g.add(K.wheel(0.038,0.06,K.M.pu(),FX*s,0.04,z));g.add(K.cyl(0.008,0.08,K.M.chrome(),FX*s,0.04,z,'x',12));});
+     [-1,1].forEach(k=>g.add(K.rbox(0.006,0.05,0.15,K.M.dark(),FX*s+k*0.036,0.045,0.93,0.002)));})},
+  {name:'Rodillos de entrada',ex:[0,0,0.85],fn:'Ruedas pequeñas en la punta que levantan la horquilla sobre la tabla inferior de la estiba al entrar.',mat:'Nailon de alta densidad',
+   build:(g,K)=>[-1,1].forEach(s=>g.add(K.wheel(0.017,0.07,K.M.nylon(),FX*s,0.019,1.085)))},
+  {name:'Ruedas directrices',ex:[0,0,-0.48],fn:'Dos ruedas grandes bajo la bomba que giran con el timón para dirigir el equipo y soportar el cabezal.',mat:'Banda de poliuretano sobre llanta de fundición',
+   build:(g,K)=>{g.add(K.wheel(0.095,0.05,K.M.pu(),-0.068,0.095,-0.25,6));g.add(K.wheel(0.095,0.05,K.M.pu(),0.068,0.095,-0.25,6));
+     g.add(K.cyl(0.013,0.2,K.M.chrome(),0,0.095,-0.25,'x',14));g.add(K.rbox(0.07,0.09,0.08,K.M.dark(),0,0.165,-0.25,0.008));}},
+  {name:'Bomba hidráulica',sw:'#f2b316',ex:[0,0.32,-0.36],fn:'Cilindro de presión con depósito de aceite. Cada bombeo del timón impulsa aceite bajo el pistón y eleva las horquillas.',mat:'Cuerpo de fundición, sellos de nitrilo, aceite hidráulico ISO 32',
+   build:(g,K)=>{g.add(K.rbox(0.16,0.13,0.15,K.M.steel(),0,0.27,-0.25,0.014));K.hydraulic(g,{x:0,y:0.335,z:-0.25,r:0.052,len:0.11,addRod:false});
+     [-1,1].forEach(s=>g.add(K.rbox(0.012,0.1,0.11,K.M.steel(),s*0.092,0.26,-0.25,0.004)));}},
+  {name:'Pistón (émbolo)',move:UP,ex:[0,0.62,-0.36],fn:'Vástago cromado empujado por la presión del aceite. Convierte la presión hidráulica en fuerza de elevación.',mat:'Acero cromado duro rectificado',
+   build:(g,K)=>g.add(K.cyl(0.024,0.2,K.M.chrome(),0,0.355,-0.25,null,28))},
+  {name:'Válvula de descarga',ex:[-0.42,0.28,-0.36],fn:'Abre el retorno del aceite al depósito para bajar la carga de forma controlada.',mat:'Latón y acero, asiento cónico',
+   build:(g,K)=>{g.add(K.cyl(0.016,0.05,K.M.brass(),-0.1,0.24,-0.29,'x',18));g.add(K.cyl(0.022,0.012,K.M.dark(),-0.125,0.24,-0.29,'x',6));}},
+  {name:'Resorte de retorno',ex:[0.42,0.36,-0.4],fn:'Devuelve el timón y el émbolo de bombeo a su posición después de cada carrera.',mat:'Alambre de acero para resortes',
+   build:(g,K)=>g.add(K.helix(0.02,0.11,8,0.004,K.M.spring(),0.045,0.335,-0.34))},
+  {name:'Timón de dirección',ex:[0,0.3,-0.7],fn:'Brazo de palanca para guiar el equipo y accionar la bomba al moverlo arriba y abajo.',mat:'Tubo rectangular de acero, pintura negra',
+   build:(g,K)=>K.arm(g,PIV,TILT,a=>{a.add(K.rbox(0.045,L-0.1,0.03,K.M.dark(),0,L/2+0.02,-0.01,0.006));
+     [-1,1].forEach(s=>a.add(K.rbox(0.012,0.16,0.07,K.M.dark(),s*0.105,0.05,0,0.004)));a.add(K.rbox(0.22,0.03,0.05,K.M.dark(),0,0.12,0,0.006));a.add(K.cyl(0.014,0.24,K.M.chrome(),0,0,0,'x',14));})},
+  {name:'Empuñadura',sw:'#1a1c1e',ex:[0,0.5,-0.85],fn:'Aro de agarre para empujar, halar y girar. Aloja la palanca de mando de subida y bajada.',mat:'Tubo de acero con recubrimiento de caucho antideslizante',
+   build:(g,K)=>K.arm(g,PIV,TILT,a=>{a.add(K.loop(0.3,0.17,0.05,0.017,K.M.rubber(),0,L-0.02,0));a.add(K.rbox(0.05,0.07,0.035,K.M.dark(),0,L-0.01,-0.005,0.006));})},
+  {name:'Palanca de mando',ex:[0.32,0.45,-0.85],fn:'Selector de tres posiciones: SUBIR, NEUTRO para desplazarse y BAJAR. Acciona la válvula mediante una varilla.',mat:'Acero estampado',
+   build:(g,K)=>K.arm(g,PIV,TILT,a=>{const lev=K.rbox(0.018,0.1,0.01,K.M.steel(),0.035,L+0.07,0.02,0.003);lev.rotation.z=-0.5;a.add(lev);a.add(K.cyl(0.003,L-0.15,K.M.steel(),0.03,L/2+0.02,0.018,null,6));})},
+  {name:'Pedal de descenso',ex:[0.46,0.08,-0.5],fn:'Pedal que acciona la válvula de escape con el pie para bajar las horquillas con seguridad.',mat:'Placa de acero estriada',
+   build:(g,K)=>{const p=K.rbox(0.08,0.012,0.06,K.M.dark(),0.15,0.2,-0.35,0.004);p.rotation.x=0.25;g.add(p);
+     for(let i=0;i<4;i++){const r=K.rbox(0.07,0.004,0.006,K.M.steel(),0.15,0.208+i*0.0035,-0.372+i*0.014,0.001);r.rotation.x=0.25;g.add(r);}
+     const arm=K.rbox(0.012,0.012,0.09,K.M.dark(),0.1,0.21,-0.3,0.003);arm.rotation.y=0.6;g.add(arm);}},
+  ]
+});
+</script>
+</head>
+<body></body>
+</html>

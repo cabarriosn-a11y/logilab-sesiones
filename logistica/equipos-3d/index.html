@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Equipos 3D LogiLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: estante de equipos — encabezado corto y rejilla de fichas, cada ficha abre un visor 3D */
+:root{
+  --bg:#f2f5f7; --card:#ffffff; --ink:#0f1c27; --muted:#5a6b78; --line:#d5dde3;
+  --sena:#39A900; --sena-ink:#2a7d00; --paint:#d99a00; --soon:#8a98a4;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#07111d; --card:#0e1e30; --ink:#e6f1f8; --muted:#8aa3b6; --line:#1f3347;
+  --sena:#4cc20c; --sena-ink:#6fd93a; --paint:#f2b316; --soon:#5e7385; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 28px}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.back{font-family:var(--mono);font-size:13px;color:var(--sena-ink);text-decoration:none}
+.back:hover{text-decoration:underline}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.eyebrow i{width:10px;height:10px;background:var(--sena);display:inline-block}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(32px,5vw,50px);line-height:1;margin:6px 0 0;text-transform:uppercase;letter-spacing:.02em;text-wrap:balance}
+h1 span{color:var(--paint)}
+.lede{margin:8px 0 0;color:var(--muted);max-width:62ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{display:flex;flex-direction:column;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;text-decoration:none;color:inherit;min-width:0}
+a.card:hover{border-color:var(--sena)}
+a.card:focus-visible{outline:2px solid var(--sena);outline-offset:2px}
+.tag{align-self:flex-start;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:3px;border:1px solid currentColor}
+.tag.ok{color:var(--sena-ink)} .tag.ins{color:var(--paint)} .tag.soon{color:var(--soon)}
+.card h2{font-family:var(--display);font-size:24px;text-transform:uppercase;margin:0;line-height:1.05;letter-spacing:.02em}
+.card p{margin:0;font-size:14px;color:var(--muted)}
+.meta{margin-top:auto;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.card.soon{opacity:.7}
+footer{font-family:var(--mono);font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+footer b{color:var(--sena-ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../">← Volver al portal LogiLab</a>
+  <header>
+    <div class="eyebrow"><i></i>LogiLab SENA · Equipos de manipulación de carga</div>
+    <h1>Equipos <span>3D en piezas</span></h1>
+    <p class="lede">Visores 3D que se giran con el dedo o el mouse, se desarman en piezas y muestran el nombre y la función de cada componente. Funcionan en el celular.</p>
+  </header>
+  <main class="grid" id="grid"></main>
+  <footer><span><b>LogiLab SENA</b> · Centro Industrial y de Energías Alternativas · Regional Guajira</span><span>By Carlos Barrios · Instructor</span></footer>
+</div>
+<script>
+/* Catálogo de visores. Para agregar uno: crear /logistica/equipos-3d/<nombre>/index.html
+   (usa ../motor-3d.js) y añadir aquí su entrada con estado 'ok'. */
+const EQUIPOS = [
+  {nombre:'Contenedores ISO (6 tipos)', ruta:'contenedores/', estado:'ok', piezas:18, texto:'Estándar 20′ (Dry Van), High Cube 40′, Refrigerado (Reefer), Techo abierto (Open Top), Plataforma plegable (Flat Rack) y Tanque ISO. Se desarman en piezas, abren puertas, pliegan testeros, traen tabla comparativa y permiten entrar a caminar por dentro.'},
+  {nombre:'Montacargas eléctrico', ruta:'montacargas/', estado:'ok', piezas:17, texto:'Mástil telescópico, cadenas y poleas, cilindros de elevación e inclinación, banco de baterías, motor de tracción, contrapeso y cabina ROPS. Simula la elevación hasta 1 800 mm.'},
+  {nombre:'Transpaleta manual', ruta:'transpaleta/', estado:'ok', piezas:15, texto:'Horquillas, chasis, bomba hidráulica, pistón, timón, ruedas y rodillos. Simula la elevación de 85 a 200 mm.'},
+  {nombre:'Contenedor 40\' High Cube', ruta:'contenedor/', estado:'ok', piezas:94, texto:'Esquineros ISO 1161, postes, rieles, piso de madera, paredes y techo corrugados, puertas con barras de cierre y 6 estibas EUR. Medidas y pesos ISO reales, con zoom.'},
+  {nombre:'Apilador manual', estado:'soon', texto:'Base con patas, mástil, cadena de elevación, horquillas y timón.'},
+  {nombre:'Grúa pórtico', estado:'soon', texto:'Patas, viga principal, carro, polipasto, cables y gancho.'},
+  {nombre:'Pallet', estado:'soon', texto:'Tablas, tacos y largueros. Comparación entre pallet americano y europeo.'},
+  {nombre:'Biblioteca de piezas', ruta:'biblioteca/', estado:'ins', piezas:13, texto:'Piezas básicas del motor 3D con su nombre en código. Referencia para el instructor.'},
+];
+const tags={ok:['ok','Disponible'],soon:['soon','Próximamente'],ins:['ins','Instructor']};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+document.getElementById('grid').innerHTML=EQUIPOS.map(e=>{
+  const [cls,txt]=tags[e.estado];const inner=`<span class="tag ${cls}">${txt}</span><h2>${esc(e.nombre)}</h2><p>${esc(e.texto)}</p>${e.piezas?`<span class="meta">${e.piezas} piezas · Abrir visor →</span>`:''}`;
+  return e.ruta&&e.estado!=='soon'?`<a class="card" href="${e.ruta}">${inner}</a>`:`<div class="card soon">${inner}</div>`;}).join('');
+</script>
+</body>
+</html>

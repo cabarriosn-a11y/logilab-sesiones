@@ -1,0 +1,339 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contenedores ISO 3D</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="../motor-3d.js"></script>
+<script>
+/* Contenedores ISO en piezas · LogiLab SENA · By Carlos Barrios · Instructor */
+const W=2.438, D=Math.PI/180, sides=f=>[-1,1].forEach(f), both=f=>[-1,1].forEach(a=>[-1,1].forEach(b=>f(a,b)));
+const shade=(h,k)=>(Math.round((h>>16&255)*k)<<16)|(Math.round((h>>8&255)*k)<<8)|Math.round((h&255)*k);
+const BLK=K=>K.M.color(0x06080a,0,1);
+const LUCES=[];
+
+/* ---------- Tipos (valores típicos de referencia) ---------- */
+const TYPES=[
+ {id:'dry20',nom:'Estándar 20′',alias:'Dry Van',iso:'22G1',L:6.058,H:2.591,color:0xa8402c,ext:'6,06 × 2,44 × 2,59 m',int:'5,90 × 2,35 × 2,39 m',tara:'2 230 kg',carga:'28 250 kg',mgw:'30 480 kg',cap:'33,2 m³',serial:'202611',
+  uso:'Carga general seca: cajas, sacos, estibas. Ideal para mercancía pesada y compacta.'},
+ {id:'hc40',nom:'High Cube 40′',alias:'HC',iso:'45G1',L:12.192,H:2.896,color:0x1f5c9e,ext:'12,19 × 2,44 × 2,90 m',int:'12,03 × 2,35 × 2,70 m',tara:'3 900 kg',carga:'28 600 kg',mgw:'32 500 kg',cap:'76,3 m³',serial:'402612',
+  uso:'Carga voluminosa y liviana: muebles, textiles, electrodomésticos. Es un pie (30 cm) más alto que el estándar.'},
+ {id:'reefer',nom:'Refrigerado 40′ HC',alias:'Reefer',iso:'45R1',L:12.192,H:2.896,color:0xe6eaed,ext:'12,19 × 2,44 × 2,90 m',int:'11,58 × 2,29 × 2,55 m',tara:'4 600 kg',carga:'29 400 kg',mgw:'34 000 kg',cap:'67,5 m³',serial:'402613',
+  uso:'Perecederos a temperatura controlada entre −30 °C y +30 °C: frutas, carnes, pescado, flores, vacunas.'},
+ {id:'opentop',nom:'Techo abierto 20′',alias:'Open Top',iso:'22U1',L:6.058,H:2.591,color:0x2f7a4c,ext:'6,06 × 2,44 × 2,59 m',int:'5,90 × 2,35 × 2,35 m',tara:'2 350 kg',carga:'28 130 kg',mgw:'30 480 kg',cap:'32,6 m³',serial:'202614',
+  uso:'Carga alta que se mete con grúa por arriba: maquinaria, bloques de piedra, bobinas, tubería.'},
+ {id:'flatrack',nom:'Plataforma plegable 40′',alias:'Flat Rack',iso:'42P3',L:12.192,H:2.591,color:0xc4561f,ext:'12,19 × 2,44 × 2,59 m',int:'12,06 × 2,24 × 1,96 m',tara:'5 000 kg',carga:'40 000 kg',mgw:'45 000 kg',cap:'Sin techo ni paredes',
+  uso:'Carga sobredimensionada o muy pesada: vehículos, transformadores, maquinaria de minería.'},
+ {id:'tank',nom:'Tanque ISO 20′',alias:'ISO Tank',iso:'22T6',L:6.058,H:2.591,color:0x1d4f91,ext:'6,06 × 2,44 × 2,59 m',int:'Tanque Ø ≈ 2,2 m',tara:'3 700 kg',carga:'32 300 kg',mgw:'36 000 kg',cap:'21 000 – 26 000 L',
+  uso:'Líquidos a granel: químicos, aceites, alimentos líquidos, gases licuados (según su código T).'}
+];
+const CUR=TYPES.find(t=>t.id===location.hash.slice(1))||TYPES[0];
+
+/* ---------- Dígito de control ISO 6346 ---------- */
+function isoCheck(code){const v={};let n=10;for(const c of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'){if(n%11===0)n++;v[c]=n++;}
+  let s=0;[...code].forEach((c,i)=>{s+=(c>='A'?v[c]:+c)*Math.pow(2,i);});return s%11%10;}
+/* Marcaje pintado en la puerta derecha */
+function marking(K,o,w,h){const T=K.THREE,c=document.createElement('canvas');c.width=640;c.height=Math.round(640*h/w);const x=c.getContext('2d');
+  const ink=o.id==='reefer'?'#1a2530':'#f4f6f8';x.fillStyle=ink;x.strokeStyle=ink;
+  const cd=isoCheck('LLSU'+o.serial);x.font='bold 78px Arial';x.fillText('LLSU '+o.serial,22,92);
+  const tw=x.measureText('LLSU '+o.serial+' ').width;x.fillText(cd,22+tw,92);x.lineWidth=5;x.strokeRect(14+tw,22,62,88);
+  x.font='bold 66px Arial';x.fillText(o.iso,22,180);x.font='bold 30px Arial';
+  [['MAX. GROSS',o.mgw],['TARE',o.tara],['PAYLOAD',o.carga],['CU. CAP.',o.cap]].forEach((r,i)=>{x.fillText(r[0],22,250+i*44);x.fillText(r[1].replace(/(\d),(\d)/g,'$1.$2').replace(/(\d) (\d)/g,'$1,$2').toUpperCase(),300,250+i*44);});
+  const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;t.anisotropy=4;
+  const m=K.mesh(new T.PlaneGeometry(w,h),new T.MeshStandardMaterial({map:t,transparent:true,roughness:0.7,metalness:0,depthWrite:false}),0,0,0);m.userData.ns=1;return m;}
+const noShadow=g=>{if(g.userData.nsDone)return;g.traverse(m=>{if(m.userData&&m.userData.ns)m.castShadow=false;});g.userData.nsDone=1;};
+
+/* ---------- Piezas compartidas ---------- */
+function castingsPart(o,top=true){const L=o.L,H=o.H,zE=L/2-0.089;
+  return {name:'Esquineros ISO (corner castings)',spread:0.45,ex:[0,0.04,0],fn:'Bloques de acero fundido en las esquinas, con agujeros ovalados donde entran los twistlocks y el spreader de la grúa. Son los únicos puntos por donde se levanta, se apila y se asegura el contenedor.',mat:'Acero fundido según norma ISO 1161',
+  build:(g,K)=>both((s,sz)=>(top?[0.059,H-0.059]:[0.059]).forEach(y=>{const x=s*(W/2-0.081),z=sz*zE;
+    g.add(K.rbox(0.162,0.118,0.178,K.M.paint(shade(o.color,0.6)),x,y,z,0.012));
+    g.add(K.rbox(0.004,0.06,0.1,BLK(K),s*(W/2+0.001),y,z,0.002));g.add(K.rbox(0.08,0.055,0.004,BLK(K),x,y,sz*(L/2+0.001),0.002));
+    g.add(K.rbox(0.06,0.004,0.11,BLK(K),x,y+(y>1?0.06:-0.06),z,0.002));}))};}
+
+function leafArms(g,K,o,fill){g.userData.lv=[];const lw=(W-0.1)/2,Hd=o.H-0.36;
+  sides(s=>{const a=K.arm(g,[s*(W/2-0.01),0.16,o.L/2-0.035],[0,0,0],a=>fill(a,s,lw,Hd));g.userData.lv.push([a,s]);});}
+const doorMotion=(g,t)=>{noShadow(g);g.userData.lv.forEach(([a,s])=>{a.rotation.y=s*t*260*D;});};
+
+function boxParts(o){const L=o.L,H=o.H,k=L/6.058,P=K=>K.M.paint(o.color),R=o.id==='reefer',OT=o.id==='opentop';
+  const parts=[castingsPart(o),
+  {name:'Postes esquineros',spread:0.4,ex:[0,0.08,0],fn:'Columnas verticales que unen los esquineros de abajo con los de arriba. Cargan el peso de los contenedores apilados encima (hasta 9 de altura en un buque).',mat:'Acero Corten en perfil plegado',
+   build:(g,K)=>both((s,sz)=>{const a=sz>0?0.2:0.15,t=sz>0?0.022:0.012;
+     g.add(K.extrude([[0,0],[-a,0],[-a,-t],[-t,-t],[-t,-a],[0,-a]].map(([u,v])=>[u*s,sz*L/2+v*sz]),H-0.236,P(K),{plane:'xz',x:s*W/2,y:0.118,bevel:0.004}));})},
+  {name:'Bastidor inferior',fn:'Largueros laterales, travesaños y umbral que forman la base. Sostienen el piso y reparten el peso de la carga hacia los esquineros.',mat:'Perfiles en C de acero Corten',
+   build:(g,K)=>{sides(s=>{g.add(K.rbox(0.05,0.16,L-0.356,P(K),s*(W/2-0.025),0.08,0,0.008));g.add(K.rbox(0.1,0.014,L-0.356,P(K),s*(W/2-0.06),0.007,0,0.005));});
+     const n=Math.round((L-0.5)/0.3);for(let i=0;i<=n;i++){const z=-L/2+0.25+i*(L-0.5)/n;
+       if(o.goose&&z<-L/2+3.3)sides(s=>g.add(K.rbox(0.66,0.1,0.05,K.M.dark(),s*(W/2-0.38),0.07,z,0.006)));else g.add(K.rbox(W-0.1,0.1,0.05,K.M.dark(),0,0.07,z,0.006));}
+     sides(sz=>g.add(K.rbox(W-0.324,0.16,0.12,P(K),0,0.08,sz*(L/2-0.06),0.01)));
+     for(let i=0;i<Math.round(L/3);i++){const l=new K.THREE.PointLight(0xfff1dc,0,L*0.45,2);l.position.set(0,H-0.45,-L/2+(i+0.5)*L/Math.round(L/3));g.add(l);LUCES.push(l);}}},
+  {name:R?'Piso en T de aluminio':'Piso de madera contrachapada',ex:[0,0.65,0],
+   fn:R?'Piso con canales en forma de T por donde circula el aire frío por debajo de la carga. Así la temperatura queda pareja en todo el contenedor.':'Tablero de madera dura de 28 mm atornillado a los travesaños. Resiste el paso de un montacargas con hasta 7 260 kg por eje.',
+   mat:R?'Perfiles de aluminio extruido':'Contrachapado de madera tropical tratada contra plagas',
+   build:(g,K)=>{g.add(K.rbox(W-0.1,0.028,L-0.24,R?K.M.color(0xb9c0c6,0.85,0.35):K.M.wood(0x8a5a32),0,0.174,0,0.004));
+     const st=R?0.065:0.3;for(let x=-W/2+0.05+st;x<W/2-0.06;x+=st)g.add(K.rbox(R?0.024:0.006,R?0.01:0.002,L-0.26,R?K.M.color(0x30363b,0.6,0.5):K.M.color(0x3a2414,0,0.9),x,0.19,0,0.001));}},
+  {name:'Paredes laterales',spread:0.9,ex:[0,0.25,0],
+   fn:R?'Paneles tipo sándwich: lámina exterior, espuma aislante y lámina interior. Mantienen el frío como una nevera.':'Láminas onduladas que cierran los costados. El corrugado les da rigidez sin agregar peso.',
+   mat:R?'Aluminio/acero inoxidable con 80 mm de poliuretano':'Lámina de acero Corten de 1,6 mm',
+   build:(g,K)=>sides(s=>{const c=K.corrugated(L-0.36,H-0.3,R?Math.round(L/0.11):Math.round(L/0.278),R?0.012:0.036,0.003,P(K),s*(W/2-0.045),0.17,0);c.rotation.y=-s*Math.PI/2;g.add(c);})},
+  {name:'Largueros superiores',spread:0.35,ex:[0,0.95,0],fn:'Tubos cuadrados que recorren el borde superior a lo largo. Amarran los postes y sostienen el techo.',mat:'Tubo de acero de 60 × 60 mm',
+   build:(g,K)=>sides(s=>g.add(K.rbox(0.06,0.1,L-0.356,P(K),s*(W/2-0.03),H-0.06,0,0.01)))},
+  {name:'Dintel y retenedores de levas',ex:[0,0.35,0.5*k],fn:'Viga superior del marco de las puertas que rigidiza la abertura trasera. Arriba y abajo lleva los retenedores donde encajan las levas de las barras de cierre.',mat:'Acero Corten, retenedores galvanizados',
+   build:(g,K)=>{const hb=K.arm(g,OT?[(W-0.324)/2,H-0.1,L/2-0.07]:[0,H-0.1,L/2-0.07],[0,0,0],a=>{const x0=OT?-(W-0.324)/2:0;
+       a.add(K.rbox(W-0.324,0.2,0.12,K.M.paint(OT?shade(o.color,0.8):o.color),x0,0,0,0.012));if(OT)a.add(K.cyl(0.035,0.24,K.M.steel(),0,0,0.07,null,16));});
+     if(OT)g.userData.hd=hb;const lw=(W-0.1)/2;
+     sides(s=>[0.32,lw-0.3].forEach(d=>{const x=s*(W/2-0.01)-s*d;[H-0.18,0.13].forEach(y=>g.add(K.rbox(0.07,0.05,0.06,K.M.steel(),x,y,L/2+0.03,0.008)));}));},
+   motion:OT?(g,t)=>{g.userData.hd.rotation.y=t*100*D;}:null},
+  {name:'Puertas traseras',spread:0.6,ex:[0,0,1.3*k],fn:'Dos hojas corrugadas montadas en bisagras que abren hasta 270°. Llevan pintado el código del contenedor y sus pesos máximos.',mat:'Lámina de acero Corten, empaque de caucho EPDM',
+   build:(g,K)=>leafArms(g,K,o,(a,s,lw,Hd)=>{const c=K.corrugated(lw-0.08,Hd-0.12,3,0.028,0.003,P(K),-s*lw/2,0.06,0);c.rotation.y=Math.PI;a.add(c);
+     [0.03,Hd-0.03].forEach(y=>a.add(K.rbox(lw,0.06,0.05,P(K),-s*lw/2,y,0,0.01)));
+     [0.03,lw-0.03].forEach(d=>a.add(K.rbox(0.06,Hd,0.05,P(K),-s*d,Hd/2,0,0.01)));
+     a.add(K.loop(lw-0.1,Hd-0.1,0.05,0.012,K.M.rubber(),-s*lw/2,0.05,-0.03));
+     [0.25,Hd*0.37,Hd*0.63,Hd-0.25].forEach(y=>{a.add(K.cyl(0.028,0.13,K.M.steel(),0,y,0,null,16));a.add(K.rbox(0.22,0.05,0.014,K.M.steel(),-s*0.11,y,0.03,0.005));});
+     if(s>0){const m=marking(K,o,0.84,0.6);m.position.set(-s*lw/2-0.02,Hd*0.66,0.036);a.add(m);}}),
+   motion:doorMotion},
+  {name:'Barras de cierre y manijas',spread:0.6,ex:[0,0.15,1.65*k],fn:'Cuatro barras verticales que al girar con su manija meten las levas en los retenedores y trancan las puertas. En la manija se pone el sello de seguridad (precinto).',mat:'Tubo de acero galvanizado de 27 mm',
+   build:(g,K)=>leafArms(g,K,o,(a,s,lw,Hd)=>{const st=()=>K.M.color(0xa3abb1,0.8,0.33);
+     [0.32,lw-0.3].forEach((d,i)=>{const x=-s*d;a.add(K.cyl(0.0135,Hd+0.08,st(),x,Hd/2,0.07,null,12));
+       [-0.03,Hd+0.03].forEach(y=>a.add(K.rbox(0.06,0.07,0.05,st(),x,y,0.07,0.01)));
+       [0.4,Hd*0.55,Hd-0.4].forEach(y=>a.add(K.rbox(0.08,0.035,0.06,st(),x,y,0.05,0.008)));
+       const hy=1.0+i*0.09;a.add(K.cable([x,hy,0.075],[x+s*0.32,hy,0.075],0.014,st()));a.add(K.cyl(0.02,0.1,K.M.rubber(),x+s*0.3,hy,0.075,'x',12));
+       a.add(K.rbox(0.05,0.1,0.05,st(),x+s*0.36,hy,0.06,0.008));if(i===1&&s<0)a.add(K.cyl(0.01,0.05,K.M.color(0xffcc00,0.1,0.4),x+s*0.36,hy-0.08,0.09,null,8));});}),
+   motion:doorMotion}];
+  if(!R)parts.push({name:'Pared frontal',ex:[0,0.1,-1.1*k],fn:'Pared fija del extremo opuesto a las puertas. Lleva arriba un travesaño que une los postes frontales.',mat:'Lámina corrugada de acero Corten de 2 mm',
+   build:(g,K)=>{g.add(K.corrugated(W-0.3,H-0.3,5,0.036,0.003,P(K),0,0.17,-(L/2-0.045)));g.add(K.rbox(W-0.324,0.11,0.1,P(K),0,H-0.07,-(L/2-0.05),0.01));}});
+  if(!R&&!OT)parts.push({name:'Techo corrugado',ex:[0,1.7,0],fn:'Lámina ondulada que cierra el contenedor por arriba y escurre el agua lluvia. Aguanta el peso de una persona sobre los bordes, no en el centro.',mat:'Lámina de acero Corten de 2 mm',
+   build:(g,K)=>{const h=W-0.14,c=K.corrugated(L-0.36,h,Math.round(L/0.25),0.02,0.003,P(K),0,0,-h/2);c.rotation.x=Math.PI/2;const gr=new K.THREE.Group();gr.add(c);gr.rotation.y=Math.PI/2;gr.position.y=H-0.035;g.add(gr);}});
+  if(R)parts.push({name:'Techo aislado',ex:[0,1.7,0],fn:'Panel tipo sándwich con espuma aislante que evita que el sol caliente la carga. Por dentro es liso para que el aire frío corra sin obstáculos.',mat:'Aluminio con poliuretano expandido',
+   build:(g,K)=>{g.add(K.rbox(W-0.12,0.05,L-0.36,P(K),0,H-0.03,0,0.012));for(let z=-L/2+0.6;z<L/2-0.4;z+=0.6)g.add(K.rbox(W-0.16,0.012,0.04,K.M.paint(shade(o.color,0.85)),0,H-0.003,z,0.004));}});
+  if(OT)parts.push(
+  {name:'Arcos de techo removibles',ex:[0,1.05,0],fn:'Tubos curvos que se encajan de lado a lado y sostienen la lona. Se quitan para meter la carga desde arriba con una grúa.',mat:'Tubo de acero galvanizado',
+   build:(g,K)=>{for(let i=0;i<6;i++){const z=-L/2+0.55+i*(L-1.1)/5;g.add(K.tube([[-W/2+0.05,H-0.12,z],[-W/2+0.4,H-0.04,z],[0,H-0.015,z],[W/2-0.4,H-0.04,z],[W/2-0.05,H-0.12,z]],0.022,K.M.steel()));}}},
+  {name:'Lona removible',ex:[0,1.9,0],fn:'Cubierta de lona impermeable que reemplaza el techo. Se amarra con un cable de seguridad (cable TIR) que pasa por argollas en los largueros.',mat:'Lona de PVC reforzada con poliéster',
+   build:(g,K)=>{const a=[];for(let i=0;i<=20;i++){const x=-W/2-0.01+i*(W+0.02)/20;a.push([x,H-0.115+0.1*Math.cos(x/W*Math.PI)]);}
+     const pts=a.concat(a.slice().reverse().map(([x,y])=>[x,y-0.008]));g.add(K.extrude(pts,L-0.2,K.M.color(0x23452f,0,0.85),{plane:'xy',bevel:0.002}));
+     sides(s=>g.add(K.cable([s*(W/2+0.02),H-0.17,-L/2+0.12],[s*(W/2+0.02),H-0.17,L/2-0.12],0.006,K.M.steel())));}});
+  if(!R)parts.push({name:'Respiraderos de ventilación',spread:0.6,ex:[0,0.3,0],fn:'Rejillas cubiertas que igualan la presión y dejan salir la humedad. Ayudan a evitar la condensación ("lluvia de contenedor") que daña la carga.',mat:'Plástico ABS o acero inoxidable',
+   build:(g,K)=>sides(s=>[-1,1].forEach(sz=>{const x=s*(W/2+0.03),y=H-0.38,z=sz*(L/2-0.7);g.add(K.rbox(0.03,0.13,0.24,K.M.color(0x8d959b,0.3,0.5),x,y,z,0.01));
+     for(let i=0;i<4;i++)g.add(K.rbox(0.036,0.012,0.2,K.M.dark(),x+s*0.004,y-0.045+i*0.03,z,0.003));}))});
+  if(L<7)parts.push({name:'Bolsillos para montacargas',spread:0.25,fn:'Túneles bajo el piso por donde entran las horquillas para levantar el contenedor vacío. Solo los traen los de 20 pies.',mat:'Lámina de acero soldada al bastidor',
+   build:(g,K)=>[-1,1].forEach(sz=>{const z=sz*1.025;g.add(K.rbox(W-0.06,0.012,0.4,P(K),0,0.128,z,0.004));
+     sides(s=>{g.add(K.rbox(0.012,0.16,0.5,P(K),s*(W/2+0.006),0.08,z,0.004));g.add(K.rbox(0.006,0.115,0.355,BLK(K),s*(W/2+0.013),0.066,z,0.002));});})});
+  if(o.goose)parts.push({name:'Túnel de cuello de ganso',ex:[0,0,-0.7],fn:'Hendidura bajo el piso al frente de los contenedores de 40 pies. Ahí encaja el cuello del chasis portacontenedores para que el conjunto viaje más bajo.',mat:'Lámina de acero de 4 mm',
+   build:(g,K)=>{const z=-L/2+0.12+1.575;g.add(K.rbox(1.03,0.012,3.15,P(K),0,0.124,z,0.004));sides(s=>g.add(K.rbox(0.012,0.124,3.15,P(K),s*0.515,0.062,z,0.004)));}});
+  parts.push({name:'Argollas de amarre',spread:0.25,ex:[0,0.65,0],fn:'Anillos soldados por dentro, abajo y arriba, para amarrar la carga con cintas o cadenas. Cada uno resiste cerca de 1 000 kg de tensión.',mat:'Acero forjado',
+   build:(g,K)=>sides(s=>{const n=Math.round(L/1.1);for(let i=0;i<n;i++){const z=-L/2+0.6+i*(L-1.2)/(n-1);[0.22,H-0.16].forEach(y=>{
+     const r=K.mesh(new K.THREE.TorusGeometry(0.03,0.007,8,20),K.M.steel(),s*(W/2-0.09),y,z);r.rotation.y=Math.PI/2;g.add(r);g.add(K.rbox(0.03,0.03,0.05,K.M.steel(),s*(W/2-0.065),y,z,0.004));});}})});
+  if(R)parts.push(...reeferParts(o));
+  return parts;}
+
+/* ---------- Unidad de refrigeración (reefer) ---------- */
+function reeferParts(o){const L=o.L,H=o.H,zf=-L/2,G=K=>K.M.color(0xcfd5d9,0.55,0.4);
+  return [
+  {name:'Carcasa de la unidad de refrigeración',ex:[0,0,-1.0],fn:'Equipo de frío montado en el frente del contenedor, como un aire acondicionado. Arriba están las tapas del evaporador, que enfría el aire de adentro.',mat:'Aluminio y acero inoxidable',
+   build:(g,K)=>{g.add(K.rbox(W-0.3,H-0.3,0.3,G(K),0,0.17+(H-0.3)/2,zf+0.2,0.02));g.add(K.rbox(W-0.324,0.12,0.12,K.M.paint(o.color),0,H-0.07,zf+0.06,0.01));
+     sides(s=>{g.add(K.rbox(0.95,0.42,0.025,K.M.color(0xe1e5e8,0.5,0.35),s*0.52,H-0.47,zf+0.045,0.012));g.add(K.rbox(0.12,0.03,0.02,K.M.dark(),s*0.52,H-0.32,zf+0.03,0.006));
+       [0.15,0.8].forEach(d=>g.add(K.cyl(0.015,0.06,K.M.steel(),s*(0.52-0.47+d),H-0.68,zf+0.035,'x',10)));});
+     g.add(K.rbox(W-0.36,0.02,0.04,K.M.dark(),0,H-0.72,zf+0.04,0.005));}},
+  {name:'Condensador y ventilador',ex:[-0.2,0.15,-1.8],fn:'Serpentín con aletas donde el gas refrigerante bota al exterior el calor que sacó de la carga. El ventilador sopla aire a través de él.',mat:'Tubos de cobre con aletas de aluminio',
+   build:(g,K)=>{const cx=-0.5,cy=1.5,z=zf+0.035;g.add(K.rbox(0.9,0.9,0.05,K.M.color(0x2a3036,0.6,0.5),cx,cy,zf+0.07,0.01));
+     for(let i=0;i<22;i++)g.add(K.rbox(0.006,0.86,0.04,K.M.color(0x8a9097,0.85,0.3),cx-0.42+i*0.04,cy,zf+0.05,0.001));
+     [0.36,0.26,0.16].forEach(r=>{const t=K.mesh(new K.THREE.TorusGeometry(r,0.008,8,48),K.M.chrome(),cx,cy,z);g.add(t);});
+     for(let i=0;i<8;i++){const a=i*Math.PI/4;g.add(K.cable([cx,cy,z],[cx+0.37*Math.cos(a),cy+0.37*Math.sin(a),z],0.006,K.M.chrome()));}
+     const fan=K.arm(g,[cx,cy,zf+0.06],[0,0,0],a=>{for(let i=0;i<4;i++){const b=K.rbox(0.3,0.09,0.012,K.M.color(0x1b1d20,0.1,0.5),0.16,0,0,0.03);const p=new K.THREE.Group();p.add(b);p.rotation.z=i*Math.PI/2;b.rotation.x=0.4;a.add(p);}
+       a.add(K.cyl(0.05,0.06,K.M.dark(),0,0,0,'z',20));});g.userData.fan=fan;},
+   motion:(g,t)=>{g.userData.fan.rotation.z=t*Math.PI*6;}},
+  {name:'Compresor',ex:[0.45,0,-1.5],fn:'Corazón del sistema de frío: comprime el gas refrigerante para que pueda soltar el calor en el condensador. Queda detrás de una rejilla protectora.',mat:'Carcasa de acero, motor eléctrico trifásico',
+   build:(g,K)=>{const x=0.55,y=0.62;g.add(K.cyl(0.16,0.42,K.M.color(0x2d5a3c,0.4,0.45),x,y,zf+0.2,null,28));g.add(K.mesh(new K.THREE.SphereGeometry(0.16,24,12,0,Math.PI*2,0,Math.PI/2),K.M.color(0x2d5a3c,0.4,0.45),x,y+0.21,zf+0.2));
+     g.add(K.tube([[x+0.1,y+0.3,zf+0.2],[x+0.25,y+0.45,zf+0.15],[x+0.1,y+0.6,zf+0.1]],0.015,K.M.color(0xb87333,0.9,0.3)));
+     g.add(K.rbox(0.8,0.62,0.02,K.M.dark(),x,y+0.05,zf+0.12,0.01));const gr=K.grille(0.78,0.6,9,0.008,K.M.chrome(),x,y-0.25,zf+0.03);g.add(gr);}},
+  {name:'Controlador y pantalla',ex:[0.4,0.35,-1.25],fn:'Computador de la unidad: fija la temperatura, muestra la lectura y guarda el registro de todo el viaje. Ese registro sirve como prueba ante el cliente o la aduana.',mat:'Caja sellada IP67, pantalla LED',
+   build:(g,K)=>{const x=0.55,y=1.55,z=zf+0.06;g.add(K.rbox(0.42,0.34,0.08,K.M.color(0x1e2328,0.3,0.5),x,y,z,0.015));
+     g.add(K.rbox(0.24,0.08,0.006,K.M.lens(0x3cff7a,1.0),x,y+0.07,z-0.042,0.003));
+     for(let i=0;i<3;i++)for(let j=0;j<2;j++)g.add(K.rbox(0.05,0.035,0.012,K.M.color(0x6b737a,0.2,0.4),x-0.08+i*0.08,y-0.05-j*0.05,z-0.044,0.006));
+     g.add(K.cyl(0.02,0.04,K.M.color(0xe53935,0.1,0.4),x+0.17,y+0.12,z-0.05,'z',12));}},
+  {name:'Ventila de aire fresco',ex:[0.3,0.55,-1.0],fn:'Compuerta redonda que deja entrar aire de afuera. Se abre para frutas que "respiran" (como el banano), que de lo contrario se maduran por exceso de gas.',mat:'Polímero con regleta graduada en m³/h',
+   build:(g,K)=>{const x=0.55,y=2.0,z=zf+0.04;g.add(K.cyl(0.14,0.03,K.M.color(0xd9dee2,0.3,0.4),x,y,z,'z',32));g.add(K.rbox(0.2,0.04,0.02,K.M.dark(),x,y,z-0.02,0.008));
+     for(let i=0;i<6;i++){const a=i*Math.PI/6+0.3;g.add(K.cable([x+0.06*Math.cos(a),y+0.06*Math.sin(a),z-0.018],[x+0.12*Math.cos(a),y+0.12*Math.sin(a),z-0.018],0.004,K.M.dark()));}}},
+  {name:'Cable de alimentación 460 V',ex:[-0.4,0,-1.4],fn:'Cable con enchufe que conecta la unidad a la corriente del puerto, del buque o de un generador (genset). Sin energía la carga se daña en pocas horas.',mat:'Cable de cobre con chaqueta de caucho, enchufe IEC',
+   build:(g,K)=>{const x=-0.5,y=0.6,z=zf+0.1;for(let i=0;i<5;i++)g.add(K.mesh(new K.THREE.TorusGeometry(0.2-i*0.006,0.016,8,40),K.M.color(0xff7a1a,0.05,0.55),x,y,z-i*0.033));
+     g.add(K.cyl(0.05,0.18,K.M.color(0x2c3238,0.3,0.5),x+0.32,y-0.1,z,null,20));g.add(K.tube([[x+0.19,y-0.05,z-0.16],[x+0.28,y+0.05,z-0.1],[x+0.32,y+0.0,z]],0.016,K.M.color(0xff7a1a,0.05,0.55)));
+     g.add(K.rbox(0.62,0.55,0.02,K.M.color(0x2a3036,0.5,0.5),x,y,zf+0.16,0.01));}}];}
+
+/* ---------- Flat rack ---------- */
+function flatParts(o){const L=o.L,H=o.H,P=K=>K.M.paint(o.color),FY=0.66,zp=L/2-0.2;
+  const endWall=(sz)=>({name:sz<0?'Testero frontal plegable':'Testero trasero plegable',ex:[0,0.15,sz*1.6],
+   fn:'Pared de extremo con postes que se abate hacia adentro sobre bisagras. Plegados, varios flat racks vacíos se apilan como uno solo y ahorran espacio al retornarlos.',
+   mat:'Postes de acero, panel corrugado, esquineros superiores ISO',
+   build:(g,K)=>{g.userData.w=K.arm(g,[0,FY+0.02,sz*zp],[0,0,0],a=>{
+       sides(s=>{a.add(K.rbox(0.17,1.79,0.18,P(K),s*(W/2-0.085),0.915,0,0.015));a.add(K.rbox(0.162,0.118,0.178,K.M.paint(shade(o.color,0.6)),s*(W/2-0.081),1.869,0,0.012));
+         a.add(K.rbox(0.004,0.06,0.1,BLK(K),s*(W/2+0.001),1.869,0,0.002));a.add(K.rbox(0.06,0.004,0.11,BLK(K),s*(W/2-0.081),1.93,0,0.002));});
+       const c=K.corrugated(W-0.36,1.55,6,0.03,0.003,P(K),0,0.13,0);if(sz>0)c.rotation.y=Math.PI;a.add(c);
+       a.add(K.rbox(W-0.324,0.12,0.14,P(K),0,1.74,0,0.012));a.add(K.rbox(W-0.324,0.12,0.14,P(K),0,0.07,0,0.012));
+       sides(s=>a.add(K.rbox(0.06,0.06,0.03,K.M.steel(),s*0.5,1.5,-sz*0.08,0.006)));});},
+   motion:(g,t)=>{g.userData.w.rotation.x=-sz*t*88*D;}});
+  return [castingsPart(o,false),
+  {name:'Largueros laterales (vientre de pez)',spread:0.5,fn:'Vigas laterales más profundas en el centro, donde la carga hace más fuerza. Esta forma soporta hasta 40 toneladas concentradas.',mat:'Acero de alta resistencia, alma de 12 mm',
+   build:(g,K)=>sides(s=>{const pf=[[-L/2+0.18,0.36],['q',-L/2+1.4,0.12,-L/2+2.8,0.12],[L/2-2.8,0.12],['q',L/2-1.4,0.12,L/2-0.18,0.36],[L/2-0.18,0.62],[-L/2+0.18,0.62]];
+     g.add(K.extrude(pf,0.035,P(K),{plane:'zy',x:s*(W/2-0.06),bevel:0.006}));g.add(K.rbox(0.16,0.03,L-0.36,P(K),s*(W/2-0.09),0.635,0,0.006));
+     g.add(K.tube([[s*(W/2-0.06),0.36,-L/2+0.18],[s*(W/2-0.06),0.14,-L/2+2.6],[s*(W/2-0.06),0.13,0],[s*(W/2-0.06),0.14,L/2-2.6],[s*(W/2-0.06),0.36,L/2-0.18]],0.028,P(K)));})},
+  {name:'Travesaños y vigas de extremo',fn:'Vigas transversales bajo el piso y vigas gruesas en cada extremo. Unen los dos largueros y llevan el peso hasta los esquineros.',mat:'Perfiles de acero estructural',
+   build:(g,K)=>{for(let z=-L/2+0.6;z<L/2-0.5;z+=0.45)g.add(K.rbox(W-0.18,0.2,0.07,K.M.dark(),0,0.52,z,0.008));
+     sides(sz=>{g.add(K.rbox(W-0.324,0.5,0.16,P(K),0,0.38,sz*(L/2-0.08),0.015));sides(s=>g.add(K.rbox(0.162,0.26,0.178,P(K),s*(W/2-0.081),0.25,sz*(L/2-0.089),0.012)));});}},
+  {name:'Piso de madera dura',ex:[0,0.75,0],fn:'Tablones gruesos sobre los travesaños. Aguantan el peso concentrado de maquinaria y se pueden clavar calzos para fijar la carga.',mat:'Madera dura tropical de 40 mm',
+   build:(g,K)=>{g.add(K.rbox(W-0.2,0.04,L-0.56,K.M.wood(0x8a5a32),0,0.645,0,0.004));for(let x=-W/2+0.25;x<W/2-0.15;x+=0.18)g.add(K.rbox(0.006,0.002,L-0.58,K.M.color(0x3a2414,0,0.9),x,0.666,0,0.001));}},
+  endWall(-1),endWall(1),
+  {name:'Bisagras y pasadores de bloqueo',spread:0.3,ex:[0,0.4,0],fn:'Ejes sobre los que giran los testeros y pasadores con resorte que los trancan de pie. Nunca se debe mover un flat rack con un testero sin trancar.',mat:'Acero forjado, resortes de acero',
+   build:(g,K)=>both((s,sz)=>{const x=s*(W/2-0.085),z=sz*zp;g.add(K.cyl(0.05,0.22,K.M.steel(),x,FY+0.02,z,'x',20));
+     g.add(K.helix(0.03,0.16,7,0.005,K.M.spring(),x-s*0.04,FY+0.12,z-sz*0.14));g.add(K.cable([x,FY+0.12,z-sz*0.14],[x-s*0.16,FY+0.3,z-sz*0.14],0.012,K.M.color(0xffcc00,0.2,0.4)));})},
+  {name:'Argollas de amarre (D-rings)',spread:0.3,ex:[0,0.55,0],fn:'Argollas abatibles a lo largo de los largueros para trincar la carga con cadenas o eslingas. Cada una resiste entre 3 y 5 toneladas.',mat:'Acero forjado',
+   build:(g,K)=>sides(s=>{for(let z=-L/2+0.9;z<L/2-0.8;z+=1.2){const r=K.mesh(new K.THREE.TorusGeometry(0.05,0.012,8,20),K.M.steel(),s*(W/2-0.03),0.6,z);r.rotation.y=Math.PI/2;g.add(r);
+     g.add(K.rbox(0.04,0.05,0.12,K.M.steel(),s*(W/2-0.05),0.645,z,0.006));}})},
+  {name:'Bolsillos para estacas',spread:0.35,ex:[0,0.2,0],fn:'Cajuelas en el costado donde se encajan estacas o postes laterales. Sirven para contener carga suelta como troncos o tubería.',mat:'Lámina de acero soldada',
+   build:(g,K)=>sides(s=>{for(let z=-L/2+1.6;z<L/2-1.4;z+=1.8){g.add(K.rbox(0.07,0.14,0.1,P(K),s*(W/2+0.01),0.55,z,0.008));g.add(K.rbox(0.045,0.004,0.07,BLK(K),s*(W/2+0.01),0.621,z,0.001));}})}];}
+
+/* ---------- Tanque ISO ---------- */
+function tankParts(o){const L=o.L,H=o.H,P=K=>K.M.paint(o.color),YC=1.3,RV=1.03,RC=1.08,LC=4.5,ST=K=>K.M.color(0xc9cfd4,0.85,0.28);
+  const half=(K,s)=>{const T=K.THREE,gr=new T.Group(),m=K.M.color(0xdfe3e6,0.7,0.33);m.side=T.DoubleSide;
+    const c=K.mesh(new T.CylinderGeometry(RC,RC,LC,48,1,true,s>0?0:Math.PI,Math.PI),m,0,0,0);c.rotation.x=Math.PI/2;gr.add(c);
+    [-1.6,-0.5,0.5,1.6].forEach(z=>{const b=K.mesh(new T.TorusGeometry(RC+0.006,0.012,8,32,Math.PI),K.M.color(0xb9bfc4,0.8,0.3),0,0,z);b.rotation.z=s>0?-Math.PI/2:Math.PI/2;gr.add(b);});
+    gr.position.set(s*0.001,YC,0);return gr;};
+  return [castingsPart(o),
+  {name:'Marco ISO (bastidor)',fn:'Estructura de acero con medidas de contenedor de 20 pies que encierra y protege el tanque. Gracias a él, el tanque se maneja con los mismos equipos que un contenedor normal.',mat:'Acero estructural pintado',
+   build:(g,K)=>{both((s,sz)=>g.add(K.rbox(0.16,H-0.236,0.16,P(K),s*(W/2-0.08),H/2,sz*(L/2-0.08),0.012)));
+     sides(s=>[0.07,H-0.07].forEach(y=>g.add(K.rbox(0.1,0.12,L-0.356,P(K),s*(W/2-0.05),y,0,0.01))));
+     sides(sz=>{[0.07,H-0.07].forEach(y=>g.add(K.rbox(W-0.324,0.12,0.12,P(K),0,y,sz*(L/2-0.07),0.01)));
+       sides(s=>[0.3,H-0.3].forEach(y=>g.add(K.ram([s*(W/2-0.14),y,sz*(L/2-0.1)],[s*0.77,YC+(y>1?0.77:-0.77),sz*(LC/2+0.2)],0.045,P(K)))));});}},
+  {name:'Recipiente de acero inoxidable',fn:'Tanque cilíndrico con fondos abombados que contiene el líquido. Se prueba a presión y su código T indica qué productos puede llevar.',mat:'Acero inoxidable 316L de 4 a 6 mm',
+   build:(g,K)=>{g.add(K.cyl(RV,LC,ST(K),0,YC,0,'z',48));sides(sz=>{const h=K.mesh(new K.THREE.SphereGeometry(RC,48,24),K.M.color(0xdfe3e6,0.75,0.3),0,YC,sz*LC/2);h.scale.z=0.42;g.add(h);
+     g.add(K.mesh(new K.THREE.TorusGeometry(RC+0.01,0.05,10,48),P(K),0,YC,sz*(LC/2+0.2)));});}},
+  {name:'Revestimiento y aislamiento',spread:1.3,ex:[0,0.2,0],fn:'Forro de aluminio sobre una capa de lana mineral que mantiene la temperatura del producto. Los anillos lo refuerzan y protegen de golpes.',mat:'Lámina de aluminio sobre aislante de 50 mm',
+   build:(g,K)=>sides(s=>g.add(half(K,s)))},
+  {name:'Serpentín de calefacción a vapor',ex:[0,-0.0,0],spread:0.4,fn:'Tubos pegados al fondo del tanque por donde se pasa vapor para calentar productos espesos (aceites, chocolate, resinas) y poder descargarlos.',mat:'Tubo de acero inoxidable',
+   build:(g,K)=>sides(s=>{const x=s*0.36,y=YC-RV-0.015,m=()=>K.M.color(0xc98a4b,0.85,0.3);g.add(K.cable([x,y,-LC/2],[x,y,LC/2],0.022,m()));
+     g.add(K.tube([[x,y,LC/2],[x,y+0.02,LC/2+0.25],[x*1.4,0.3,L/2-0.25]],0.022,m()));g.add(K.cyl(0.035,0.06,K.M.steel(),x*1.4,0.3,L/2-0.22,'z',16));})},
+  {name:'Boca de hombre (manhole)',ex:[0,0.75,0],fn:'Escotilla superior para inspeccionar, limpiar o cargar el tanque. Se cierra con tornillos de mariposa abatibles y un empaque hermético.',mat:'Acero inoxidable, empaque de PTFE',
+   build:(g,K)=>{const y=YC+RV;g.add(K.cyl(0.26,0.16,ST(K),0,y+0.06,0,null,40));{const r=K.mesh(new K.THREE.TorusGeometry(0.27,0.02,8,40),ST(K),0,y+0.14,0);r.rotation.x=Math.PI/2;g.add(r);}
+     g.userData.lid=K.arm(g,[0,y+0.15,-0.28],[0,0,0],a=>{a.add(K.cyl(0.29,0.045,ST(K),0,0.022,0.28,null,40));a.add(K.mesh(new K.THREE.SphereGeometry(0.12,24,8,0,Math.PI*2,0,Math.PI/2),ST(K),0,0.04,0.28));
+       a.add(K.cable([-0.12,0.08,0.52],[0.12,0.08,0.52],0.012,K.M.steel()));a.add(K.cyl(0.03,0.08,K.M.steel(),0,0.03,0.0,'x',12));});
+     for(let i=0;i<6;i++){const ang=i*Math.PI/3+Math.PI/6,x=0.31*Math.cos(ang),z=0.31*Math.sin(ang);g.add(K.cyl(0.012,0.14,K.M.steel(),x,y+0.18,z,null,8));g.add(K.rbox(0.07,0.025,0.015,K.M.steel(),x,y+0.25,z,0.005));}},
+   motion:(g,t)=>{g.userData.lid.rotation.x=-t*105*D;}},
+  {name:'Válvula de alivio de presión',ex:[0.3,0.9,0],fn:'Válvula de seguridad que suelta gas si la presión interna sube demasiado. Evita que el tanque se deforme o reviente por calor o reacciones del producto.',mat:'Acero inoxidable, resorte calibrado',
+   build:(g,K)=>{const x=0.32,y=YC+RV,z=0.45;g.add(K.cyl(0.07,0.22,ST(K),x,y+0.1,z,null,24));g.add(K.cyl(0.1,0.04,K.M.color(0xe53935,0.3,0.4),x,y+0.23,z,null,24));g.add(K.lathe([[0.06,0],[0.05,0.06],[0.015,0.1],[0,0.1]],K.M.color(0xe53935,0.3,0.4)).translateX(x).translateY(y+0.25).translateZ(z));}},
+  {name:'Caja antiderrame',ex:[0,1.15,0],fn:'Bandeja alrededor de la boca de hombre y las válvulas que recoge el producto derramado al cargar. Tiene drenajes que lo llevan al piso.',mat:'Lámina de acero inoxidable',
+   build:(g,K)=>{const y=YC+RV+0.03;sides(s=>{g.add(K.rbox(0.015,0.16,1.35,ST(K),s*0.62,y+0.08,0.05,0.004));g.add(K.rbox(1.25,0.16,0.015,ST(K),0,y+0.08,0.05+s*0.67,0.004));
+     g.add(K.tube([[s*0.62,y,0.65],[s*0.85,y-0.35,0.7],[s*1.12,0.45,0.75]],0.018,K.M.dark()));});}},
+  {name:'Pasarela superior',spread:0.0,ex:[0,0.6,0],fn:'Plataforma de rejilla antideslizante para que el operario camine sobre el tanque. Se usa con arnés anclado a la línea de vida.',mat:'Rejilla de aluminio antideslizante',
+   build:(g,K)=>[-1,1].forEach(sz=>{const z0=sz*0.72,z1=sz*(L/2-0.2),len=Math.abs(z1-z0),zc=(z0+z1)/2,y=H-0.06;g.add(K.rbox(0.56,0.03,len,K.M.color(0x9aa1a7,0.7,0.45),0,y,zc,0.004));
+     for(let i=1;i<len/0.08;i++)g.add(K.rbox(0.54,0.006,0.008,K.M.dark(),0,y+0.017,z0+sz*i*0.08,0.001));sides(s=>g.add(K.rbox(0.03,0.04,len,K.M.dark(),s*0.28,y+0.01,zc,0.004)));
+     [0.3,0.7].forEach(f=>sides(s=>g.add(K.cable([s*0.22,y-0.02,z0+(z1-z0)*f],[s*0.3,YC+RC*0.93,z0+(z1-z0)*f],0.012,K.M.dark()))));})},
+  {name:'Escalera de acceso',ex:[0,0,0.6],fn:'Escalera fija en el extremo trasero para subir a la pasarela. Debe usarse siempre con tres puntos de apoyo.',mat:'Tubo de aluminio',
+   build:(g,K)=>{const x=0.75,z=L/2-0.03,m=()=>K.M.color(0xb0b7bd,0.7,0.35);sides(s=>g.add(K.cable([x+s*0.18,0.2,z],[x+s*0.18,H-0.05,z],0.017,m())));
+     for(let y=0.4;y<H-0.1;y+=0.28)g.add(K.cable([x-0.18,y,z],[x+0.18,y,z],0.013,m()));}},
+  {name:'Válvula de descarga inferior',ex:[0,0,1.0],fn:'Salida por el fondo del tanque para vaciar el líquido con manguera. Tiene tres cierres en serie (válvula de pie, válvula de mariposa y tapa) por seguridad.',mat:'Acero inoxidable, empaques de PTFE',
+   build:(g,K)=>{const y0=YC-RV,zt=LC/2+0.25;g.add(K.tube([[0,y0+0.05,LC/2+0.05],[0,0.24,zt],[0,0.22,zt+0.2]],0.05,ST(K)));
+     g.add(K.cyl(0.09,0.12,ST(K),0,0.22,zt+0.25,'z',28));g.add(K.cable([0,0.22,zt+0.25],[0.25,0.3,zt+0.25],0.014,K.M.color(0xe53935,0.3,0.4)));
+     g.add(K.cyl(0.1,0.05,K.M.color(0x2b2f33,0.6,0.4),0,0.22,zt+0.34,'z',28));sides(s=>g.add(K.rbox(0.05,0.03,0.03,K.M.steel(),s*0.11,0.22,zt+0.34,0.006)));}},
+  {name:'Tubo portadocumentos',ex:[-0.3,0.2,0.4],fn:'Cilindro con tapa donde viajan los documentos del embarque: certificado de limpieza, hoja de seguridad del producto y guía de carga.',mat:'Tubo de PVC o aluminio con tapa roscada',
+   build:(g,K)=>{const x=-(W/2-0.25),z=L/2-0.12;g.add(K.cyl(0.05,0.36,K.M.color(0x3a4048,0.3,0.5),x,1.1,z,null,20));g.add(K.cyl(0.058,0.05,K.M.color(0xe53935,0.2,0.4),x,1.3,z,null,20));}}];}
+
+/* ---------- Configuración del tipo elegido ---------- */
+const INTRO={
+ dry20:'El contenedor más usado del mundo. Caja de acero cerrada con puertas atrás, piso de madera y bolsillos para montacargas. Equivale a 1 TEU, la unidad con que se mide la capacidad de buques y puertos.',
+ hc40:'Igual al estándar de 40 pies pero 30 cm más alto (2,90 m). Equivale a 2 TEU. Al ser tan largo trae un túnel de cuello de ganso bajo el frente y no tiene bolsillos para montacargas.',
+ reefer:'Contenedor aislado con una unidad de frío propia en el frente. Mantiene la carga a temperatura fija durante todo el viaje y registra cada lectura. Necesita conexión eléctrica en patio, buque o con un genset.',
+ opentop:'Sin techo fijo: tiene arcos removibles y una lona. El dintel de la puerta también se abre para meter carga alta. Se carga desde arriba con grúa.',
+ flatrack:'Plataforma reforzada con testeros (paredes de extremo) que se pliegan. Sin techo ni costados, permite cargar por arriba o por los lados piezas que no caben en un contenedor cerrado.',
+ tank:'Tanque de acero inoxidable dentro de un marco con medidas de contenedor de 20 pies. Lleva líquidos a granel, peligrosos o alimenticios, y se maneja con los mismos equipos que un contenedor normal.'};
+const MOTION={flatrack:{label:'Plegar testeros',from:0,to:88,unit:'°'},tank:{label:'Abrir boca de hombre',from:0,to:105,unit:'°'}};
+const CFG={title:CUR.nom,accent:CUR.alias,paint:'#'+((CUR.id==='reefer'?0x3ea6e0:CUR.color)|0x1000000).toString(16).slice(1),
+  lede:'Elige el tipo de contenedor, gíralo, desármalo y toca cada pieza para ver su nombre y su función.',
+  specs:[[CUR.iso,'Código ISO 6346'],[CUR.ext.replace(/ m$/,''),'Medidas exteriores (m)'],[CUR.carga,'Carga útil máx.'],[CUR.cap,'Capacidad']],
+  intro:{title:CUR.nom+' ('+CUR.alias+')',text:INTRO[CUR.id]},
+  motion:MOTION[CUR.id]||{label:'Apertura de puertas',from:0,to:260,unit:'°'},
+  parts:CUR.id==='flatrack'?flatParts(CUR):CUR.id==='tank'?tankParts(CUR):boxParts(Object.assign({goose:CUR.L>7},CUR))};
+
+/* Captura los controles de cámara para el modo "entrar" (sin modificar el motor) */
+let CTL=null;{const OC=THREE.OrbitControls;THREE.OrbitControls=function(c,d){const o=new OC(c,d);CTL=o;return o;};THREE.OrbitControls.prototype=OC.prototype;}
+LogiLab3D.mount({portal:'../', portalText:'Volver a Equipos 3D',eyebrow:'Contenedores marítimos ISO', ...CFG});
+
+/* ---------- Selector de tipos y tabla comparativa ---------- */
+function extras(){const wrap=document.querySelector('.ll-wrap');if(!wrap)return;
+  document.head.insertAdjacentHTML('beforeend',`<style>
+  .ct-nav{display:flex;gap:8px;flex-wrap:wrap}
+  .ct-nav a{font-family:var(--mono);font-size:12.5px;letter-spacing:.02em;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:999px;display:flex;gap:6px;align-items:baseline;min-height:40px;align-items:center}
+  .ct-nav a small{color:var(--muted);font-size:11px}
+  .ct-nav a:hover{border-color:var(--holo)}
+  .ct-nav a[aria-current=page]{background:var(--sena);border-color:var(--sena);color:#fff}
+  .ct-nav a[aria-current=page] small{color:rgba(255,255,255,.8)}
+  .ct-tab{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .ct-tab h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.04em;font-size:22px;margin:0 0 4px}
+  .ct-tab p{margin:0 0 10px;color:var(--muted);font-size:13px}
+  .ct-scroll{overflow-x:auto}
+  .ct-tab table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+  .ct-tab th,.ct-tab td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  .ct-tab th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:500}
+  .ct-tab td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ct-tab tr.on td{background:rgba(57,169,0,.12)}
+  .ct-tab td a{color:var(--ink);font-weight:600}
+  </style>`);
+  const nav=document.createElement('nav');nav.className='ct-nav';nav.setAttribute('aria-label','Tipos de contenedor');
+  nav.innerHTML=TYPES.map(t=>`<a href="#${t.id}"${t===CUR?' aria-current="page"':''}>${t.nom} <small>${t.alias}</small></a>`).join('');
+  wrap.insertBefore(nav,wrap.querySelector('.ll-grid'));
+  const tab=document.createElement('section');tab.className='ct-tab';
+  tab.innerHTML=`<h2>Comparación de tipos</h2><p>Valores típicos de referencia. Cada naviera publica los suyos en la puerta del contenedor y en su ficha técnica.</p><div class="ct-scroll"><table>
+   <thead><tr><th>Tipo</th><th>ISO</th><th>Exterior (L × A × H)</th><th>Interior / útil</th><th>Tara</th><th>Carga útil</th><th>Capacidad</th><th>Uso típico</th></tr></thead><tbody>
+   ${TYPES.map(t=>`<tr class="${t===CUR?'on':''}"><td><a href="#${t.id}">${t.nom}</a><br><small>${t.alias}</small></td><td class="n">${t.iso}</td><td class="n">${t.ext}</td><td class="n">${t.int}</td><td class="n">${t.tara}</td><td class="n">${t.carga}</td><td class="n">${t.cap}</td><td>${t.uso}</td></tr>`).join('')}
+   </tbody></table></div>`;
+  wrap.insertBefore(tab,wrap.querySelector('.ll-foot'));
+  addEventListener('hashchange',()=>location.reload());
+  if(['dry20','hc40','reefer','opentop'].includes(CUR.id))walkMode(wrap);}
+
+/* ---------- Entrar al contenedor (vista en primera persona) ---------- */
+function walkMode(wrap){const T=THREE,stage=wrap.querySelector('.ll-stage'),btns=wrap.querySelector('.ll-btns');
+  document.head.insertAdjacentHTML('beforeend',`<style>
+  .ct-pad{position:absolute;right:12px;bottom:150px;display:none;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px);gap:6px;z-index:5;touch-action:none}
+  .ct-pad button{border:1px solid var(--line);background:var(--panel-solid);color:var(--ink);border-radius:10px;font-size:18px;cursor:pointer;user-select:none;-webkit-user-select:none}
+  .ct-pad button:active{background:var(--sena);color:#fff}
+  .ct-in{position:absolute;left:12px;bottom:150px;display:none;max-width:260px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sena);border-radius:8px;padding:8px 10px;font-size:12.5px;z-index:5}
+  .ct-in b{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block}
+  .walking .ct-pad{display:grid}.walking .ct-in{display:block}.walking .ll-hint{display:none}
+  @media (max-width:640px){.ct-pad,.ct-in{bottom:200px}.ct-in{max-width:170px}}
+  </style>`);
+  const L=CUR.L,H=CUR.H,EYE=1.72,zMin=-L/2+(CUR.id==='reefer'?0.75:0.45);
+  const pad=document.createElement('div');pad.className='ct-pad';pad.setAttribute('aria-label','Caminar');
+  pad.innerHTML='<span></span><button data-d="f" aria-label="Avanzar">▲</button><span></span><button data-d="l" aria-label="Izquierda">◀</button><button data-d="b" aria-label="Retroceder">▼</button><button data-d="r" aria-label="Derecha">▶</button>';
+  const info=document.createElement('div');info.className='ct-in';
+  info.innerHTML=`<b>Estás adentro</b>Espacio útil: ${CUR.int}.<br>Arrastra para mirar alrededor. Camina con las flechas (o W A S D).`;
+  stage.append(pad,info);
+  const go=document.createElement('button');go.className='primary';go.textContent='Entrar al contenedor';btns.prepend(go);
+  let inside=false,save=null,tw=null;const held=new Set();
+  const setSlider=(id,v)=>{const e=document.getElementById(id);if(e){e.value=v;e.dispatchEvent(new Event('input'));}};
+  function look(cam,tgt){const d=tgt.clone().sub(cam).normalize();CTL.object.position.copy(cam);CTL.target.copy(cam.clone().add(d.multiplyScalar(0.06)));}
+  function tween(toCam,toTgt,ms,done){const c0=CTL.object.position.clone(),t0=CTL.target.clone(),st=performance.now();
+    tw=()=>{const k=Math.min(1,(performance.now()-st)/ms),e=k*k*(3-2*k);CTL.object.position.lerpVectors(c0,toCam,e);CTL.target.lerpVectors(t0,toTgt,e);if(k>=1){tw=null;done&&done();}};}
+  function enter(){if(!CTL)return;inside=true;go.textContent='Salir del contenedor';stage.classList.add('walking');
+    save={min:CTL.minDistance,max:CTL.maxDistance,pol:CTL.maxPolarAngle,zoom:CTL.enableZoom,pan:CTL.enablePan};
+    setSlider('ll-explode',0);setSlider('ll-motion',100);LUCES.forEach(l=>{l.intensity=1.6;});
+    const door=new T.Vector3(0,EYE,L/2+3.2),inPos=new T.Vector3(0,EYE,L/2-0.9),ahead=new T.Vector3(0,EYE-0.15,-L/2);
+    tween(door,new T.Vector3(0,EYE-0.2,0),900,()=>{CTL.minDistance=0.01;CTL.maxPolarAngle=Math.PI*0.92;CTL.minPolarAngle=0.08;CTL.enableZoom=false;CTL.enablePan=false;
+      tween(inPos,ahead,1300,()=>{look(CTL.object.position.clone(),ahead);CTL.maxDistance=1;});});}
+  function exit(){inside=false;held.clear();go.textContent='Entrar al contenedor';stage.classList.remove('walking');LUCES.forEach(l=>{l.intensity=0;});
+    Object.assign(CTL,{minDistance:save.min,maxDistance:save.max,maxPolarAngle:save.pol,minPolarAngle:0,enableZoom:save.zoom,enablePan:save.pan});
+    wrap.querySelector('[data-a=reset]').click();}
+  go.addEventListener('click',()=>inside?exit():enter());
+  const K2D={ArrowUp:'f',KeyW:'f',ArrowDown:'b',KeyS:'b',ArrowLeft:'l',KeyA:'l',ArrowRight:'r',KeyD:'r'};
+  addEventListener('keydown',e=>{if(inside&&K2D[e.code]){held.add(K2D[e.code]);e.preventDefault();}});
+  addEventListener('keyup',e=>{if(K2D[e.code])held.delete(K2D[e.code]);});
+  pad.querySelectorAll('button').forEach(b=>{const d=b.dataset.d;b.addEventListener('pointerdown',e=>{held.add(d);b.setPointerCapture(e.pointerId);e.preventDefault();});
+    ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>held.delete(d)));});
+  let last=performance.now();
+  (function loop(now){requestAnimationFrame(loop);const dt=Math.min(0.1,(now-last)/1000);last=now;if(tw){tw();return;}
+    if(!inside||!held.size||!CTL)return;const cam=CTL.object.position,f=CTL.target.clone().sub(cam);f.y=0;f.normalize();
+    const r=new T.Vector3(-f.z,0,f.x),mv=new T.Vector3(),sp=1.6*dt;
+    if(held.has('f'))mv.add(f);if(held.has('b'))mv.sub(f);if(held.has('r'))mv.add(r);if(held.has('l'))mv.sub(r);if(!mv.lengthSq())return;
+    mv.normalize().multiplyScalar(sp);const n=cam.clone().add(mv);
+    n.z=Math.max(zMin,Math.min(L/2+4,n.z));if(n.z<L/2-0.05)n.x=Math.max(-(W/2-0.32),Math.min(W/2-0.32,n.x));else n.x=Math.max(-3,Math.min(3,n.x));
+    if(n.z<L/2-0.05&&cam.z>=L/2-0.05&&Math.abs(n.x)>W/2-0.35)return;
+    n.y=EYE;const d=n.clone().sub(cam);cam.copy(n);CTL.target.add(d);})(last);}
+if(document.querySelector('.ll-wrap'))extras();else document.addEventListener('DOMContentLoaded',extras);
+</script>
+
+</head><body></body></html>

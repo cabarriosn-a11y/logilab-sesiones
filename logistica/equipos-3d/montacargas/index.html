@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Montacargas Eléctrico 3D</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="../motor-3d.js"></script>
+<script>
+const MI=[0,0.9,0], CAR=[0,1.8,0];               // mástil interior sube 0,9 m; tablero y horquillas 1,8 m
+const FR={x:0.43,y:0.3,z:0.42,r:0.3}, RR={x:0.36,y:0.23,z:-1.0,r:0.23};
+const sides=f=>[-1,1].forEach(f);
+const ropsMat=K=>K.M.color(0x1d2023,0.45,0.5);
+LogiLab3D.mount({
+  portal:'../', portalText:'Volver a Equipos 3D',
+  title:'Montacargas eléctrico', accent:'en piezas',
+  specs:[['1 800 kg','Capacidad nominal'],['48 V','Banco de baterías'],['0 → 1 800 mm','Elevación del modelo']],
+  intro:{title:'Montacargas eléctrico contrabalanceado',text:'Levanta y transporta estibas con horquillas montadas en un mástil telescópico. El peso de las baterías y del contrapeso trasero equilibra la carga para que el equipo no se vuelque hacia adelante. Usa el control de elevación para ver cómo suben el mástil interior, las cadenas y el tablero.'},
+  motion:{label:'Elevación',from:0,to:1800,unit:'mm'},
+  camera:{pos:[3.7,2.5,4.1],target:[0,0.95,0.25]},
+  parts:[
+  {name:'Horquillas / uñas',spread:0.3,ex:[0,0,0.95],move:CAR,fn:'Brazos de acero en L que entran bajo la estiba y la cargan. Se cuelgan del tablero y se pueden correr a lo ancho según la estiba.',mat:'Acero forjado de alta resistencia',
+   build:(g,K)=>sides(s=>{const pf=[[0.93,0.02],[1.95,0.02],['q',2.04,0.02,2.04,0.034],[2.0,0.062],[1.02,0.065],['q',0.988,0.068,0.988,0.1],[0.988,0.52],[0.93,0.52]];
+     g.add(K.extrude(pf,0.1,K.M.color(0x2b2f33,0.6,0.42),{plane:'zy',x:0.28*s,bevel:0.01}));})},
+  {name:'Tablero portahorquillas',ex:[0,0.15,0.6],move:CAR,fn:'Placa que sostiene las horquillas y sube por el mástil. La rejilla superior evita que la carga caiga hacia el operador.',mat:'Placa de acero con rejilla soldada',
+   build:(g,K)=>{const d=K.M.color(0x2b2f33,0.6,0.42);g.add(K.rbox(0.9,0.34,0.05,d,0,0.3,0.9,0.012));
+     [0.45,0.15].forEach(y=>g.add(K.rbox(0.98,0.065,0.07,d,0,y,0.915,0.012)));
+     g.add(K.grille(0.92,0.78,8,0.016,K.M.color(0x2b2f33,0.6,0.42),0,0.48,0.9));
+     sides(s=>{g.add(K.cyl(0.035,0.04,K.M.steel(),0.24*s,0.22,0.86,'x',20));g.add(K.cyl(0.035,0.04,K.M.steel(),0.24*s,0.42,0.86,'x',20));});}},
+  {name:'Cadenas y poleas',ex:[0,0.25,0.42],move:MI,fn:'Cadenas de hojas que pasan por poleas en lo alto del mástil y tiran del tablero. Por cada centímetro que sube el mástil, el tablero sube dos.',mat:'Cadena de hojas de acero aleado',
+   build:(g,K)=>{g.userData.ch=[];sides(s=>{g.add(K.pulley(0.065,0.05,K.M.steel(),0.18*s,2.12,0.82));
+     const c=K.chain(58,0.035,0.006,K.M.steel(),0.18*s,2.12,0.885);g.add(c);g.userData.ch.push(c);});},
+   motion:(g,t)=>g.userData.ch.forEach(c=>c.children.forEach((l,i)=>{l.visible=i*0.035*0.78<1.62-0.9*t;}))},
+  {name:'Mástil interior',ex:[0,0.2,0.3],move:MI,fn:'Tramo telescópico que corre dentro del mástil exterior. Lleva arriba las poleas de las cadenas.',mat:'Perfil de acero laminado',
+   build:(g,K)=>{const d=K.M.color(0x2b2f33,0.6,0.42);sides(s=>g.add(K.beamI(1.98,0.1,0.06,d,{axis:'y',x:0.26*s,y:1.11,z:0.8})));
+     g.add(K.rbox(0.6,0.07,0.09,d,0,2.07,0.8,0.012));g.add(K.rbox(0.6,0.06,0.07,d,0,0.2,0.8,0.012));}},
+  {name:'Mástil telescópico exterior',ex:[0,0.08,0.12],fn:'Estructura vertical fija que guía la subida y bajada de las horquillas. Se inclina hacia adelante o atrás con los cilindros de inclinación.',mat:'Perfil de acero laminado, rodillos de guía',
+   build:(g,K)=>{const d=K.M.color(0x2b2f33,0.6,0.42);sides(s=>{g.add(K.beamI(1.95,0.12,0.075,d,{axis:'y',x:0.34*s,y:1.075,z:0.72}));
+       g.add(K.rbox(0.05,0.14,0.16,K.M.dark(),0.34*s,0.92,0.66,0.01));});
+     g.add(K.rbox(0.8,0.08,0.1,d,0,2.0,0.72,0.014));g.add(K.rbox(0.8,0.07,0.1,d,0,0.3,0.72,0.014));g.add(K.rbox(0.8,0.05,0.08,d,0,1.2,0.7,0.01));}},
+  {name:'Cilindros de elevación',spread:0.25,ex:[0,0,0],fn:'Pistones hidráulicos que empujan el mástil interior hacia arriba. La bomba envía aceite a presión y el vástago cromado se extiende.',mat:'Tubo de acero rectificado, vástago cromado',
+   build:(g,K)=>{g.userData.r=[];sides(s=>{const rod=K.hydraulic(g,{x:0.16*s,y:0.12,z:0.72,r:0.045,len:1.1,rodLen:1.0,bodyMat:K.M.color(0x2b2f33,0.6,0.42)});g.userData.r.push([rod,rod.position.y]);});},
+   motion:(g,t)=>g.userData.r.forEach(([r,y0])=>{r.position.y=y0+0.9*t;})},
+  {name:'Cilindros de inclinación',ex:[0,0.2,0.2],fn:'Dos pistones que inclinan el mástil hacia adelante para recoger la carga y hacia atrás para asegurarla durante el recorrido.',mat:'Acero con vástago cromado',
+   build:(g,K)=>sides(s=>g.add(K.ram([0.3*s,0.56,0.2],[0.3*s,0.92,0.66],0.04,K.M.paint())))},
+  {name:'Chasis y carrocería',fn:'Bastidor que soporta todos los componentes y une los ejes. La carrocería amarilla protege los equipos y forma los guardabarros.',mat:'Acero estructural, lámina pintada',
+   build:(g,K)=>{const pf=[[0.08,0.16],[0.08,0.6],['q',0.08,0.66,0.02,0.66],[-0.04,0.66],['q',-0.1,0.66,-0.1,0.74],[-0.1,0.98],['q',-0.1,1.04,-0.16,1.04],[-0.7,1.04],[-0.7,0.16]];
+     sides(s=>{g.add(K.extrude(pf,0.07,K.M.paint(),{plane:'zy',x:0.5*s,bevel:0.02}));
+       const arc=[];for(let i=0;i<=16;i++){const a=(12+i*156/16)*Math.PI/180;arc.push([FR.z+0.38*Math.cos(a),FR.y+0.38*Math.sin(a)]);}
+       for(let i=16;i>=0;i--){const a=(12+i*156/16)*Math.PI/180;arc.push([FR.z+0.335*Math.cos(a),FR.y+0.335*Math.sin(a)]);}
+       g.add(K.extrude(arc,0.25,K.M.paint(),{plane:'zy',x:FR.x*s,bevel:0.01}));});
+     g.add(K.rbox(0.86,0.18,1.3,K.M.dark(),0,0.24,-0.04,0.02));
+     g.add(K.rbox(0.62,0.035,0.56,K.M.rubber(),0,0.49,0.34,0.008));
+     g.add(K.rbox(0.44,0.42,0.14,K.M.paint(),0,0.7,0.55,0.05));
+     g.add(K.rbox(0.9,0.04,0.12,K.M.dark(),0,0.64,0.08,0.01));}},
+  {name:'Contrapeso',ex:[0,0,-0.6],fn:'Bloque de hierro fundido en la parte trasera que equilibra el peso de la carga. Sin él, el montacargas se volcaría hacia adelante al levantar una estiba.',mat:'Hierro fundido pintado',
+   build:(g,K)=>{const pf=[[-0.7,0.16],[-0.7,1.04],[-0.78,1.04],['q',-0.86,1.04,-0.9,1.1],[-1.06,1.14],['q',-1.32,1.14,-1.32,0.9],[-1.32,0.34],['q',-1.32,0.16,-1.28,0.16],['q',-1.28,0.6,-1.0,0.6],['q',-0.72,0.6,-0.72,0.16]];
+     g.add(K.extrude(pf,1.07,K.M.paint(),{plane:'zy',bevel:0.035}));
+     sides(s=>g.add(K.rbox(0.12,0.05,0.02,K.M.lens(0xff2a1a,1.1),0.38*s,0.95,-1.335,0.008)));
+     g.add(K.cyl(0.035,0.12,K.M.dark(),0,0.42,-1.36,'z',16));g.add(K.rbox(0.22,0.08,0.06,K.M.dark(),0,0.42,-1.33,0.01));}},
+  {name:'Banco de baterías',ex:[0.95,0.08,0],fn:'Fuente de energía eléctrica de 48 V formada por celdas de plomo-ácido. Su gran peso también sirve como contrapeso.',mat:'Celdas de plomo-ácido en bandeja de acero',
+   build:(g,K)=>{g.add(K.battery(4,2,0.2,0.62,0.26,0,0.3,-0.4));
+     g.add(K.tube([[0.3,0.95,-0.12],[0.3,1.0,0.0],[0.25,0.6,0.1],[0.2,0.3,0.3]],0.016,K.M.color(0xff7a1a,0.1,0.5)));}},
+  {name:'Asiento y capó',ex:[0,0.6,0],fn:'Puesto del operador con asiento acolchado sobre el capó que cubre la batería. Tiene cinturón y respaldo para trabajar con seguridad.',mat:'Vinilo, espuma y lámina de acero',
+   build:(g,K)=>{g.add(K.rbox(0.9,0.04,0.36,K.M.dark(),0,1.02,-0.26,0.01));g.add(K.seat(0.5,0,1.04,-0.25));}},
+  {name:'Volante y controles',ex:[0,0.55,0.35],fn:'Interfaz para la dirección y el manejo del sistema de elevación. Las palancas suben, bajan e inclinan el mástil.',mat:'Caucho, acero y plástico',
+   build:(g,K)=>{g.add(K.steering(0.16,0,1.13,0.38,-0.55,0.36));
+     [0.18,0.24,0.3].forEach((x,i)=>{g.add(K.cyl(0.008,0.2,K.M.steel(),x,1.0,0.52,null,8));g.add(K.mesh(new K.THREE.SphereGeometry(0.022,16,12),K.M.rubber(),x,1.1,0.52));});
+     g.add(K.rbox(0.14,0.08,0.03,K.M.color(0x0e1418,0.2,0.3),-0.14,0.95,0.48,0.008));
+     g.add(K.rbox(0.1,0.05,0.005,K.M.lens(0x3ee0f0,0.8),-0.14,0.955,0.464,0.002));}},
+  {name:'Cabina de seguridad (ROPS)',ex:[0,0.9,0],fn:'Estructura metálica que protege al operador contra caídas de objetos y vuelcos. El techo de barras deja ver la carga en alto.',mat:'Tubo de acero estructural, pintura negra',
+   build:(g,K)=>{const m=()=>ropsMat(K);sides(s=>{const x=0.47*s;
+       g.add(K.tube([[x,0.66,0.06],[x,1.4,0.18],[x,1.98,0.29],[x,2.07,0.24],[x,2.08,0.0],[x,2.08,-0.55],[x,2.04,-0.7],[x,1.6,-0.82],[x,1.14,-0.9]],0.034,m()));});
+     [0.24,-0.66].forEach(z=>g.add(K.cable([-0.47,2.08,z],[0.47,2.08,z],0.03,m())));
+     for(let i=0;i<6;i++)g.add(K.rbox(0.94,0.022,0.05,m(),0,2.1,0.12-i*0.15,0.006));}},
+  {name:'Faros y baliza',ex:[0,1.25,0.15],fn:'Luces de trabajo y baliza ámbar que avisa a los peatones que el equipo está en movimiento.',mat:'LED, carcasa de aluminio, policarbonato',
+   build:(g,K)=>{sides(s=>g.add(K.lamp(0.045,0.47*s,1.86,0.34)));g.add(K.beacon(0.05,0,2.12,-0.62));}},
+  {name:'Motor eléctrico de tracción',ex:[-0.85,0,0.25],fn:'Impulsa el movimiento del vehículo de forma silenciosa y sin emisiones. Transmite la fuerza al eje delantero mediante un diferencial.',mat:'Motor AC, carcasa de aluminio con aletas',
+   build:(g,K)=>{g.add(K.cyl(0.07,0.66,K.M.dark(),0,FR.y,FR.z,'x',24));g.add(K.mesh(new K.THREE.SphereGeometry(0.12,24,16),K.M.dark(),0.02,FR.y,FR.z));
+     g.add(K.cyl(0.11,0.24,K.M.color(0x50565c,0.7,0.35),0.17,FR.y,FR.z+0.0,'x',32));
+     for(let i=0;i<7;i++)g.add(K.cyl(0.118,0.012,K.M.steel(),0.07+i*0.032,FR.y,FR.z,'x',32));
+     g.add(K.cyl(0.07,0.03,K.M.chrome(),0.3,FR.y,FR.z,'x',24));}},
+  {name:'Ruedas de tracción',spread:0.35,ex:[0,0,0.05],fn:'Neumáticos delanteros robustos que mueven el equipo y soportan casi todo el peso de la carga.',mat:'Caucho macizo con labrado, rin de acero',
+   build:(g,K)=>sides(s=>g.add(K.tire(FR.r,0.22,FR.x*s,FR.y,FR.z)))},
+  {name:'Ruedas directrices',spread:0.3,ex:[0,0,-0.2],fn:'Ruedas traseras que giran para dirigir el montacargas. Por estar atrás, el equipo gira en espacios muy cerrados.',mat:'Caucho macizo, eje de dirección de acero',
+   build:(g,K)=>{sides(s=>g.add(K.tire(RR.r,0.17,RR.x*s,RR.y,RR.z)));g.add(K.cyl(0.04,0.58,K.M.dark(),0,RR.y,RR.z,'x',16));}},
+  ]
+});
+</script>
+</head>
+<body></body>
+</html>

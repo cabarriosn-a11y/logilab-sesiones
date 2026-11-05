@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Motor 3D LogiLab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="../motor-3d.js"></script>
+<script>
+LogiLab3D.mount({
+  portal:'../', portalText:'Volver a Equipos 3D',
+  eyebrow:'Motor 3D · Biblioteca de piezas',
+  title:'Biblioteca', accent:'de piezas básicas',
+  lede:'Catálogo de las piezas reutilizables del motor. Cada equipo nuevo (montacargas, apilador, grúa pórtico, contenedor) se arma combinando estas piezas.',
+  specs:[['21','Piezas base'],['v1.2','Versión del motor'],['three.js r128','Render 3D']],
+  intro:{title:'Motor 3D LogiLab',text:'Pasa el puntero por cada pieza para ver su nombre en código (K.función) y para qué sirve. El control "Extensión" mueve el vástago hidráulico y la cadena para probar el movimiento.'},
+  motion:{label:'Extensión',from:0,to:100,unit:'%'},
+  parts:[
+    {name:'Rueda con rayos · K.wheel',fn:'Rueda grande con banda de poliuretano y rayos. Sirve para ruedas directrices y de carga.',mat:'K.wheel(r, ancho, K.M.pu(), x,y,z, rayos)',ex:[0,0,-0.3],
+     build:(g,K)=>g.add(K.wheel(0.12,0.06,K.M.pu(),-0.9,0.12,0,6))},
+    {name:'Cilindro hidráulico · K.hydraulic',fn:'Cuerpo pintado con vástago cromado. El vástago se anima con motion.',mat:'const rod=K.hydraulic(g,{x,y,z,r,len})',ex:[0,0.2,-0.3],
+     build:(g,K)=>{g.userData.rod=K.hydraulic(g,{x:-0.55,y:0,z:0,r:0.05,len:0.32});g.userData.y0=g.userData.rod.position.y;},
+     motion:(g,t)=>{g.userData.rod.position.y=g.userData.y0+t*0.2;}},
+    {name:'Viga I · K.beamI',fn:'Perfil estructural en I para mástiles, travesaños y vigas de grúa.',mat:'K.beamI(largo, alto, ala, mat, {axis,x,y,z})',ex:[0,0,0.3],
+     build:(g,K)=>g.add(K.beamI(0.5,0.12,0.08,K.M.paint(0x2f6fb0),{axis:'x',x:-0.15,y:0.06,z:0.35}))},
+    {name:'Perfil en U · K.channelU',fn:'Canal en U para horquillas, rieles y bastidores.',mat:'K.channelU(largo, ancho, alto, espesor, mat, {axis,open})',ex:[0,0,0.3],
+     build:(g,K)=>g.add(K.channelU(0.5,0.14,0.07,0.008,K.M.paint(),{axis:'x',x:-0.15,y:0,z:0.6,open:'down'}))},
+    {name:'Cadena · K.chain',fn:'Cadena de eslabones alternos para mástiles de elevación y polipastos.',mat:'K.chain(n, eslabón, alambre, mat, x,y,z)',ex:[0,0.2,0],
+     build:(g,K)=>{g.add(K.rbox(0.12,0.03,0.06,K.M.dark(),-0.2,0.62,0));g.add(K.chain(14,0.04,0.006,K.M.steel(),-0.2,0.6,0));}},
+    {name:'Gancho · K.hook',fn:'Gancho de izaje con ojo y punta. Se cuelga de cables o cadenas.',mat:'K.hook(tamaño, mat, x,y,z)',ex:[0,0.25,0],
+     build:(g,K)=>{g.add(K.cable([0.05,0.7,0],[0.05,0.42,0],0.006,K.M.cable()));g.add(K.hook(0.2,K.M.paint(0xf2b316),0.05,0.42,0));}},
+    {name:'Cable · K.cable',fn:'Cable recto entre dos puntos, para grúas pórtico y tensores.',mat:'K.cable([x1,y1,z1],[x2,y2,z2], radio, K.M.cable())',ex:[0.2,0,0],
+     build:(g,K)=>{g.add(K.cable([0.25,0.02,-0.1],[0.45,0.6,0.1],0.006,K.M.cable()));g.add(K.cable([0.45,0.6,0.1],[0.65,0.02,-0.1],0.006,K.M.cable()));}},
+    {name:'Resorte · K.helix',fn:'Resorte helicoidal para retornos de palancas y amortiguación.',mat:'K.helix(radio, alto, vueltas, alambre, mat, x,y,z)',ex:[0.2,0.2,0],
+     build:(g,K)=>g.add(K.helix(0.04,0.2,8,0.006,K.M.spring(),0.9,0.02,0))},
+    {name:'Panel corrugado · K.corrugated',fn:'Pared trapezoidal tipo contenedor ISO.',mat:'K.corrugated(ancho, alto, costillas, prof., espesor, mat, x,y,z)',ex:[0.3,0,-0.3],
+     build:(g,K)=>g.add(K.corrugated(0.6,0.4,6,0.025,0.006,K.M.paint(0xb8432b),0.85,0,-0.45))},
+    {name:'Caja redondeada · K.rbox',fn:'Bloque con bordes suaves para carcasas, tapas y travesaños.',mat:'K.rbox(ancho, alto, prof, mat, x,y,z, radio)',ex:[0,0,-0.3],
+     build:(g,K)=>g.add(K.rbox(0.2,0.14,0.18,K.M.steel(),-0.15,0.07,-0.45,0.015))},
+    {name:'Aro de empuñadura · K.loop',fn:'Aro redondeado de tubo para empuñaduras y barandas.',mat:'K.loop(ancho, alto, esquina, radio, mat, x,y,z)',ex:[0,0.2,-0.3],
+     build:(g,K)=>g.add(K.loop(0.3,0.17,0.05,0.017,K.M.rubber(),-0.55,0.45,-0.45))},
+    {name:'Perfil extruido · K.extrude',fn:'Cualquier forma 2D con espesor: torres triangulares, placas, puntas de horquilla.',mat:"K.extrude([[x,y],...], espesor, mat, {plane:'xy'|'xz'|'zy', holes})",ex:[0.3,0,0.3],
+     build:(g,K)=>g.add(K.extrude([[-0.15,0],[0.25,0],[0,0.3],[-0.15,0.3]],0.1,K.M.paint(),{plane:'zy',x:0.6,z:0.45}))},
+    {name:'Tarima de madera · K.rbox + K.M.wood',fn:'Ejemplo de material madera para pallets y estibas.',mat:'K.M.wood()',ex:[0.3,0,0.3],
+     build:(g,K)=>{for(let i=0;i<5;i++)g.add(K.rbox(0.36,0.018,0.06,K.M.wood(),1.0,0.1,0.32+i*0.075,0.003));[0.32,0.47,0.62].forEach(z=>[-0.15,0,0.15].forEach(x=>g.add(K.rbox(0.07,0.08,0.07,K.M.wood(0x9c7046),1.0+x,0.045,z,0.004))));}},
+    {name:'Llanta con labrado · K.tire',fn:'Neumático con labrado, rin y tuercas. Para montacargas, camiones y grúas.',mat:'K.tire(r, ancho, x,y,z, {lugs, rimColor, tread})',ex:[0,0,-0.3],
+     build:(g,K)=>g.add(K.tire(0.22,0.16,-0.95,0.22,-1.05))},
+    {name:'Asiento · K.seat',fn:'Asiento acolchado con respaldo, mirando hacia +z.',mat:'K.seat(ancho, x,y,z)',ex:[0,0.2,-0.3],
+     build:(g,K)=>g.add(K.seat(0.42,-0.45,0,-1.05))},
+    {name:'Volante · K.steering',fn:'Aro con radios, perilla y columna de dirección.',mat:'K.steering(r, x,y,z, inclinación, columna)',ex:[0,0.2,-0.3],
+     build:(g,K)=>g.add(K.steering(0.14,0.0,0.42,-1.05,-0.5,0.36))},
+    {name:'Banco de baterías · K.battery',fn:'Celdas con bornes rojo y negro y puentes entre celdas.',mat:'K.battery(columnas, filas, ancho, alto, fondo, x,y,z)',ex:[0,0.2,-0.3],
+     build:(g,K)=>g.add(K.battery(3,2,0.12,0.25,0.14,0.4,0,-1.05))},
+    {name:'Polea · K.pulley',fn:'Polea acanalada para cadenas y cables, eje en X.',mat:'K.pulley(r, ancho, mat, x,y,z)',ex:[0,0.3,-0.3],
+     build:(g,K)=>g.add(K.pulley(0.08,0.05,K.M.steel(),0.75,0.1,-1.05))},
+    {name:'Faro y baliza · K.lamp / K.beacon',fn:'Luces que brillan solas: faro de trabajo y baliza ámbar.',mat:'K.lamp(r, x,y,z, color) · K.beacon(r, x,y,z)',ex:[0.2,0.3,-0.3],
+     build:(g,K)=>{g.add(K.lamp(0.05,0.95,0.12,-1.05));g.add(K.beacon(0.05,1.1,0,-1.05));}},
+    {name:'Cilindro entre puntos · K.ram',fn:'Cilindro hidráulico orientado entre dos puntos, para inclinación y brazos.',mat:'K.ram([x1,y1,z1],[x2,y2,z2], r, mat)',ex:[0.3,0.2,0],
+     build:(g,K)=>g.add(K.ram([1.25,0.05,-0.6],[1.3,0.45,-0.35],0.035))},
+    {name:'Rejilla · K.grille',fn:'Marco con barras para respaldos de carga y barandas.',mat:'K.grille(ancho, alto, barras, r, mat, x,y,z)',ex:[0.3,0.2,0.3],
+     build:(g,K)=>g.add(K.grille(0.4,0.35,5,0.01,K.M.dark(),1.0,0,0.95))},
+  ]
+});
+</script>
+</head>
+<body></body>
+</html>
