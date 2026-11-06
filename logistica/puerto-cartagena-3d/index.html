@@ -1,0 +1,445 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Puerto Cartagena 3D</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+/* Layout: simulador — escenario 3D grande + panel lateral (indicadores, elementos, ficha). Paleta: azul bahía, concreto de muelle, verde SENA para acciones */
+:root{
+  --bg:#eef3f5;--surface:#ffffff;--surface2:#e5edf0;--ink:#122028;--muted:#55666f;--line:#cbd8de;
+  --sena:#39A900;--sena-ink:#2a7d00;--bay:#1d6f8c;--hi:#0f8fb0;--warn:#a15c00;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1419;--surface:#121e25;--surface2:#18282f;--ink:#e3edf1;--muted:#93a7b0;--line:#26373f;--sena:#4cc20f;--sena-ink:#7ad94a;--bay:#5fb8d6;--hi:#3ee0f0;--warn:#f2c46b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b1419;--surface:#121e25;--surface2:#18282f;--ink:#e3edf1;--muted:#93a7b0;--line:#26373f;--sena:#4cc20f;--sena-ink:#7ad94a;--bay:#5fb8d6;--hi:#3ee0f0;--warn:#f2c46b;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 24px}
+.wrap{max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px 24px}
+.brand{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.brand i{width:10px;height:10px;background:var(--sena);display:inline-block}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,5vw,50px);line-height:1;margin:4px 0 0;text-transform:uppercase;letter-spacing:.02em;text-wrap:balance}
+h1 span{color:var(--bay)}
+.lede{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.specs{display:flex;gap:22px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.specs b{display:block;font-family:var(--display);font-size:26px;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;height:clamp(420px,70vh,780px);border-radius:12px;overflow:hidden;background:#9fc6da;border:1px solid var(--line)}
+@media (max-width:640px){.stage{height:62vh;min-height:380px}}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.ov{position:absolute;font-family:var(--mono);font-size:11.5px;color:#e8f3f7;background:rgba(8,22,32,.72);border:1px solid rgba(140,200,230,.25);border-radius:8px;padding:6px 10px;backdrop-filter:blur(4px)}
+.ov.cam{left:10px;top:10px}
+.ov.clock{right:10px;top:10px;text-align:right}
+.ov.clock b{font-family:var(--display);font-size:22px;display:block;letter-spacing:.04em}
+.tip{position:absolute;pointer-events:none;font-family:var(--body);font-size:13px;color:#fff;background:rgba(8,22,32,.86);border:1px solid rgba(62,224,240,.5);border-radius:6px;padding:4px 8px;transform:translate(12px,12px);white-space:nowrap}
+.bar{position:absolute;left:10px;right:10px;bottom:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between}
+.bar .g{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.bar button,.bar select{font:600 13px var(--body);color:#e8f3f7;background:rgba(8,22,32,.78);border:1px solid rgba(140,200,230,.3);border-radius:8px;padding:7px 11px;min-height:38px;cursor:pointer}
+.bar button[aria-pressed="true"]{background:#39A900;border-color:#39A900;color:#fff}
+.bar button:hover{border-color:#3ee0f0}
+button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+.msg{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-family:var(--display);font-size:28px;font-weight:800;color:#fff;background:rgba(8,22,32,.82);padding:12px 20px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em;text-align:center}
+aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.panel h2{font-family:var(--display);font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{background:var(--surface2);border-radius:8px;padding:8px 10px}
+.kpi span{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block}
+.kpi b{font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi small{color:var(--muted);font-size:12px}
+ol.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;max-height:300px;overflow:auto}
+ol.list button{width:100%;text-align:left;font:500 14px var(--body);color:var(--ink);background:none;border:0;border-radius:6px;padding:6px 8px;cursor:pointer;display:flex;gap:8px;align-items:baseline}
+ol.list button small{font-family:var(--mono);color:var(--muted);font-size:11px;min-width:20px}
+ol.list button:hover{background:var(--surface2)}
+ol.list button[aria-current="true"]{background:var(--bay);color:#fff}
+ol.list button[aria-current="true"] small{color:rgba(255,255,255,.8)}
+.detail h3{font-family:var(--display);font-size:22px;margin:0;text-transform:uppercase;letter-spacing:.03em;line-height:1.1}
+.detail .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.detail p{margin:6px 0 0;font-size:14px}
+.detail .dato{margin-top:8px;font-size:13px;color:var(--muted);border-left:3px solid var(--sena);padding-left:8px}
+.code{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:.08em}
+.code .cd{border:2px solid currentColor;padding:0 4px;margin-left:4px}
+.brt{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.brt div{background:var(--surface2);border-radius:8px;padding:6px 8px;text-align:center}
+.brt b{display:block;font-family:var(--display);font-size:28px;line-height:1}
+.brt span{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.detail a{color:var(--bay);font-weight:600}
+.phase{font-size:13px;color:var(--muted)}
+.phase b{color:var(--ink)}
+footer{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+footer a{color:var(--muted)}
+</style>
+
+</head><body>
+<div class="wrap">
+  <header class="head">
+    <div>
+      <div class="brand"><i></i>LogiLab SENA · Puertos y terminales</div>
+      <h1>Puerto de Cartagena <span>3D</span></h1>
+      <p class="lede">Terminal de contenedores inspirada en Contecar. Mira cómo dos grúas pórtico descargan un buque contenedor por contenedor, toca cualquier elemento para saber qué es y sube a la cabina del operador.</p>
+    </div>
+    <div class="specs"><div><b>967 m</b>Muelle de Contecar</div><div><b>3</b>Posiciones de atraque</div><div><b>Fase 1</b>Muelle y grúas STS</div></div>
+  </header>
+
+  <div class="grid">
+    <section class="stage" id="stage" aria-label="Escena 3D del puerto">
+      <canvas id="cv" aria-label="Modelo 3D de la terminal de contenedores"></canvas>
+      <div class="ov cam" id="camtxt">Cámara: panorámica</div>
+      <div class="ov clock"><span>Tiempo simulado</span><b id="clock">00:00:00</b></div>
+      <div class="tip" id="tip" hidden></div>
+      <div class="msg" id="msg" hidden></div>
+      <div class="bar">
+        <div class="g">
+          <button id="play" aria-pressed="true">❚❚ Pausa</button>
+          <select id="speed" aria-label="Velocidad"><option value="1">×1 tiempo real</option><option value="5">×5</option><option value="10" selected>×10</option><option value="30">×30</option></select>
+          <button id="labels" aria-pressed="true">Etiquetas</button>
+          <button id="reset">Reiniciar</button>
+        </div>
+        <div class="g" role="group" aria-label="Cámaras">
+          <button data-cam="pano" aria-pressed="true">Panorámica</button>
+          <button data-cam="muelle" aria-pressed="false">Muelle</button>
+          <button data-cam="buque" aria-pressed="false">Buque</button>
+          <button data-cam="cabina" aria-pressed="false">Cabina STS 1</button>
+          <button data-cam="camion" aria-pressed="false">Seguir camión</button>
+        </div>
+      </div>
+    </section>
+
+    <aside>
+      <div class="panel">
+        <h2>Indicadores de la operación</h2>
+        <div class="kpis">
+          <div class="kpi"><span>Movimientos</span><b id="k-mov">0</b><small id="k-teu">0 TEU</small></div>
+          <div class="kpi"><span>A bordo</span><b id="k-left">0</b><small>contenedores</small></div>
+          <div class="kpi"><span>STS 1</span><b id="k-c1">–</b><small>mov/h</small></div>
+          <div class="kpi"><span>STS 2</span><b id="k-c2">–</b><small>mov/h</small></div>
+        </div>
+        <p class="phase" style="margin:8px 0 0">Productividad del buque: <b id="k-ship">–</b> mov/h. Un movimiento es un contenedor del buque al camión.</p>
+      </div>
+      <div class="panel">
+        <h2>Elementos del puerto</h2>
+        <ol class="list" id="list"></ol>
+      </div>
+      <div class="panel detail" id="detail" aria-live="polite"></div>
+    </aside>
+  </div>
+
+  <footer><a href="../../">← Portal LogiLab</a><span><b>LogiLab SENA</b> · Centro Industrial y de Energías Alternativas · Regional Guajira</span><span>By Carlos Barrios · Instructor</span></footer>
+</div>
+
+<script>
+'use strict';
+const T=THREE, $=id=>document.getElementById(id), rnd=(a,b)=>a+Math.random()*(b-a), D=Math.PI/180;
+const ISO_APP='../codigo-contenedor-iso6346/';
+
+/* ---------- Información de cada elemento ---------- */
+const INFO={
+ buque:{n:'Buque portacontenedores',fn:'Lleva contenedores en bodegas bajo cubierta y apilados sobre las tapas de escotilla. Este modelo tiene 14 bahías de 40 pies y hasta 13 filas de ancho.',d:'Modelo didáctico de unos 250 m de eslora. Los Neo-Panamax que cruzan el Canal de Panamá ampliado llegan a 366 m de eslora y 51 m de manga.'},
+ sts:{n:'Grúa pórtico de muelle (STS)',fn:'STS significa Ship-to-Shore: pasa los contenedores del buque al muelle y al revés. Rueda sobre rieles a lo largo del muelle para ponerse frente a cada bahía.',d:'Una grúa STS bien operada hace entre 25 y 35 movimientos por hora.'},
+ pluma:{n:'Pluma (boom)',fn:'Viga larga por donde corre el carro. La parte que sale sobre el agua es el alcance (outreach) y define cuántas filas del buque puede atender la grúa.',d:'Cuando no opera, la parte sobre el agua se levanta para que el buque pueda atracar o zarpar.'},
+ estructura:{n:'Pórtico: patas, vigas y A-frame',fn:'Las patas y vigas sostienen la pluma; el A-frame y los tirantes la cuelgan. Entre las patas pasan los camiones por carriles marcados.',d:'Las patas del lado del agua y las del lado de tierra van sobre rieles distintos.'},
+ carro:{n:'Carro (trolley)',fn:'Corre a lo largo de la pluma llevando el spreader con el contenedor. Su velocidad marca buena parte del tiempo de cada ciclo.',d:'En este simulador el carro va a 2,6 m/s y el izaje a 1,6 m/s con carga.'},
+ cabina:{n:'Cabina del operador',fn:'Cuelga del carro y se mueve con él. El operador mira hacia abajo por un piso de vidrio para poner el spreader justo sobre el contenedor.',d:'Usa la cámara «Cabina STS 1» para ver lo que ve el operador.'},
+ spreader:{n:'Spreader',fn:'Bastidor que se engancha a los cuatro esquineros superiores del contenedor con twistlocks que giran 90°. Es telescópico: se ajusta a 20 o 40 pies.',d:'Las 4 líneas que lo sostienen son los cables de izaje.'},
+ sala:{n:'Sala de máquinas',fn:'Aloja los motores y tambores de los cables de izaje y del carro. Va atrás para hacer contrapeso al alcance sobre el agua.',d:'La grúa funciona con energía eléctrica de la red del puerto.'},
+ rieles:{n:'Rieles y bogies',fn:'La grúa rueda sobre dos rieles paralelos con grupos de ruedas (bogies) en cada pata. La distancia entre rieles se llama trocha.',d:'En este modelo la trocha es de 30,5 m (100 pies), una medida común en terminales.'},
+ escotillas:{n:'Tapas de escotilla',fn:'Cierran las bodegas del buque. Encima se apilan contenedores; para abrirlas primero hay que descargar todo lo que llevan encima.',d:'Bajo cubierta los niveles (tiers) se numeran desde 02; sobre cubierta, desde 82.'},
+ trincaje:{n:'Puentes de trincaje',fn:'Plataformas entre bahías desde donde los estibadores ponen barras y tensores que aseguran las columnas de contenedores.',d:'Antes de que la grúa levante un contenedor hay que quitar su trinca y abrir los twistlocks de abajo.'},
+ contenedores:{n:'Contenedores a bordo',fn:'Cada contenedor tiene un lugar exacto en el plano de estiba, dado por tres números: bahía (bay), fila (row) y nivel (tier). Toca uno para ver su posición y su matrícula.',d:'Bahía: de proa a popa. Fila: 00 al centro, impares a estribor y pares a babor. Nivel: sobre cubierta desde 82.'},
+ muelle:{n:'Muelle y delantal (apron)',fn:'Franja de concreto junto al agua donde trabajan las grúas y circulan los camiones. Detrás está el patio de contenedores.',d:'Contecar tiene 967 m de muelle y 3 posiciones de atraque, según su ficha en Supertransporte.'},
+ carriles:{n:'Carriles bajo la grúa',fn:'Franjas pintadas entre las patas de la grúa. Cada grúa trabaja con su propio carril para que los camiones no se crucen.',d:'Si no hay camión esperando, la grúa queda detenida con el contenedor colgando: eso baja la productividad.'},
+ bolardos:{n:'Bolardos (bitas)',fn:'Postes de hierro fundido anclados en el borde del muelle donde se amarran las líneas del buque.',d:'Cada bolardo tiene una capacidad de tiro marcada, por ejemplo 100 o 150 toneladas.'},
+ amarras:{n:'Líneas de amarre',fn:'Cabos que sujetan el buque al muelle: largos de proa y popa, traveses y esprines. Evitan que el buque se mueva mientras operan las grúas.',d:'Un buque mal amarrado obliga a parar las grúas.'},
+ defensas:{n:'Defensas',fn:'Piezas de caucho en la cara del muelle que absorben el golpe del atraque y protegen el casco y el muelle.',d:'Se calculan según la energía de atraque del buque más grande que recibe el muelle.'},
+ camion:{n:'Tractocamión de terminal',fn:'Lleva el contenedor entre la grúa y el patio. Se detiene bajo la grúa en su carril y el spreader le pone el contenedor sobre el chasis.',d:'Usa la cámara «Seguir camión» para acompañar un viaje.'},
+ patio:{n:'Patio de contenedores',fn:'Zona donde los contenedores esperan en bloques antes de salir por la garita o subir a otro buque (transbordo).',d:'Fase 2: grúas RTG, reach stackers y zona de reefers.'}
+};
+const ORDER=['buque','contenedores','escotillas','trincaje','sts','pluma','carro','cabina','spreader','sala','estructura','rieles','muelle','carriles','bolardos','amarras','defensas','camion','patio'];
+
+/* ---------- Renderizador y escena ---------- */
+const cv=$('cv'),stage=$('stage');
+const R=new T.WebGLRenderer({canvas:cv,antialias:true});
+R.setPixelRatio(Math.min(devicePixelRatio,1.75));R.outputEncoding=T.sRGBEncoding;R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=0.82;
+R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;
+const scene=new T.Scene();scene.fog=new T.Fog(0xcfe2ec,500,2600);
+const cam=new T.PerspectiveCamera(45,1,0.5,7000);
+const ctl=new T.OrbitControls(cam,cv);ctl.enableDamping=true;ctl.maxPolarAngle=Math.PI*0.48;ctl.minDistance=8;ctl.maxDistance=900;
+
+// Cielo
+scene.add(new T.Mesh(new T.SphereGeometry(5000,32,16),new T.ShaderMaterial({side:T.BackSide,depthWrite:false,fog:false,
+  uniforms:{top:{value:new T.Color(0x3f86c2)},bot:{value:new T.Color(0xdcebf3)}},
+  vertexShader:'varying float h;void main(){h=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:'uniform vec3 top;uniform vec3 bot;varying float h;void main(){gl_FragColor=vec4(mix(bot,top,pow(max(h,0.),.55)),1.);}'})));
+scene.add(new T.HemisphereLight(0xe2f2ff,0x4a4a40,0.5));
+const sun=new T.DirectionalLight(0xfff6e6,1.45);sun.position.set(-160,260,190);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-190,right:190,top:190,bottom:-190,near:60,far:800});sun.shadow.bias=-0.0005;scene.add(sun);
+
+/* ---------- Materiales por elemento (para resaltar) ---------- */
+const MATS={},pick=[];
+function mk(key,color,metal=.2,rough=.6,extra={}){const m=new T.MeshStandardMaterial(Object.assign({color,metalness:metal,roughness:rough},extra));if(extra.emissive)m.userData.keep=true;(MATS[key]=MATS[key]||[]).push(m);return m;}
+function tag(o,key){o.traverse(m=>{if(m.isMesh){m.userData.key=key;m.castShadow=true;m.receiveShadow=true;pick.push(m);}});return o;}
+const box=(w,h,d,m,x,y,z)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);return o;};
+const cyl=(r,h,m,x,y,z,axis,seg=16)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,h,seg),m);o.position.set(x,y,z);if(axis==='x')o.rotation.z=Math.PI/2;if(axis==='z')o.rotation.x=Math.PI/2;return o;};
+const rod=(a,b,r,m)=>{const A=new T.Vector3(...a),B=new T.Vector3(...b),d=B.clone().sub(A),o=new T.Mesh(new T.CylinderGeometry(r,r,d.length(),8),m);o.position.copy(A).add(B).multiplyScalar(.5);o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());return o;};
+
+/* Texturas */
+function canvasTex(w,h,draw,rep){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;t.anisotropy=4;if(rep){t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(...rep);}return t;}
+const corr=canvasTex(256,64,(x,w,h)=>{x.fillStyle='#fff';x.fillRect(0,0,w,h);for(let i=0;i<w;i+=8){x.fillStyle='rgba(0,0,0,.16)';x.fillRect(i,0,3,h);x.fillStyle='rgba(255,255,255,.5)';x.fillRect(i+4,0,1,h);}x.fillStyle='rgba(0,0,0,.25)';x.fillRect(0,0,w,4);x.fillRect(0,h-4,w,4);});
+const waterTex=canvasTex(256,256,(x,w,h)=>{x.fillStyle='#fff';x.fillRect(0,0,w,h);for(let i=0;i<500;i++){x.fillStyle=`rgba(${Math.random()<.5?'255,255,255':'0,40,60'},${Math.random()*.18})`;x.fillRect(Math.random()*w,Math.random()*h,rnd(8,40),rnd(1,3));}},[90,90]);
+const concTex=canvasTex(256,256,(x,w,h)=>{x.fillStyle='#fff';x.fillRect(0,0,w,h);for(let i=0;i<1600;i++){x.fillStyle=`rgba(0,0,0,${Math.random()*.06})`;x.fillRect(Math.random()*w,Math.random()*h,2,2);}x.strokeStyle='rgba(0,0,0,.12)';x.lineWidth=2;x.strokeRect(0,0,w,h);},[60,20]);
+
+/* ---------- Agua, tierra, ciudad ---------- */
+const water=new T.Mesh(new T.PlaneGeometry(9000,9000),new T.MeshStandardMaterial({color:0x15607a,map:waterTex,roughness:.32,metalness:.1}));
+water.rotation.x=-Math.PI/2;water.receiveShadow=true;scene.add(water);
+const QY=3; // altura del muelle sobre el agua
+const land=tag(box(1300,9,420,mk('muelle',0x9a978e,0,.92,{map:concTex}),0,QY-4.5,210),'muelle');scene.add(land);
+// cara del muelle (concreto más oscuro)
+scene.add(tag(box(1300,5,0.8,mk('muelle',0x8f8c84,0,.95),0,QY-2.5,0.2),'muelle'));
+// Pintura: línea amarilla de seguridad y carriles
+const paintY=QY+0.03,yel=new T.MeshStandardMaterial({color:0xf2c200,roughness:.8}),wht=new T.MeshStandardMaterial({color:0xf4f4f0,roughness:.8});
+scene.add(box(1300,.05,.35,yel,0,paintY,1.8));
+[6,12,18,24,30].forEach(z=>{for(let x=-640;x<640;x+=10)scene.add(box(5,.05,.25,wht,x,paintY,z));});
+const laneMat=mk('carriles',0x5d7a8a,0,.9);[9,15].forEach(z=>scene.add(tag(box(1300,.04,4.6,laneMat,0,QY+0.02,z),'carriles')));
+// Ciudad al fondo (referencia visual de la bahía)
+const city=new T.Group();city.add(box(3200,6,260,new T.MeshStandardMaterial({color:0x6f8a62,roughness:1}),0,2,-1250));
+for(let i=0;i<70;i++){const h=rnd(30,170),w=rnd(14,32);city.add(box(w,h,w,new T.MeshStandardMaterial({color:new T.Color().setHSL(.1,.15,rnd(.72,.9)),roughness:.9}),rnd(-900,500),h/2+4,rnd(-1320,-1170)));}
+scene.add(city);
+
+/* ---------- Defensas, bolardos ---------- */
+const fenM=mk('defensas',0x161616,0,.85),fenP=mk('defensas',0x2b2f33,.3,.6);
+for(let x=-180;x<=180;x+=15){const g=new T.Group();g.add(cyl(1.0,1.5,fenM,x,1.4,-0.6,'z',20));g.add(box(2.6,2.6,.3,fenP,x,1.4,-1.45));scene.add(tag(g,'defensas'));}
+const bolM=mk('bolardos',0x2a2d31,.5,.5);const BOL=[];
+for(let x=-180;x<=180;x+=20){const g=new T.Group();g.add(cyl(.32,.9,bolM,x,QY+.45,1.0));g.add(cyl(.5,.18,bolM,x,QY+.95,1.0));scene.add(tag(g,'bolardos'));BOL.push(x);}
+
+/* ---------- Buque ---------- */
+const SH={zc:-19.5,deck:12,bays:14,bayX:k=>-84+k*13.1,rowZ:r=>-19.5+(r-6)*2.55};
+const ship=new T.Group();scene.add(ship);
+function hullShape(){const s=new T.Shape(),o=19.5;const P=(x,v)=>[x,v+o];
+  s.moveTo(...P(-118,-17));s.lineTo(...P(95,-17));s.quadraticCurveTo(...P(122,-15),...P(129,0));s.quadraticCurveTo(...P(122,15),...P(95,17));
+  s.lineTo(...P(-118,17));s.quadraticCurveTo(...P(-124,17),...P(-124,11));s.lineTo(...P(-124,-11));s.quadraticCurveTo(...P(-124,-17),...P(-118,-17));return s;}
+function hullPart(y0,y1,m,grow=0){const g=new T.ExtrudeGeometry(hullShape(),{depth:y1-y0,bevelEnabled:false,curveSegments:16});g.rotateX(-Math.PI/2);g.translate(0,y0,0);const o=new T.Mesh(g,m);if(grow){o.scale.set(1+grow,1,1+grow);o.position.z=SH.zc*-grow;}return o;}
+ship.add(hullPart(1.2,SH.deck,mk('buque',0x22364e,.3,.55)));
+ship.add(hullPart(-9,1.2,mk('buque',0x9b2a22,.2,.7),.002));
+ship.add(hullPart(0.9,1.5,mk('buque',0x15191d,.2,.7),.004));
+ship.add(hullPart(SH.deck,SH.deck+0.3,mk('buque',0x6b7b6a,.2,.8)));
+// Castillo de proa y mástil
+ship.add(box(26,2.4,30,mk('buque',0x22364e,.3,.55),104,SH.deck+1.2,SH.zc));
+ship.add(cyl(.4,10,mk('buque',0xe8e8e2,.4,.5),112,SH.deck+7,SH.zc));
+// Superestructura (puente) y chimenea
+const wh=mk('buque',0xf0f1ec,.1,.6),win=mk('buque',0x1b2a36,.6,.2);
+ship.add(box(14,20,30,wh,-104,SH.deck+10,SH.zc));ship.add(box(16,3,40,wh,-104,SH.deck+21.5,SH.zc));
+[6,10,14,18].forEach(y=>ship.add(box(14.1,1.1,30.1,win,-104,SH.deck+y,SH.zc)));ship.add(box(16.1,1.4,40.1,win,-104,SH.deck+21.8,SH.zc));
+ship.add(box(7,12,6,mk('buque',0x2b3036,.3,.6),-116,SH.deck+6,SH.zc));ship.add(box(7.1,2.2,6.1,mk('buque',0x39A900,.2,.5),-116,SH.deck+10,SH.zc));
+// Nombre en la popa
+const nameTex=canvasTex(1024,256,(x,w,h)=>{x.fillStyle='#22364e';x.fillRect(0,0,w,h);x.fillStyle='#f4f4f0';x.textAlign='center';x.font='bold 120px Arial';x.fillText('LOGILAB CARIBE',w/2,130);x.font='bold 64px Arial';x.fillText('CARTAGENA',w/2,220);});
+const nm=new T.Mesh(new T.PlaneGeometry(22,5.5),new T.MeshStandardMaterial({map:nameTex,roughness:.6}));nm.position.set(-124.05,8,SH.zc);nm.rotation.y=-Math.PI/2;ship.add(nm);
+tag(ship,'buque');
+// Escotillas y puentes de trincaje
+const hat=new T.Group(),lash=new T.Group();const hm=mk('escotillas',0x5f6f62,.3,.7),lm=mk('trincaje',0x8d969c,.6,.45);
+for(let k=0;k<SH.bays;k++){const nr=k>=12?11:13;hat.add(box(12.6,.7,nr*2.55+.4,hm,SH.bayX(k),SH.deck+.65,SH.zc));}
+for(let k=0;k<=SH.bays;k++){const x=SH.bayX(k)-6.55;lash.add(box(.6,6,33.6,lm,x,SH.deck+3.6,SH.zc));for(let z=-34;z<=-5;z+=3.4)lash.add(box(.9,.15,.9,lm,x,SH.deck+6.6,z));}
+scene.add(tag(hat,'escotillas'));scene.add(tag(lash,'trincaje'));
+// Amarras
+const amM=mk('amarras',0xd9cfa8,0,.9);const amG=new T.Group();
+const line=(a,b)=>{const m=[(a[0]+b[0])/2,(a[1]+b[1])/2-1.6,(a[2]+b[2])/2];amG.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3([a,m,b].map(p=>new T.Vector3(...p))),20,.12,6),amM));};
+[[100,160],[96,120],[90,60]].forEach(([sx,bx])=>line([sx,SH.deck+1,-2.6],[bx,QY+.9,1]));
+[[-120,-160],[-116,-120],[-100,-60]].forEach(([sx,bx])=>line([sx,SH.deck+1,-2.6],[bx,QY+.9,1]));
+scene.add(tag(amG,'amarras'));
+
+/* ---------- Contenedores a bordo (InstancedMesh) ---------- */
+const LV={};(()=>{let n=10;for(const c of'ABCDEFGHIJKLMNOPQRSTUVWXYZ'){if(n%11===0)n++;LV[c]=n++;}})();
+const checkDigit=s=>[...s].reduce((a,c,i)=>a+(/[A-Z]/.test(c)?LV[c]:+c)*2**i,0)%11%10;
+const OWN=['LLS','RHC','GJR','WYU','SNA','CTX','MGL'];
+const COLS=['#a8402c','#1f5c9e','#2f7a4c','#c4561f','#5b6770','#7a2f3a','#c99a1c','#2a4f7a','#8a8f94','#3d6b5e'];
+const CL=12.19,CW=2.44;
+const contMat=mk('contenedores',0xffffff,.25,.6,{map:corr});
+const MAXI=SH.bays*13*6;
+const inst=new T.InstancedMesh(new T.BoxGeometry(CL,1,CW),contMat,MAXI);inst.castShadow=inst.receiveShadow=true;inst.userData.key='contenedores';scene.add(inst);pick.push(inst);
+let CT=[];const dmy=new T.Object3D();
+function newCode(){let ser,own=OWN[Math.floor(Math.random()*OWN.length)];do{ser=String(Math.floor(Math.random()*1e6)).padStart(6,'0');}while([...own+'U'+ser].reduce((a,c,i)=>a+(/[A-Z]/.test(c)?LV[c]:+c)*2**i,0)%11===10);return own+'U'+ser+checkDigit(own+'U'+ser);}
+function loadShip(){CT=[];let i=0;
+  for(let k=0;k<SH.bays;k++){const r0=k>=12?1:0,r1=k>=12?11:12;
+    for(let r=r0;r<=r1;r++){let n=2+Math.floor(Math.random()*4);if(k>=12)n=Math.min(n,3);if(k===0)n=Math.min(n,4);
+      let base=SH.deck+1.02;
+      for(let t=0;t<n;t++){const hc=Math.random()<.38,h=hc?2.896:2.591,reefer=hc&&Math.random()<.18;
+        const c={i,k,r,t,x:SH.bayX(k),z:SH.rowZ(r),h,y:base+h/2,alive:true,iso:reefer?'45R1':hc?'45G1':'42G1',col:reefer?'#e6eaed':COLS[Math.floor(Math.random()*COLS.length)],code:newCode(),peso:(rnd(7,28)).toFixed(1)};
+        base+=h+.02;CT.push(c);dmy.position.set(c.x,c.y,c.z);dmy.scale.set(1,h,1);dmy.updateMatrix();inst.setMatrixAt(i,dmy.matrix);inst.setColorAt(i,new T.Color(c.col));i++;}}}
+  for(let j=i;j<MAXI;j++){dmy.scale.set(0,0,0);dmy.updateMatrix();inst.setMatrixAt(j,dmy.matrix);}
+  inst.count=i;inst.instanceMatrix.needsUpdate=true;if(inst.instanceColor)inst.instanceColor.needsUpdate=true;}
+function hideInst(c){c.alive=false;dmy.position.set(0,-50,0);dmy.scale.set(0,0,0);dmy.updateMatrix();inst.setMatrixAt(c.i,dmy.matrix);inst.instanceMatrix.needsUpdate=true;}
+const bayNo=k=>String(4*(SH.bays-1-k)+2).padStart(2,'0');
+const rowNo=r=>r===6?'00':String(r>6?2*(r-6)-1:2*(6-r)).padStart(2,'0');
+const tierNo=t=>String(82+2*t);
+function contMesh(c){const m=new T.Mesh(new T.BoxGeometry(CL,c.h,CW),new T.MeshStandardMaterial({color:new T.Color(c.col),map:corr,metalness:.25,roughness:.6}));m.castShadow=true;m.userData.key='contenedores';m.userData.cont=c;pick.push(m);scene.add(m);return m;}
+function dropMesh(m){scene.remove(m);const i=pick.indexOf(m);if(i>=0)pick.splice(i,1);m.geometry.dispose();m.material.dispose();}
+
+/* ---------- Patio (fase 2, estático) ---------- */
+const yardN=2*4*8*6*4,yard=new T.InstancedMesh(new T.BoxGeometry(CL,2.591,CW),mk('patio',0xffffff,.25,.6,{map:corr}),yardN);yard.castShadow=yard.receiveShadow=true;
+let yi=0;[66,94].forEach(zb=>[-170,-55,60,175].forEach(xb=>{for(let b=0;b<8;b++)for(let r=0;r<6;r++){const n=Math.floor(rnd(0,5));for(let t=0;t<n;t++){dmy.position.set(xb-45.5+b*13,QY+1.3+t*2.62,zb+r*2.6);dmy.scale.set(1,1,1);dmy.updateMatrix();yard.setMatrixAt(yi,dmy.matrix);yard.setColorAt(yi,new T.Color(COLS[Math.floor(Math.random()*COLS.length)]));yi++;}}}));
+yard.count=yi;yard.userData.key='patio';scene.add(yard);pick.push(yard);
+
+/* ---------- Grúas STS ---------- */
+const ZW=3,ZL=33.5,YSAFE=40,BOOM_Y=48.5;
+function buildCrane(name){const g=new T.Group();
+  const st=mk('estructura',0xe3e6e9,.35,.45),ac=mk('estructura',0x1f5c9e,.35,.45),bm=mk('pluma',0xe3e6e9,.35,.45),rl=mk('rieles',0x3b4045,.6,.4),wl=mk('rieles',0x1f2326,.5,.5);
+  const E=new T.Group(),P=new T.Group(),Rr=new T.Group();
+  [-9,9].forEach(sx=>{[ZW,ZL].forEach(z=>{E.add(box(1.7,43,1.7,st,sx,QY+21.5,z));Rr.add(box(6,1.6,1.5,rl,sx,QY+1.1,z));[-2,-0.7,0.7,2].forEach(dx=>Rr.add(cyl(.45,.5,wl,sx+dx,QY+.45,z,'z',12)));});
+    E.add(box(1.9,2.4,ZL-ZW+1.7,ac,sx,45.5,(ZW+ZL)/2));E.add(box(1.2,1.2,ZL-ZW,st,sx,24,(ZW+ZL)/2));
+    E.add(rod([sx,46.7,ZW],[sx*.47,74,13],.55,ac));E.add(rod([sx,46.7,ZL],[sx*.47,74,13],.55,ac));
+    E.add(rod([sx*.47,74,13],[sx*.47,BOOM_Y+1.5,-16],.18,st));E.add(rod([sx*.47,74,13],[sx*.47,BOOM_Y+1.5,-46],.18,st));E.add(rod([sx*.47,74,13],[sx*.47,BOOM_Y+1.5,ZL+18],.22,st));});
+  [ZW,ZL].forEach(z=>{E.add(box(20,2,1.6,st,0,45.5,z));E.add(box(20,1.4,1.4,st,0,QY+4,z));});
+  E.add(box(9.6,1.4,1.4,ac,0,74,13));
+  // Pluma: dos vigas con arriostramiento
+  [-4.2,4.2].forEach(x=>{P.add(box(1.3,3,103.5,bm,x,BOOM_Y,1.75));});
+  for(let z=-49;z<=53;z+=6){P.add(box(8.4,.5,.5,bm,0,BOOM_Y+1.3,z));P.add(rod([-4.2,BOOM_Y-1.4,z],[4.2,BOOM_Y+1.4,z+6],.12,bm));}
+  P.add(box(1,1,1,mk('pluma',0xff3b1f,0,.4,{emissive:0xff2000,emissiveIntensity:.8}),0,BOOM_Y+1.8,-49.5));
+  const S=box(10,6,12,mk('sala',0xf2f3f0,.2,.6),0,BOOM_Y+4.5,ZL+12);S.add(box(10.1,1,12.1,mk('sala',0x1f5c9e,.3,.5),0,2,0));
+  // Carro, cabina, spreader
+  const trolley=new T.Group(),car=box(9,2.2,7,mk('carro',0x1f5c9e,.4,.45),0,0,0);trolley.add(car);[-3.6,3.6].forEach(x=>[-2.6,2.6].forEach(z=>trolley.add(cyl(.5,.5,mk('carro',0x23272b,.5,.5),x,1.1,z,'x',12))));
+  const cab=new T.Group();cab.add(box(3.2,3,4,mk('cabina',0xf2f3f0,.2,.55),0,0,0));cab.add(box(3.25,1.6,4.05,mk('cabina',0x203a4d,.7,.15),0,.3,0));cab.add(box(.4,4,.4,mk('cabina',0x2b2f33,.5,.5),0,2.6,0));
+  cab.position.set(0,-4.3,-5.2);trolley.add(cab);trolley.position.y=BOOM_Y-2.2;
+  const spr=new T.Group(),yl=mk('spreader',0xf2b316,.3,.45),dk=mk('spreader',0x2b2f33,.5,.5);
+  spr.add(box(12.2,.55,2.44,yl,0,.28,0));spr.add(box(3.2,1,2.2,dk,0,1.05,0));[-6,6].forEach(x=>[-1.1,1.1].forEach(z=>spr.add(box(.35,.7,.35,dk,x,-.2,z))));
+  const ropes=[];const rm=mk('spreader',0x1d2023,.6,.4);[-1,1].forEach(x=>[-.6,.6].forEach(z=>{const r=cyl(.06,1,rm,x,0,z);g.add(r);ropes.push(r);}));
+  tag(E,'estructura');tag(P,'pluma');tag(S,'sala');tag(Rr,'rieles');tag(car,'carro');trolley.children.slice(1).forEach(o=>o!==cab&&tag(o,'carro'));tag(cab,'cabina');tag(spr,'spreader');ropes.forEach(r=>tag(r,'spreader'));
+  g.add(E,P,S,Rr,trolley,spr);
+  const lb=label(name);lb.position.set(0,82,13);g.add(lb);
+  scene.add(g);return{g,trolley,cab,spr,ropes,lb};}
+// Rieles a lo largo del muelle
+const railM=mk('rieles',0x4a5056,.7,.35);[ZW,ZL].forEach(z=>scene.add(tag(box(1300,.25,.35,railM,0,QY+.13,z),'rieles')));
+
+/* ---------- Camiones ---------- */
+function buildTruck(){const g=new T.Group(),y=mk('camion',0xf2b316,.3,.5),dk=mk('camion',0x2b2f33,.5,.5),gl=mk('camion',0x203a4d,.6,.2),tm=mk('camion',0x151617,0,.9);
+  [-.45,.45].forEach(z=>g.add(box(12.6,.45,.3,dk,0,QY+1.25,z)));g.add(box(.4,.4,2.3,dk,-6,QY+1.25,0));g.add(box(.4,.4,2.3,dk,6,QY+1.25,0));
+  [-5,-3.8].forEach(x=>[-1,1].forEach(z=>g.add(cyl(.55,.5,tm,x,QY+.55,z,'z',14))));
+  g.add(box(4.4,1.4,2.5,y,8.6,QY+1.5,0));g.add(box(1.9,2.1,1.5,y,9.8,QY+3.2,-.45));g.add(box(1.95,1,1.55,gl,9.8,QY+3.6,-.45));
+  [7.4,10].forEach(x=>[-1.1,1.1].forEach(z=>g.add(cyl(.6,.45,tm,x,QY+.6,z,'z',14))));
+  g.add(cyl(.12,1.6,dk,9.4,QY+4.8,.6));
+  tag(g,'camion');scene.add(g);return g;}
+
+/* ---------- Etiquetas ---------- */
+function label(text){const t=canvasTex(512,112,(x,w,h)=>{x.fillStyle='rgba(8,22,32,.82)';x.beginPath();x.roundRect?x.roundRect(4,4,w-8,h-8,22):x.rect(4,4,w-8,h-8);x.fill();x.strokeStyle='rgba(62,224,240,.7)';x.lineWidth=4;x.stroke();x.fillStyle='#fff';x.font='bold 54px Arial';x.textAlign='center';x.textBaseline='middle';x.fillText(text,w/2,h/2+2);});
+  const s=new T.Sprite(new T.SpriteMaterial({map:t,depthWrite:false,transparent:true}));s.scale.set(24,5.25,1);s.renderOrder=10;LABELS.push(s);return s;}
+const LABELS=[];
+{const a=label('Buque LOGILAB CARIBE');a.position.set(-104,52,SH.zc);scene.add(a);
+ const b=label('Patio · fase 2');b.position.set(0,26,86);scene.add(b);
+ const c=label('Bahía de Cartagena');c.position.set(-60,30,-320);c.scale.set(60,13,1);scene.add(c);}
+
+/* ---------- Simulación ---------- */
+const C1=buildCrane('STS 1'),C2=buildCrane('STS 2');
+const CR=[Object.assign(C1,{id:1,bays:[0,1,2,3,4,5,6],lane:9}),Object.assign(C2,{id:2,bays:[7,8,9,10,11,12,13],lane:15})];
+const TR=[];CR.forEach(c=>{c.trucks=[0,1].map(j=>({g:buildTruck(),c,st:'arrive',x:0,cargo:null}));});
+let simT=0,PLAY=true,SPEED=10,moves=0;
+const step=(v,t,s)=>{const d=t-v;return Math.abs(d)<=s?[t,true]:[v+Math.sign(d)*s,false];};
+function reset(){CT.forEach(c=>{});scene.children.filter(o=>o.userData.cont).forEach(dropMesh);
+  CR.forEach(c=>{c.trucks.forEach(t=>{if(t.cargo)dropMesh(t.cargo);t.cargo=null;});});
+  loadShip();simT=0;moves=0;$('msg').hidden=true;
+  CR.forEach(c=>{c.bi=0;c.x=SH.bayX(c.bays[0]);c.tz=c.lane;c.sy=YSAFE;c.st='pick';c.wait=0;c.carry=null;c.moves=0;
+    c.trucks.forEach((t,j)=>{t.st='arrive';t.x=c.x-40-j*60;t.cargo=null;});});
+  selectKey(SEL||'buque',false);}
+function topIn(bay){let best=null;CT.forEach(c=>{if(c.alive&&c.k===bay&&(!best||c.y+c.h/2>best.y+best.h/2+.01||(Math.abs(c.y+c.h/2-(best.y+best.h/2))<.01&&c.z>best.z)))best=c;});return best;}
+function craneStep(c,dt){const o=CR[c.id===1?1:0];let ok;
+  switch(c.st){
+  case'pick':{const b=topIn(c.bays[c.bi]);if(b){c.cont=b;c.st='toShip';}else{c.bi++;c.st=c.bi>=c.bays.length?'done':'gantry';}break;}
+  case'gantry':{const tx=SH.bayX(c.bays[c.bi]);if(Math.abs(tx-o.x)<24&&o.st!=='done'){break;}[c.x,ok]=step(c.x,tx,.8*dt);if(ok)c.st='pick';break;}
+  case'toShip':[c.tz,ok]=step(c.tz,c.cont.z,2.6*dt);if(ok)c.st='lowerShip';break;
+  case'lowerShip':[c.sy,ok]=step(c.sy,c.cont.y+c.cont.h/2,2.4*dt);if(ok){c.st='lock';c.wait=9;}break;
+  case'lock':c.wait-=dt;if(c.wait<=0){hideInst(c.cont);c.carry=contMesh(c.cont);c.st='raiseShip';}break;
+  case'raiseShip':[c.sy,ok]=step(c.sy,YSAFE,1.6*dt);if(ok)c.st='toLane';break;
+  case'toLane':[c.tz,ok]=step(c.tz,c.lane,2.6*dt);if(ok)c.st='waitTruck';break;
+  case'waitTruck':{const t=c.trucks.find(t=>t.st==='wait'&&Math.abs(t.x-c.x)<.05);if(t){c.truck=t;c.st='lowerTruck';}break;}
+  case'lowerTruck':[c.sy,ok]=step(c.sy,QY+1.5+c.cont.h,1.6*dt);if(ok){c.st='unlock';c.wait=7;}break;
+  case'unlock':c.wait-=dt;if(c.wait<=0){c.truck.cargo=c.carry;c.carry=null;c.truck.st='leave';c.moves++;moves++;c.st='raiseEmpty';}break;
+  case'raiseEmpty':[c.sy,ok]=step(c.sy,YSAFE,2.4*dt);if(ok)c.st='pick';break;}
+}
+function truckStep(t,dt){const c=t.c,other=c.trucks.find(u=>u!==t);
+  if(t.st==='arrive'){const blocked=other.st==='wait'||(other.st==='arrive'&&other.x>t.x);const tx=blocked?c.x-18:c.x;let ok;[t.x,ok]=step(t.x,Math.min(tx,Math.max(t.x,tx)),6*dt);if(t.x>tx)t.x=tx;if(ok&&!blocked)t.st='wait';}
+  else if(t.st==='wait'){if(Math.abs(t.x-c.x)>.05)t.st='arrive';}
+  else if(t.st==='leave'){t.x+=7*dt;if(t.x>c.x+260){if(t.cargo){dropMesh(t.cargo);t.cargo=null;}t.x=c.x-240;t.st='arrive';}}
+}
+function simulate(dt){simT+=dt;CR.forEach(c=>craneStep(c,dt));CR.forEach(c=>c.trucks.forEach(t=>truckStep(t,dt)));
+  if(CR.every(c=>c.st==='done')&&!CT.some(c=>c.alive)){$('msg').hidden=false;$('msg').textContent='Buque descargado · '+moves+' movimientos';}}
+function syncVisual(){CR.forEach(c=>{c.g.position.x=c.x;c.trolley.position.z=c.tz;c.spr.position.set(0,c.sy,c.tz);
+    const top=BOOM_Y-3.3,bot=c.sy+1.55;c.ropes.forEach((r,i)=>{r.scale.y=Math.max(.1,top-bot);r.position.y=(top+bot)/2;r.position.z=c.tz+(i%2?.6:-.6);});
+    if(c.carry)c.carry.position.set(c.x,c.sy-c.cont.h/2,c.tz);
+    c.trucks.forEach(t=>{t.g.position.set(t.x,0,c.lane);if(t.cargo)t.cargo.position.set(t.x,QY+1.5+t.cargo.userData.cont.h/2,c.lane);});});}
+
+/* ---------- Cámaras ---------- */
+const PRESET={pano:[[-175,92,165],[-15,16,-8]],muelle:[[150,20,70],[0,16,0]],buque:[[70,85,-170],[0,14,-20]]};
+let follow=null,fly=null;
+function setCam(k){document.querySelectorAll('[data-cam]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cam===k));
+  $('camtxt').textContent='Cámara: '+{pano:'panorámica',muelle:'muelle',buque:'buque',cabina:'cabina del operador STS 1',camion:'siguiendo un camión'}[k];
+  if(k==='cabina'||k==='camion'){follow=k;ctl.enabled=false;return;}
+  follow=null;ctl.enabled=true;flyTo(...PRESET[k]);}
+function flyTo(p,t,dur=1.3){fly={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new T.Vector3(...p),t1:new T.Vector3(...t),s:performance.now(),d:dur*1000};}
+document.querySelectorAll('[data-cam]').forEach(b=>b.onclick=()=>setCam(b.dataset.cam));
+const tmpV=new T.Vector3();
+function updateCam(){if(fly){const k=Math.min(1,(performance.now()-fly.s)/fly.d),e=k*k*(3-2*k);cam.position.lerpVectors(fly.p0,fly.p1,e);ctl.target.lerpVectors(fly.t0,fly.t1,e);if(k>=1)fly=null;}
+  if(follow==='cabina'){const c=CR[0];c.cab.getWorldPosition(tmpV);cam.position.set(tmpV.x+.8,tmpV.y-.4,tmpV.z+1.2);cam.lookAt(c.x,c.sy-2,c.tz-4);}
+  else if(follow==='camion'){const c=CR[0],t=c.trucks.find(t=>t.st==='leave'&&t.cargo)||c.trucks.find(t=>t.st==='wait')||c.trucks[0];
+    cam.position.lerp(tmpV.set(t.x-26,QY+11,c.lane+16),.08);cam.lookAt(t.x+6,QY+3,c.lane);}
+  else ctl.update();}
+
+/* ---------- Selección, resaltado, ficha ---------- */
+let SEL=null,SELC=null;const selBox=new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(CL+.3,1,CW+.3)),new T.LineBasicMaterial({color:0x3ee0f0}));selBox.visible=false;scene.add(selBox);
+$('list').innerHTML=ORDER.map((k,i)=>`<li><button data-k="${k}"><small>${String(i+1).padStart(2,'0')}</small>${INFO[k].n}</button></li>`).join('');
+$('list').querySelectorAll('button').forEach(b=>b.onclick=()=>selectKey(b.dataset.k,true));
+const FOCUS={buque:[[60,70,-150],[0,14,-20]],contenedores:[[40,48,-70],[-20,18,-20]],escotillas:[[30,40,-60],[0,12,-20]],trincaje:[[10,30,-45],[0,14,-20]],
+  sts:[[-150,60,110],[-60,35,10]],pluma:[[-140,70,-60],[-80,48,0]],carro:[[-115,55,40],[-84,46,10]],cabina:[[-100,46,10],[-84,42,0]],spreader:[[-105,36,30],[-84,30,0]],
+  sala:[[-110,62,75],[-84,52,45]],estructura:[[-140,40,90],[-84,30,18]],rieles:[[-120,10,40],[-84,3,18]],muelle:[[-40,40,90],[0,3,15]],carriles:[[-40,22,50],[-40,3,12]],
+  bolardos:[[-140,12,14],[-160,3,1]],amarras:[[-170,25,30],[-140,8,0]],defensas:[[-150,6,-14],[-160,2,0]],camion:[[-110,14,40],[-84,4,9]],patio:[[0,90,10],[0,5,86]]};
+function selectKey(k,fly){SEL=k;SELC=null;selBox.visible=false;
+  $('list').querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.k===k));
+  const I=INFO[k];$('detail').innerHTML=`<div class="eyebrow">Elemento ${String(ORDER.indexOf(k)+1).padStart(2,'0')} de ${ORDER.length}</div><h3>${I.n}</h3><p>${I.fn}</p><div class="dato">${I.d}</div>`;
+  if(fly&&FOCUS[k]){setCam('pano');flyTo(...FOCUS[k]);$('camtxt').textContent='Cámara: '+I.n.toLowerCase();}}
+function selectCont(c){SEL='contenedores';SELC=c;$('list').querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.k==='contenedores'));
+  const tipo={'42G1':'Estándar 40′','45G1':'High Cube 40′','45R1':'Reefer 40′ HC'}[c.iso];
+  const where=c.alive?'A bordo':'Descargado (en camión hacia el patio)';
+  $('detail').innerHTML=`<div class="eyebrow">Contenedor · ${where}</div>
+   <div class="code">${c.code.slice(0,4)} ${c.code.slice(4,10)}<span class="cd">${c.code[10]}</span></div>
+   <p style="margin-top:2px"><b>${c.iso}</b> · ${tipo} · ${c.peso.replace('.',',')} t brutas</p>
+   <div class="brt"><div><span>Bay</span><b>${bayNo(c.k)}</b></div><div><span>Row</span><b>${rowNo(c.r)}</b></div><div><span>Tier</span><b>${tierNo(c.t)}</b></div></div>
+   <p class="small">Posición de estiba <b>${bayNo(c.k)}${rowNo(c.r)}${tierNo(c.t)}</b>. Bahía ${bayNo(c.k)}: un 40 pies ocupa dos bahías de 20 (${String(+bayNo(c.k)-1).padStart(2,'0')} y ${String(+bayNo(c.k)+1).padStart(2,'0')}). Fila ${rowNo(c.r)}: ${c.r===6?'al centro':c.r>6?'hacia estribor (lado del muelle)':'hacia babor (lado del agua)'}. Nivel ${tierNo(c.t)}: ${c.t+1}.º sobre cubierta.</p>
+   <p class="small"><a href="${ISO_APP}?c=${c.code}#validar" target="_blank" rel="noopener">Validar esta matrícula en la app ISO 6346 →</a></p>
+   <div class="dato">Matrículas ficticias con dígito de control real.</div>`;}
+const ray=new T.Raycaster(),mouse=new T.Vector2();
+function hit(e){const r=cv.getBoundingClientRect();mouse.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mouse,cam);
+  const h=ray.intersectObjects(pick,false)[0];if(!h)return null;const o=h.object;
+  if(o===inst&&h.instanceId!=null)return{key:'contenedores',cont:CT[h.instanceId]};if(o.userData.cont)return{key:'contenedores',cont:o.userData.cont};
+  if(o===yard)return{key:'patio'};return{key:o.userData.key};}
+let down=null;cv.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY];});
+cv.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>6)return;const h=hit(e);if(!h)return;h.cont?selectCont(h.cont):selectKey(h.key,false);});
+let lastHover=0;cv.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const now=performance.now();if(now-lastHover<90)return;lastHover=now;const h=hit(e),tip=$('tip');
+  if(!h){tip.hidden=true;return;}const r=stage.getBoundingClientRect();tip.hidden=false;tip.style.left=(e.clientX-r.left)+'px';tip.style.top=(e.clientY-r.top)+'px';
+  tip.textContent=h.cont?`${h.cont.code} · ${bayNo(h.cont.k)} ${rowNo(h.cont.r)} ${tierNo(h.cont.t)}`:INFO[h.key]?INFO[h.key].n:'';});
+cv.addEventListener('pointerleave',()=>$('tip').hidden=true);
+function pulse(t){const v=.35+.35*Math.sin(t*.006);Object.entries(MATS).forEach(([k,arr])=>arr.forEach(m=>{if(m.userData.keep)return;
+  if(k===SEL&&!(k==='contenedores'&&SELC)){m.emissive.setHex(0x0f8fb0);m.emissiveIntensity=v;}else if(m.userData.on!==false){m.emissive.setHex(0);m.emissiveIntensity=1;}}));
+  if(SELC){const p=SELC.alive?[SELC.x,SELC.y,SELC.z]:null;const mesh=scene.children.find(o=>o.userData.cont===SELC);
+    if(p){selBox.position.set(...p);selBox.scale.y=SELC.h+.3;selBox.visible=true;}else if(mesh){selBox.position.copy(mesh.position);selBox.scale.y=SELC.h+.3;selBox.visible=true;}else selBox.visible=false;}}
+
+/* ---------- Controles ---------- */
+$('play').onclick=()=>{PLAY=!PLAY;$('play').setAttribute('aria-pressed',PLAY);$('play').textContent=PLAY?'❚❚ Pausa':'▶ Continuar';};
+$('speed').onchange=e=>SPEED=+e.target.value;
+$('labels').onclick=()=>{const on=$('labels').getAttribute('aria-pressed')!=='true';$('labels').setAttribute('aria-pressed',on);LABELS.forEach(l=>l.visible=on);};
+$('reset').onclick=reset;
+const hhmmss=s=>[s/3600,s/60%60,s%60].map(v=>String(Math.floor(v)).padStart(2,'0')).join(':');
+function kpis(){$('clock').textContent=hhmmss(simT);$('k-mov').textContent=moves;$('k-teu').textContent=moves*2+' TEU';$('k-left').textContent=CT.filter(c=>c.alive).length;
+  const h=simT/3600,r=n=>h>0.03&&n?Math.round(n/h):'–';$('k-c1').textContent=r(CR[0].moves);$('k-c2').textContent=r(CR[1].moves);$('k-ship').textContent=r(moves);}
+
+/* ---------- Bucle ---------- */
+function resize(){const w=cv.clientWidth,h=cv.clientHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(cv);resize();
+cam.position.set(...PRESET.pano[0]);ctl.target.set(...PRESET.pano[1]);
+reset();
+let last=performance.now(),kt=0;
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(PLAY){let s=dt*SPEED;while(s>0){const d=Math.min(s,.2);simulate(d);s-=d;}}
+  syncVisual();waterTex.offset.x+=dt*.004;waterTex.offset.y+=dt*.002;pulse(now);updateCam();R.render(scene,cam);
+  kt+=dt;if(kt>.25){kt=0;kpis();}}
+requestAnimationFrame(frame);
+</script>
+
+</body></html>

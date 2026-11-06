@@ -358,6 +358,7 @@ const VIEWS=['validar','construir','practica','lote','tamano'];
 function route(){const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'validar';
   VIEWS.forEach(x=>$('v-'+x).hidden=x!==v);document.querySelectorAll('nav.tabs a').forEach(a=>{if(a.getAttribute('href')==='#'+v)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});}
 addEventListener('hashchange',route);route();
+try{const qc=new URLSearchParams(location.search).get('c');if(qc){$('vin').value=qc.slice(0,20);$('vst').value='';}}catch(e){}
 runValidate();runBuild();newQuiz();runLote();runST();
 </script>
 
