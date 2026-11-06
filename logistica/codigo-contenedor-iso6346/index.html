@@ -1,0 +1,364 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Código de Contenedor ISO 6346</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: herramienta de trabajo — cabecera, pestañas, panel principal + panel de referencia; marcaje tipo puerta de contenedor como pieza central */
+:root{
+  --bg:#f3f6f4; --surface:#ffffff; --surface2:#e9efeb; --ink:#14201a; --muted:#56655d; --line:#cfd9d3;
+  --sena:#39A900; --sena-ink:#2a7d00; --steel:#24496b; --door:#a8402c; --door-ink:#fbf7f2;
+  --ok:#2a7d00; --ok-bg:#e6f4dc; --bad:#b3261e; --bad-bg:#fbe5e3; --warn:#8a5a00; --warn-bg:#fdf1d6;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif; --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1512; --surface:#15201b; --surface2:#1c2a24; --ink:#e4ede8; --muted:#97a89f; --line:#2c3d35;
+  --sena:#4cc20f; --sena-ink:#7ad94a; --steel:#7fb0db; --door:#8f3524; --door-ink:#fbf1e8;
+  --ok:#7ad94a; --ok-bg:#1d3313; --bad:#ff8a80; --bad-bg:#3a1714; --warn:#f2c46b; --warn-bg:#352711; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1512; --surface:#15201b; --surface2:#1c2a24; --ink:#e4ede8; --muted:#97a89f; --line:#2c3d35;
+  --sena:#4cc20f; --sena-ink:#7ad94a; --steel:#7fb0db; --door:#8f3524; --door-ink:#fbf1e8;
+  --ok:#7ad94a; --ok-bg:#1d3313; --bad:#ff8a80; --bad-bg:#3a1714; --warn:#f2c46b; --warn-bg:#352711; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.parts.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:640px){.parts.three{grid-template-columns:minmax(0,1fr)}}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 28px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.brand{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.brand i{width:10px;height:10px;background:var(--sena);display:inline-block}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,5.2vw,50px);line-height:1;margin:6px 0 0;text-transform:uppercase;letter-spacing:.02em;text-wrap:balance}
+h1 span{color:var(--sena-ink)}
+.lede{margin:6px 0 0;color:var(--muted);max-width:68ch}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}
+nav.tabs a{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--muted);padding:8px 14px;border-radius:8px;border:1px solid transparent;min-height:42px;display:flex;align-items:center}
+nav.tabs a:hover{color:var(--ink);border-color:var(--line)}
+nav.tabs a[aria-current="page"]{background:var(--sena);color:#fff}
+nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--steel);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:920px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel h2{font-family:var(--display);font-weight:700;font-size:24px;text-transform:uppercase;letter-spacing:.03em;margin:0}
+.panel h3{font-family:var(--display);font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.04em;margin:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+label{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-height:44px}
+input.code{font-family:var(--mono);font-size:24px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+textarea{font-family:var(--mono);font-size:14px;min-height:170px;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row>div{flex:1 1 140px;min-width:0}
+button{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:8px;padding:10px 14px;min-height:44px;cursor:pointer}
+button.primary{background:var(--sena);border-color:var(--sena);color:#fff}
+button:hover{border-color:var(--steel)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+/* Marcaje tipo puerta */
+.door{background:var(--door);color:var(--door-ink);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden;
+  background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 2px,transparent 2px 22px,rgba(255,255,255,.06) 22px 24px,transparent 24px 44px)}
+.door .stencil{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,60px);letter-spacing:.06em;line-height:1;display:flex;flex-wrap:wrap;gap:.25em;align-items:center}
+.door .cd{border:4px solid currentColor;padding:0 .14em;line-height:1.05}
+.door .cd.bad{border-style:dashed;opacity:.85}
+.door .st{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,40px);letter-spacing:.06em;margin-top:8px}
+.door .tag{position:absolute;right:12px;top:10px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;opacity:.8}
+/* Partes */
+.parts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:640px){.parts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.part{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface2);min-width:0}
+.part b{display:block;font-family:var(--mono);font-size:20px;letter-spacing:.08em}
+.part span{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.part p{margin:4px 0 0;font-size:13px}
+.verdict{border-radius:10px;padding:12px 14px;font-weight:600;display:flex;gap:10px;align-items:flex-start}
+.verdict.ok{background:var(--ok-bg);color:var(--ok)}
+.verdict.bad{background:var(--bad-bg);color:var(--bad)}
+.verdict.warn{background:var(--warn-bg);color:var(--warn)}
+.verdict .ic{font-family:var(--display);font-size:22px;line-height:1}
+.verdict div span{display:block;font-weight:400;color:var(--ink);font-size:14px;margin-top:2px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:center}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.l,th.l{text-align:left}
+tfoot td{font-weight:600}
+.calc{display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:14px;background:var(--surface2);border-radius:10px;padding:12px 14px}
+.calc b{color:var(--sena-ink)}
+.ref .letters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;font-family:var(--mono);font-size:13px}
+.ref .letters div{background:var(--surface2);border-radius:6px;padding:4px 0;text-align:center}
+.ref .letters b{display:block;font-size:15px}
+.ref ul{margin:0;padding-left:18px;font-size:13.5px}
+.ref li{margin:3px 0}
+.chip{display:inline-block;font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--line)}
+.chip.ok{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.chip.bad{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.q{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.q .qh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.q .qc{font-family:var(--mono);font-size:20px;letter-spacing:.1em;font-weight:600}
+.q .opts{display:flex;gap:8px;flex-wrap:wrap}
+.q .opts button[aria-pressed="true"]{background:var(--steel);border-color:var(--steel);color:#fff}
+.q input{max-width:120px;font-family:var(--mono);font-size:18px;text-align:center}
+.q .fb{font-size:13.5px}
+.score{font-family:var(--display);font-weight:800;font-size:44px;line-height:1}
+.toast{min-height:20px;font-size:13px;color:var(--sena-ink)}
+footer{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+footer a{color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.verdict,.door{transition:background-color .2s}}
+</style>
+
+</head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><i></i>LogiLab SENA · Contenedores marítimos</div>
+    <h1>Código de contenedor <span>ISO 6346</span></h1>
+    <p class="lede">Valida una matrícula de contenedor, construye una nueva con su dígito de control, practica el cálculo y descifra el código de tamaño y tipo. Todo según la norma ISO 6346.</p>
+  </header>
+
+  <nav class="tabs" aria-label="Secciones">
+    <a href="#validar">Validar</a><a href="#construir">Construir</a><a href="#practica">Practicar</a><a href="#lote">Revisar lista</a><a href="#tamano">Tamaño y tipo</a>
+  </nav>
+
+  <div class="grid">
+    <main>
+      <!-- VALIDAR -->
+      <section class="panel" id="v-validar" hidden>
+        <h2>Validar una matrícula</h2>
+        <div class="row">
+          <div style="flex:3 1 260px"><label for="vin">Matrícula (11 caracteres; espacios y guiones opcionales)</label><input id="vin" class="code" value="CSQU 305438 3" autocomplete="off" spellcheck="false" maxlength="20"></div>
+          <div style="flex:1 1 110px"><label for="vst">Tamaño y tipo (opcional)</label><input id="vst" class="code" value="22G1" maxlength="4" autocomplete="off" spellcheck="false"></div>
+        </div>
+        <div class="btns"><button class="primary" id="vgo">Validar</button><button id="vrand">Ejemplo al azar</button></div>
+        <div id="vout" style="display:flex;flex-direction:column;gap:14px"></div>
+      </section>
+
+      <!-- CONSTRUIR -->
+      <section class="panel" id="v-construir" hidden>
+        <h2>Construir una matrícula</h2>
+        <p class="muted small">Escribe el código del propietario y el número de serie. La app calcula el dígito de control y arma el marcaje como va pintado en la puerta.</p>
+        <div class="row">
+          <div><label for="bown">Propietario (3 letras)</label><input id="bown" class="code" value="LLS" maxlength="3" autocomplete="off" spellcheck="false"></div>
+          <div><label for="bcat">Categoría</label><select id="bcat"><option value="U">U · Contenedor de carga</option><option value="J">J · Equipo desmontable</option><option value="Z">Z · Remolque o chasis</option></select></div>
+          <div><label for="bser">Número de serie (6 dígitos)</label><input id="bser" class="code" value="202611" maxlength="6" inputmode="numeric" autocomplete="off"></div>
+          <div><label for="bst">Tamaño y tipo</label><select id="bst"></select></div>
+        </div>
+        <div class="btns"><button class="primary" id="bgo">Calcular dígito</button><button id="bnext">Siguiente serie</button><button id="bcopy">Copiar matrícula</button></div>
+        <div id="bout" style="display:flex;flex-direction:column;gap:14px"></div>
+      </section>
+
+      <!-- PRACTICAR -->
+      <section class="panel" id="v-practica" hidden>
+        <h2>Practicar</h2>
+        <p class="muted small">Diez ejercicios. En unos decides si la matrícula es válida; en otros calculas el dígito de control a mano. Usa la tabla de letras de la derecha. Al terminar, envía tu resultado.</p>
+        <div class="row">
+          <div style="flex:2 1 220px"><label for="pname">Nombre completo</label><input id="pname" autocomplete="name"></div>
+          <div><label for="pdoc">Documento</label><input id="pdoc" inputmode="numeric"></div>
+          <div><label for="pgrp">Ficha o grupo</label><input id="pgrp" placeholder="Ej. 3229854"></div>
+        </div>
+        <div class="btns"><button class="primary" id="pnew">Nuevos ejercicios</button><button id="pcheck">Calificar</button></div>
+        <div id="pq" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div id="pres" hidden style="display:flex;flex-direction:column;gap:10px">
+          <div class="row" style="align-items:center"><div class="score" id="pscore">0/10</div><div class="muted small" id="pcode" style="flex:3 1 200px"></div></div>
+          <div class="btns"><button class="primary" id="swa">Enviar por WhatsApp</button><button id="smail">Correo</button><button id="scopy">Copiar resultado</button><button id="sdl">Descargar .txt</button></div>
+          <div class="small muted" id="smailto" hidden></div>
+          <div class="toast" id="ptoast" role="status"></div>
+        </div>
+      </section>
+
+      <!-- LOTE -->
+      <section class="panel" id="v-lote" hidden>
+        <h2>Revisar una lista</h2>
+        <p class="muted small">Pega varias matrículas, una por línea (por ejemplo las que encontraste en fotos de terminales de Cartagena o Santa Marta). La app revisa cada una.</p>
+        <label for="lin">Matrículas</label>
+        <textarea id="lin" spellcheck="false">CSQU3054383
+CSQU3054384
+LLSU 202611 2
+LLSU-402612-?
+ABC1234567
+LLSZ 100001 7</textarea>
+        <div class="btns"><button class="primary" id="lgo">Revisar</button><button id="lcopy">Copiar tabla</button><button id="lcsv">Descargar CSV</button></div>
+        <div class="scroll"><table id="lt"></table></div>
+        <div class="toast" id="ltoast" role="status"></div>
+      </section>
+
+      <!-- TAMAÑO -->
+      <section class="panel" id="v-tamano" hidden>
+        <h2>Código de tamaño y tipo</h2>
+        <p class="muted small">Va debajo de la matrícula. Son 4 caracteres: longitud, altura y ancho, y dos del tipo de contenedor (ISO 6346:1995).</p>
+        <div class="row"><div style="flex:0 1 200px"><label for="tin">Código</label><input id="tin" class="code" value="45R1" maxlength="4" autocomplete="off" spellcheck="false"></div>
+          <div class="btns" id="tquick"></div></div>
+        <div id="tout" style="display:flex;flex-direction:column;gap:14px"></div>
+      </section>
+    </main>
+
+    <aside class="panel ref" aria-label="Referencia">
+      <h3>Valor de las letras</h3>
+      <div class="letters" id="letters"></div>
+      <p class="small muted" style="margin:0">Se saltan 11, 22 y 33 porque son múltiplos de 11, el número que se usa para dividir.</p>
+      <h3>Pasos del cálculo</h3>
+      <ul>
+        <li>Cambia cada letra por su valor; los dígitos valen lo mismo.</li>
+        <li>Multiplica cada valor por su peso: 1, 2, 4, 8 … 512 (2<sup>0</sup> a 2<sup>9</sup>).</li>
+        <li>Suma los 10 productos.</li>
+        <li>Divide la suma entre 11 y toma el residuo.</li>
+        <li>El residuo es el dígito de control. Si da 10, el dígito es 0 (la norma recomienda no usar esas series).</li>
+      </ul>
+      <h3>Estructura</h3>
+      <ul>
+        <li><b>3 letras</b>: código del propietario, registrado ante el BIC.</li>
+        <li><b>1 letra</b>: categoría (U, J o Z).</li>
+        <li><b>6 dígitos</b>: número de serie.</li>
+        <li><b>1 dígito</b>: control, enmarcado en la puerta.</li>
+      </ul>
+      <p class="small muted" style="margin:0">Esta app comprueba la estructura y el dígito. No consulta si el prefijo está registrado: eso se verifica en el registro del BIC.</p>
+    </aside>
+  </div>
+
+  <footer><a href="../../">← Portal LogiLab</a><span><b>LogiLab SENA</b> · Centro Industrial y de Energías Alternativas · Regional Guajira</span><span>By Carlos Barrios · Instructor</span></footer>
+</div>
+
+<script>
+/* ===== Núcleo ISO 6346 ===== */
+const LV={};(()=>{let n=10;for(const c of'ABCDEFGHIJKLMNOPQRSTUVWXYZ'){if(n%11===0)n++;LV[c]=n++;}})();
+const CATS={U:'Contenedor de carga',J:'Equipo desmontable del contenedor (ej. unidad de frío, genset)',Z:'Remolque o chasis'};
+const val=c=>/[A-Z]/.test(c)?LV[c]:+c;
+function steps(ten){const r=[...ten].map((c,i)=>({c,v:val(c),w:2**i,p:val(c)*2**i}));const sum=r.reduce((a,x)=>a+x.p,0),rem=sum%11;return{r,sum,rem,cd:rem%10};}
+const clean=s=>(s||'').toUpperCase().replace(/[\s\-\.\/]/g,'');
+function analyze(raw){const s=clean(raw),errs=[],tips=[];
+  if(/[O]/.test(s.slice(4))) tips.push('En la parte numérica hay una letra O: posiblemente es un cero (0).');
+  if(/[0-9]/.test(s.slice(0,4))&&s.length>=4) tips.push('En las cuatro primeras posiciones hay un número: deben ser letras (¿un 0 por O o un 1 por I?).');
+  if(s.length!==11) errs.push(`Tiene ${s.length} caracteres; deben ser 11 (4 letras, 6 dígitos y 1 dígito de control).`);
+  const own=s.slice(0,3),cat=s[3],ser=s.slice(4,10),cd=s[10];
+  if(!/^[A-Z]{3}$/.test(own)) errs.push('El código del propietario deben ser 3 letras.');
+  if(cat&&!CATS[cat]) errs.push(`La cuarta letra es "${cat}"; la categoría solo puede ser U, J o Z.`);
+  if(!/^\d{6}$/.test(ser)) errs.push('El número de serie deben ser 6 dígitos.');
+  let calc=null;if(/^[A-Z]{4}\d{6}/.test(s)) calc=steps(s.slice(0,10));
+  const cdOk=calc&&/^\d$/.test(cd||'')&&+cd===calc.cd;
+  if(calc&&cd!==undefined&&!/^\d$/.test(cd)) errs.push('El dígito de control debe ser un número de 0 a 9.');
+  return{s,own,cat,ser,cd,errs,tips,calc,cdOk,valid:!errs.length&&cdOk};}
+const fmt=s=>s.length>=10?`${s.slice(0,4)} ${s.slice(4,10)} ${s.slice(10)}`.trim():s;
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function randSerial(){return String(Math.floor(Math.random()*1e6)).padStart(6,'0');}
+function randOwner(){const A='ABCDEFGHIJKLMNOPQRSTUVWXYZ';return [0,1,2].map(()=>A[Math.floor(Math.random()*26)]).join('');}
+function makeCode(own,cat,ser){const st=steps(own+cat+ser);return own+cat+ser+st.cd;}
+
+/* ===== Tamaño y tipo (ISO 6346:1995) ===== */
+const LEN={'1':'10 pies (2 991 mm)','2':'20 pies (6 058 mm)','3':'30 pies (9 125 mm)','4':'40 pies (12 192 mm)','L':'45 pies (13 716 mm)'};
+const HW={'0':'8′0″ de alto (2 438 mm), 8 pies de ancho','2':'8′6″ de alto (2 591 mm), 8 pies de ancho','4':'9′0″ de alto (2 743 mm), 8 pies de ancho','5':'9′6″ de alto (2 896 mm), 8 pies de ancho · High Cube','6':'Más de 9′6″ de alto, 8 pies de ancho','8':'4′3″ de alto (1 295 mm), media altura','9':'4′ o menos de alto (≤ 1 219 mm)'};
+const GRP={G:'Uso general (carga seca)',V:'Ventilado',B:'Granel seco',S:'Carga específica (ganado, vehículos, peces vivos)',R:'Refrigerado (con equipo de frío)',H:'Isotérmico o con equipo de frío/calor removible',U:'Techo abierto (Open Top)',P:'Plataforma (Flat Rack)',T:'Tanque',A:'Contenedor de transporte aéreo/superficie'};
+const TYP={G0:'Aberturas en uno o ambos extremos',G1:'Respiraderos pasivos en la parte superior',G2:'Aberturas en extremos y aberturas completas en uno o ambos costados',G3:'Aberturas en extremos y aberturas parciales en los costados',
+ V0:'Ventilación natural, respiraderos abajo y arriba',V2:'Ventilación mecánica interna',V4:'Ventilación mecánica externa',
+ B0:'Granel cerrado',B1:'Granel hermético',B3:'Descarga horizontal, presión de prueba 150 kPa',B4:'Descarga horizontal, 265 kPa',B5:'Descarga por volteo, 150 kPa',B6:'Descarga por volteo, 265 kPa',
+ S0:'Ganado',S1:'Automóviles',S2:'Peces vivos',
+ R0:'Refrigeración mecánica',R1:'Refrigeración mecánica y calefacción',R2:'Refrigeración mecánica autónoma (con generador propio)',R3:'Refrigeración y calefacción autónomas',
+ H0:'Frío o calor con equipo removible externo',H1:'Frío o calor con equipo removible interno',H2:'Frío o calor con equipo removible externo (variante)',H5:'Aislado térmicamente',H6:'Aislado térmicamente (mayor aislamiento)',
+ U0:'Aberturas en uno o ambos extremos',U1:'Igual a U0 con travesaños superiores removibles en los marcos',U2:'Aberturas en extremos y en uno o ambos costados',U3:'Igual a U2 con travesaños removibles',U4:'Aberturas en extremos y parcial en un costado',U5:'Paredes laterales y de extremo fijas, sin puertas',
+ P0:'Plataforma plana',P1:'Dos testeros fijos completos',P2:'Postes fijos, independientes o con travesaño removible',P3:'Testeros plegables completos',P4:'Postes plegables',P5:'Sin techo ni extremos (esqueleto)',
+ T0:'Líquidos no peligrosos, presión mínima 45 kPa',T1:'Líquidos no peligrosos, 150 kPa',T2:'Líquidos no peligrosos, 265 kPa',T3:'Líquidos peligrosos, 150 kPa',T4:'Líquidos peligrosos, 265 kPa',T5:'Líquidos peligrosos, 400 kPa',T6:'Líquidos peligrosos, 600 kPa',T7:'Gases, 910 kPa',T8:'Gases, 2 200 kPa',T9:'Gases, presión por definir'};
+const COMMON=[['22G1','Estándar 20′'],['42G1','Estándar 40′'],['45G1','High Cube 40′'],['45R1','Reefer 40′ HC'],['22U1','Open Top 20′'],['42P3','Flat Rack 40′'],['22T6','Tanque ISO 20′'],['L5G1','High Cube 45′']];
+function decodeST(raw){const s=clean(raw),o=[];if(s.length!==4)return{ok:false,msg:'El código de tamaño y tipo tiene 4 caracteres, por ejemplo 22G1.'};
+  const L=LEN[s[0]],H=HW[s[1]],G=GRP[s[2]],T=TYP[s.slice(2)];
+  return{ok:!!(L&&H&&G),s,parts:[[s[0],'Longitud',L||'Longitud no incluida en esta tabla resumida'],[s[1],'Alto y ancho',H||'Altura o ancho especial: consultar la tabla completa de la norma'],[s.slice(2),'Tipo',(G||'Grupo desconocido')+(T?' · '+T:'')]]};}
+
+/* ===== Vistas ===== */
+const $=id=>document.getElementById(id);
+function doorHTML(code,st,ok){const c=clean(code);const own=esc(c.slice(0,4)),ser=esc(c.slice(4,10)),cd=esc(c[10]||'?');
+  return `<div class="door" aria-label="Marcaje en la puerta: ${esc(fmt(c))} ${esc(st||'')}"><div class="tag">MARCAJE EN PUERTA</div><div class="stencil"><span>${own}</span><span>${ser}</span><span class="cd${ok?'':' bad'}">${cd}</span></div>${st?`<div class="st">${esc(clean(st))}</div>`:''}</div>`;}
+function partsHTML(a){return `<div class="parts">
+  <div class="part"><span>Propietario</span><b>${esc(a.own||'—')}</b><p>Prefijo de la empresa dueña, registrado ante el BIC.</p></div>
+  <div class="part"><span>Categoría</span><b>${esc(a.cat||'—')}</b><p>${esc(CATS[a.cat]||'Debe ser U, J o Z')}</p></div>
+  <div class="part"><span>Número de serie</span><b>${esc(a.ser||'—')}</b><p>Identifica el contenedor dentro de la flota del propietario.</p></div>
+  <div class="part"><span>Dígito de control</span><b>${esc(a.cd??'—')}</b><p>${a.calc?`Calculado: ${a.calc.cd}`:'Se calcula con los 10 caracteres anteriores.'}</p></div></div>`;}
+function calcHTML(st,ten){return `<div class="scroll"><table><thead><tr><th class="l">Posición</th>${st.r.map((_,i)=>`<th>${i+1}</th>`).join('')}<th></th></tr></thead><tbody>
+  <tr><td class="l">Carácter</td>${st.r.map(x=>`<td><b>${x.c}</b></td>`).join('')}<td></td></tr>
+  <tr><td class="l">Valor</td>${st.r.map(x=>`<td>${x.v}</td>`).join('')}<td></td></tr>
+  <tr><td class="l">× Peso</td>${st.r.map(x=>`<td>${x.w}</td>`).join('')}<td></td></tr>
+  <tr><td class="l">= Producto</td>${st.r.map(x=>`<td>${x.p}</td>`).join('')}<td class="l"><b>Σ ${st.sum}</b></td></tr></tbody></table></div>
+  <div class="calc"><div>Suma = <b>${st.sum}</b></div><div>${st.sum} ÷ 11 = ${Math.floor(st.sum/11)}, residuo <b>${st.rem}</b> &nbsp;(${Math.floor(st.sum/11)} × 11 = ${Math.floor(st.sum/11)*11}; ${st.sum} − ${Math.floor(st.sum/11)*11} = ${st.rem})</div>
+  <div>Dígito de control = <b>${st.cd}</b>${st.rem===10?' (el residuo 10 se escribe 0)':''}</div></div>`;}
+function verdict(kind,title,body){return `<div class="verdict ${kind}"><span class="ic">${kind==='ok'?'✓':kind==='bad'?'✗':'!'}</span><div>${esc(title)}${body?`<span>${body}</span>`:''}</div></div>`;}
+
+function runValidate(){const a=analyze($('vin').value),st=$('vst').value.trim();let h='';
+  if(a.valid) h+=verdict('ok','Matrícula válida',`El dígito de control ${a.cd} coincide con el cálculo.${a.calc.rem===10?' Ojo: esta serie da residuo 10; la norma recomienda no usarla.':''}`);
+  else if(a.calc&&!a.errs.length) h+=verdict('bad','Dígito de control incorrecto',`La matrícula trae ${esc(a.cd??'(nada)')}, pero el cálculo da <b>${a.calc.cd}</b>. La matrícula correcta sería <b>${esc(fmt(a.s.slice(0,10)+a.calc.cd))}</b>, o hay un error al copiar otro carácter.`);
+  else h+=verdict('bad','La matrícula no cumple la estructura',a.errs.map(esc).join('<br>'));
+  a.tips.forEach(t=>h+=verdict('warn','Revisa este carácter',esc(t)));
+  h+=doorHTML(a.s,st,a.valid)+partsHTML(a);
+  if(a.calc) h+=`<h3>Cálculo paso a paso</h3>`+calcHTML(a.calc);
+  if(st){const d=decodeST(st);h+=`<h3>Tamaño y tipo ${esc(clean(st))}</h3>`+(d.parts?stHTML(d):verdict('warn',d.msg));}
+  $('vout').innerHTML=h;}
+$('vgo').onclick=runValidate;$('vin').addEventListener('keydown',e=>{if(e.key==='Enter')runValidate();});
+$('vrand').onclick=()=>{const good=Math.random()<.6,own=randOwner(),c=makeCode(own,'U',randSerial());const cd=good?c[10]:String((+c[10]+1+Math.floor(Math.random()*8))%10);
+  $('vin').value=fmt(c.slice(0,10)+cd);$('vst').value=COMMON[Math.floor(Math.random()*COMMON.length)][0];runValidate();};
+
+function stHTML(d){return `<div class="parts three">${d.parts.map(p=>`<div class="part"><span>${esc(p[1])}</span><b>${esc(p[0])}</b><p>${esc(p[2])}</p></div>`).join('')}</div>`;}
+
+$('bst').innerHTML=COMMON.map(c=>`<option value="${c[0]}">${c[0]} · ${c[1]}</option>`).join('');
+function runBuild(){const own=clean($('bown').value).replace(/[^A-Z]/g,'').slice(0,3),cat=$('bcat').value,ser=clean($('bser').value).replace(/\D/g,'');let h='';
+  if(own.length!==3){$('bout').innerHTML=verdict('bad','El propietario deben ser 3 letras','Por ejemplo MSC, MSK, CMA o una sigla inventada para practicar.');return;}
+  if(ser.length!==6){$('bout').innerHTML=verdict('bad','El número de serie deben ser 6 dígitos','Completa con ceros a la izquierda si hace falta, por ejemplo 000245.');return;}
+  const st=steps(own+cat+ser),code=own+cat+ser+st.cd;$('bout').dataset.code=fmt(code);
+  h+=st.rem===10?verdict('warn',`Matrícula: ${fmt(code)}`,'Esta serie da residuo 10 y el dígito queda en 0. La norma recomienda no usarla porque 0 también sale con residuo 0; prueba otra serie.'):verdict('ok',`Matrícula: ${fmt(code)}`,`Dígito de control calculado: ${st.cd}.`);
+  h+=doorHTML(code,$('bst').value,true)+`<h3>Cálculo paso a paso</h3>`+calcHTML(st)+`<h3>Tamaño y tipo ${esc($('bst').value)}</h3>`+stHTML(decodeST($('bst').value));
+  $('bout').innerHTML=h;}
+$('bgo').onclick=runBuild;['bown','bser'].forEach(i=>$(i).addEventListener('keydown',e=>{if(e.key==='Enter')runBuild();}));$('bcat').onchange=runBuild;$('bst').onchange=runBuild;
+$('bnext').onclick=()=>{const s=clean($('bser').value).replace(/\D/g,'')||'0';$('bser').value=String((+s+1)%1e6).padStart(6,'0');runBuild();};
+$('bcopy').onclick=()=>copy($('bout').dataset.code||'',null,$('bcopy'));
+
+/* ===== Práctica ===== */
+let QS=[];
+function newQuiz(){QS=[];const kinds=['valid','valid','valid','valid','valid','calc','calc','calc','calc','calc'].sort(()=>Math.random()-.5);
+  kinds.forEach(k=>{const own=randOwner(),cat=Math.random()<.85?'U':(Math.random()<.5?'J':'Z');let ser=randSerial();while(steps(own+cat+ser).rem===10)ser=randSerial();
+    const code=makeCode(own,cat,ser);
+    if(k==='valid'){const good=Math.random()<.5;const shown=good?code:code.slice(0,10)+String((+code[10]+1+Math.floor(Math.random()*8))%10);QS.push({k,shown,ans:good,correct:code[10]});}
+    else QS.push({k,shown:code.slice(0,10),ans:+code[10]});});
+  $('pq').innerHTML=QS.map((q,i)=>`<div class="q" id="q${i}"><div class="qh"><span class="chip">${i+1}. ${q.k==='valid'?'¿Es válida?':'Calcula el dígito'}</span><span class="qc">${esc(q.k==='valid'?fmt(q.shown):fmt(q.shown)+' ?')}</span></div>
+    ${q.k==='valid'?`<div class="opts"><button data-q="${i}" data-v="1" aria-pressed="false">Válida</button><button data-q="${i}" data-v="0" aria-pressed="false">No válida</button></div>`:`<div class="row" style="align-items:center"><label for="qa${i}" style="margin:0">Dígito</label><input id="qa${i}" inputmode="numeric" maxlength="1"></div>`}
+    <div class="fb" hidden></div></div>`).join('');
+  $('pq').querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{const i=+b.dataset.q;QS[i].pick=b.dataset.v==='1';b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));});
+  $('pres').hidden=true;}
+function gradeQuiz(){let ok=0;QS.forEach((q,i)=>{const el=$('q'+i),fb=el.querySelector('.fb');let right,msg;
+   if(q.k==='valid'){right=q.pick===q.ans;msg=q.pick===undefined?'Sin responder.':'';msg+=q.ans?` Es válida: el dígito ${q.correct} coincide.`:` No es válida: el dígito correcto es ${q.correct}.`;}
+   else{const v=$('qa'+i).value.trim();q.pick=v;right=v!==''&&+v===q.ans;msg=(v===''?'Sin responder. ':'')+`El dígito correcto es ${q.ans} (suma ${steps(q.shown).sum}, residuo ${steps(q.shown).rem}).`;}
+   q.right=right;if(right)ok++;fb.hidden=false;fb.innerHTML=`<span class="chip ${right?'ok':'bad'}">${right?'Correcta':'Incorrecta'}</span> ${esc(msg)}`;});
+  const name=$('pname').value.trim(),doc=$('pdoc').value.trim(),grp=$('pgrp').value.trim();
+  $('pscore').textContent=`${ok}/10`;$('pres').hidden=false;
+  const nota=(ok/2).toFixed(1);$('pcode').textContent=`Nota sugerida: ${nota} sobre 5,0${name?'':' · Escribe tu nombre antes de enviar.'}`;
+  $('pres').dataset.txt=report(ok,nota,name,doc,grp);}
+function report(ok,nota,name,doc,grp){const d=new Date();return ['PRÁCTICA ISO 6346 · LogiLab SENA',`Aprendiz: ${name||'(sin nombre)'}`,`Documento: ${doc||'-'}`,`Ficha/grupo: ${grp||'-'}`,`Fecha: ${d.toLocaleString('es-CO')}`,`Resultado: ${ok}/10 · Nota sugerida ${nota}`,'',
+  ...QS.map((q,i)=>`${i+1}. ${q.k==='valid'?'¿Válida?':'Dígito'} ${fmt(q.shown)} → respondió ${q.k==='valid'?(q.pick===undefined?'-':q.pick?'válida':'no válida'):(q.pick||'-')} · ${q.right?'OK':'X'}`)].join('\n');}
+$('pnew').onclick=newQuiz;$('pcheck').onclick=gradeQuiz;
+$('swa').onclick=()=>{const t=$('pres').dataset.txt||'';open('https://wa.me/?text='+encodeURIComponent(t),'_blank');};
+$('smail').onclick=()=>{const t=$('pres').dataset.txt||'';const href='mailto:?subject='+encodeURIComponent('Práctica ISO 6346 · '+($('pname').value||'aprendiz'))+'&body='+encodeURIComponent(t);
+  const m=$('smailto');m.hidden=false;m.innerHTML=`Si no se abrió tu correo, copia el resultado y pégalo en un correo a tu instructor. <a href="${esc(href)}">Abrir correo</a>`;location.href=href;};
+$('scopy').onclick=()=>copy($('pres').dataset.txt||'',$('ptoast'));
+$('sdl').onclick=()=>download('practica-iso6346-'+(clean($('pname').value)||'aprendiz')+'.txt',$('pres').dataset.txt||'','text/plain',$('ptoast'));
+
+/* ===== Lote ===== */
+let LROWS=[];
+function runLote(){LROWS=$('lin').value.split(/\n/).map(x=>x.trim()).filter(Boolean).map(line=>{const a=analyze(line);
+   const estado=a.valid?'Válida':(a.calc&&!a.errs.length)?'Dígito incorrecto':'Estructura inválida';
+   const det=a.valid?'':(a.calc&&!a.errs.length)?`Debería ser ${a.calc.cd}`:a.errs[0]||'';return{line,code:a.s,estado,det,cd:a.calc?a.calc.cd:'',a};});
+  $('lt').innerHTML=`<thead><tr><th class="l">Como se escribió</th><th class="l">Propietario</th><th>Cat.</th><th>Serie</th><th>Dígito</th><th>Calculado</th><th class="l">Resultado</th></tr></thead><tbody>${LROWS.map(r=>`<tr><td class="l">${esc(r.line)}</td><td class="l">${esc(r.a.own)}</td><td>${esc(r.a.cat||'')}</td><td>${esc(r.a.ser)}</td><td>${esc(r.a.cd||'')}</td><td>${r.cd}</td><td class="l"><span class="chip ${r.estado==='Válida'?'ok':'bad'}">${r.estado}</span> <span class="small">${esc(r.det)}</span></td></tr>`).join('')}</tbody>
+  <tfoot><tr><td class="l" colspan="7">${LROWS.filter(r=>r.estado==='Válida').length} de ${LROWS.length} válidas</td></tr></tfoot>`;}
+const loteTxt=sep=>[['Matricula','Propietario','Categoria','Serie','Digito','Calculado','Resultado','Detalle'],...LROWS.map(r=>[r.line,r.a.own,r.a.cat||'',r.a.ser,r.a.cd||'',r.cd,r.estado,r.det])].map(r=>r.map(x=>sep===','?`"${String(x).replace(/"/g,'""')}"`:x).join(sep)).join('\n');
+$('lgo').onclick=runLote;$('lcopy').onclick=()=>copy(loteTxt('\t'),$('ltoast'));$('lcsv').onclick=()=>download('matriculas-iso6346.csv','﻿'+loteTxt(','),'text/csv',$('ltoast'));
+
+/* ===== Tamaño ===== */
+$('tquick').innerHTML=COMMON.map(c=>`<button data-st="${c[0]}" title="${c[1]}">${c[0]}</button>`).join('');
+$('tquick').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('tin').value=b.dataset.st;runST();});
+function runST(){const d=decodeST($('tin').value);const name=(COMMON.find(c=>c[0]===d.s)||[])[1];
+  $('tout').innerHTML=d.parts?(d.ok?verdict('ok',`${d.s}${name?' · '+name:''}`,''):verdict('warn',`${d.s}: algún carácter no está en esta tabla resumida`,'Revisa la tabla completa de la norma ISO 6346.'))+stHTML(d):verdict('warn',d.msg);}
+$('tin').addEventListener('input',runST);
+
+/* ===== Utilidades ===== */
+function copy(t,toast,btn){const done=()=>{if(toast)toast.textContent='Copiado al portapapeles.';if(btn){const o=btn.textContent;btn.textContent='Copiado';setTimeout(()=>btn.textContent=o,1500);}};
+  try{navigator.clipboard.writeText(t).then(done,()=>fallback());}catch(e){fallback();}
+  function fallback(){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){if(toast)toast.textContent='Selecciona el texto y cópialo a mano.';}ta.remove();}}
+function download(name,t,type,toast){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:type+';charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();a.remove();if(toast)toast.textContent='Descarga iniciada. Si no se descargó, usa Copiar.';}catch(e){if(toast)toast.textContent='No se pudo descargar aquí; usa Copiar.';}}
+$('letters').innerHTML=Object.entries(LV).map(([k,v])=>`<div><b>${k}</b>${v}</div>`).join('');
+
+/* ===== Rutas por pestaña ===== */
+const VIEWS=['validar','construir','practica','lote','tamano'];
+function route(){const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'validar';
+  VIEWS.forEach(x=>$('v-'+x).hidden=x!==v);document.querySelectorAll('nav.tabs a').forEach(a=>{if(a.getAttribute('href')==='#'+v)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});}
+addEventListener('hashchange',route);route();
+runValidate();runBuild();newQuiz();runLote();runST();
+</script>
+
+</body></html>
