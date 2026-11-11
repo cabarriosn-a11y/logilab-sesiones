@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Juego del agua · Efecto látigo · LogiLab SENA</title>
+<style>
+:root{--g:#39A900;--gd:#2b7a00;--dk:#14261a;--bg:#f3f5f7;--ln:#dde3ea;--bl:#1a73e8;--blt:#e3effd;--red:#d40000}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:#1d2733}
+button{font:inherit}
+.top{display:flex;justify-content:space-around;align-items:center;background:#fff;border:1px solid var(--ln);border-radius:12px;margin:10px;padding:12px 8px 0;position:relative;overflow:hidden}
+.top div{padding-bottom:12px;font-size:1rem}
+.prog{position:absolute;left:0;bottom:0;height:5px;background:var(--bl);transition:width .4s}
+.prog-bg{position:absolute;left:0;right:0;bottom:0;height:5px;background:#e6ebf0}
+.wrap{display:grid;grid-template-columns:230px 1fr;gap:12px;padding:0 10px 10px}
+@media(max-width:820px){.wrap{grid-template-columns:1fr}}
+.side{display:flex;flex-direction:column;gap:12px}
+.panel{background:#fff;border:1px solid var(--ln);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+@media(max-width:820px){.side{flex-direction:row;flex-wrap:wrap}.panel{flex:1;min-width:240px}}
+.panel .ttl{text-align:center;font-style:italic;color:#6b7785;font-size:.9rem}
+.sbtn{background:var(--blt);border:none;border-radius:999px;padding:10px 14px;text-align:left;cursor:pointer;color:#1d2733}
+.sbtn:disabled{opacity:.45;cursor:not-allowed}
+.sbtn:hover:not(:disabled){background:#cfe2fb}
+.tog{display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px}
+.tog .sw{width:46px;height:26px;border-radius:999px;background:#c9d0d8;position:relative;flex:0 0 auto;transition:.2s}
+.tog .sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.tog.on .sw{background:var(--bl)}.tog.on .sw::after{left:23px}
+.board{position:relative;border-radius:18px;overflow:hidden;box-shadow:0 10px 0 #a77d4a,0 14px 24px rgba(0,0,0,.18);background:#c5e3a5;aspect-ratio:1000/680;min-height:420px}
+.board svg.map{position:absolute;inset:0;width:100%;height:100%}
+.drive{animation:drive 1.8s cubic-bezier(.3,.7,.4,1) both;animation-delay:var(--td,0s)}
+.bin{animation:bin .3s ease-out both}
+@keyframes bin{from{opacity:0;transform:translateY(-26px)}to{opacity:1;transform:none}}
+.bout{animation:bout .35s ease-in forwards}
+.bin.bout{animation:bin .3s ease-out both,bout .35s ease-in forwards}
+@keyframes bout{from{opacity:1;transform:none}to{opacity:0;transform:translate(0,-30px)}}
+@keyframes drive{from{transform:translate(var(--dx),var(--dy))}to{transform:translate(0,0)}}
+.pop{animation:pop .4s ease-out both;animation-delay:calc(var(--td,0s) + 1.8s)}
+@keyframes pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+.fast{--dur:.3s}
+@media(prefers-reduced-motion:reduce){.drive,.pop,.bin,.bout{animation:none}.bout{opacity:0}}
+.card{position:absolute;width:37%;background:rgba(255,255,255,.97);border-radius:22px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 16px 12px;text-align:center}
+.card h3{margin:0 0 6px;font-size:1.25rem;font-weight:600;display:flex;justify-content:center;align-items:baseline;gap:6px;position:relative;border-bottom:1px solid #eef1f4;padding-bottom:6px}
+.card h3 small{font-size:.85rem;color:#5b6673;font-weight:400}
+.card h3 .ic{position:absolute;right:0;top:2px;font-size:.9rem;color:#6b7785}
+.c0{left:1.2%;top:20%}.c1{right:1.2%;top:20%}.c2{left:1.2%;bottom:2%}.c3{right:1.2%;bottom:2%}
+.kv{display:flex;justify-content:center;gap:28px;font-size:1.25rem;margin:4px 0}
+.kv b{font-weight:800}.cost{color:var(--red);font-weight:800}
+.tx{color:var(--bl);font-style:italic;font-weight:700;font-size:.9rem;margin:4px 0}
+.tr{display:flex;justify-content:space-between;font-size:1rem;margin:2px 4px}
+.rv{color:#1e8e3e;font-weight:800}.dm{color:var(--red);font-weight:800}.en{color:var(--bl);font-weight:800}
+.lock{color:#6b7785;font-size:.95rem;padding:10px 0}
+.wip{display:flex;align-items:center;gap:8px;margin:8px 0 4px}
+.wipbar{flex:1;height:30px;border-radius:999px;background:repeating-linear-gradient(90deg,#c8f0dd 0 34px,#b5e9d1 34px 36px);position:relative}
+.wipbar .box{position:absolute;top:-8px;transform:translateX(-50%);text-align:center;font-weight:800;font-size:1.05rem}
+.wipbar .box span{display:block;font-size:.8rem;font-weight:600;color:#3b4652;margin-top:8px}
+.step{display:flex;align-items:center;gap:8px;margin-top:22px;justify-content:center}
+.step .pm{width:52px;height:46px;border:none;background:var(--bl);color:#fff;font-size:1.6rem;cursor:pointer}
+.step .m{border-radius:999px 0 0 999px}.step .p{border-radius:0 999px 999px 0}
+.step input{width:90px;height:46px;border:1px solid #c7d0da;text-align:center;font-size:1.2rem;margin:0 -8px}
+.step .go{background:var(--bl);color:#fff;border:none;border-radius:999px;height:46px;padding:0 20px;font-size:1.1rem;cursor:pointer;margin-left:8px}
+.hint{font-size:.82rem;color:#6b7785;font-style:italic;margin-top:6px}
+.done{color:#1e8e3e;font-weight:700}
+.over{position:absolute;inset:0;background:rgba(20,38,26,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:20px;z-index:5}
+.over .who{font-size:2.2rem;font-weight:900;color:#9be36a;margin:8px 0}
+.bigbtn{background:var(--g);color:#0f1d12;border:none;border-radius:12px;padding:14px 22px;font-weight:800;font-size:1.1rem;cursor:pointer}
+@media(max-width:820px){.board{aspect-ratio:auto;min-height:0;padding:calc((100vw - 20px)*0.68) 8px 8px;display:flex;flex-direction:column;gap:10px;order:-1}.board svg.map{height:calc((100vw - 20px)*0.68);bottom:auto}.card{position:static;width:100%}.side{order:2}}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:20;padding:14px}
+.modal.on{display:flex}
+.mbox{background:#fff;border-radius:14px;max-width:820px;width:100%;max-height:88vh;overflow:auto;padding:18px}
+.mbox h2{margin:0 0 10px}
+.x{float:right;border:none;background:#eef1f4;border-radius:999px;width:34px;height:34px;cursor:pointer;font-size:1.1rem}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{padding:6px;border-bottom:1px solid var(--ln);text-align:right}th:first-child,td:first-child{text-align:left}th{background:#1d2733;color:#fff}
+.setup{max-width:860px;margin:10px auto;padding:0 10px}
+.sc{background:#fff;border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:12px}
+.sc h2{margin:0 0 8px}
+.sc label{display:block;font-weight:600;margin:8px 0 4px}
+.sc input[type=text],.sc select{width:100%;padding:10px;border:1px solid #c7d0da;border-radius:8px;font:inherit}
+.roles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}@media(max-width:640px){.roles{grid-template-columns:1fr 1fr}}
+.role{border:1px solid var(--ln);border-radius:10px;padding:10px}
+.chk{display:flex!important;gap:6px;align-items:center;font-weight:400!important}
+.brand{background:#14261a;color:#f6f8f2;padding:12px 16px;border-left:8px solid var(--g)}
+.brand small{color:#7fd34a;font-weight:700}.brand h1{margin:2px 0 0;font-size:1.2rem}
+.legend span{display:inline-block;margin-right:12px;font-size:.88rem;font-weight:700}
+.note{background:#fff7e8;border-left:4px solid #b35f00;padding:10px 12px;border-radius:6px;font-size:.92rem}
+.btn{border:none;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;margin:4px 4px 4px 0;display:inline-block;text-decoration:none;font-size:1rem}
+.bg{background:var(--g);color:#0f1d12}.bd{background:#14261a;color:#fff}.bo{background:#fff;border:1px solid #14261a;color:#14261a}
+footer{text-align:center;color:#6b7785;font-size:.85rem;padding:14px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#14261a;color:#fff;padding:10px 16px;border-radius:999px;display:none;z-index:30}
+</style>
+</head>
+<body>
+<div class="brand"><a href="../../" style="color:#9be36a;font-weight:700;text-decoration:none;font-size:.9rem">← Portal LogiLab</a><br><small>LOGILAB SENA · AGUA WAYÚU PURA</small><h1>Juego del agua: el efecto látigo</h1></div>
+<div id="app"></div>
+<div class="modal" id="modal"><div class="mbox"><button class="x" id="mx" aria-label="Cerrar">✕</button><div id="mc"></div></div></div>
+<footer>Versión del juego de la cerveza (MIT) adaptada a Agua Wayúu Pura · LogiLab SENA · By Carlos Barrios · Instructor · <a href="../../">Portal</a></footer>
+<div id="toast"></div>
+<script>
+const ROLES=['Tienda','Distribuidor','Centro de distribución','Planta'];
+const SUP=['Distribuidor','Centro de distribución','Planta','(producción propia)'];
+const CLI=['Consumidor','Tienda','Distribuidor','Centro de distribución'];
+const C_INV=500,C_BACK=1000,KEY='logilab_juego_agua_v2';
+let G=null,reveal=null,fullVis=false,autoRun=null;
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const money=n=>'$'+Math.round(n).toLocaleString('es-CO');
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}}
+function modal(html){$('#mc').innerHTML=html;$('#modal').classList.add('on')}
+$('#mx').onclick=()=>$('#modal').classList.remove('on');
+$('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').classList.remove('on')};
+
+/* ---------- motor del juego ---------- */
+function demandFn(p,t,seed){
+ if(p==='estable')return 4;
+ if(p==='aleatorio'){const x=Math.sin((t+1)*12.9898+seed*78.233)*43758.5453;return 3+Math.floor((x-Math.floor(x))*4)}
+ return t<4?4:8;
+}
+function startWeek(){
+ const t=G.t;
+ for(let i=0;i<4;i++){
+  const rec=G.arr[i][t]||0;G.stock[i]+=rec;
+  const d=i===0?demandFn(G.pattern,t,G.seed):(t===0?4:G.orders[i-1][t-1]);
+  if(i===0)G.cons[t]=d;
+  const need=d+G.back[i];const s=Math.min(G.stock[i],need);
+  G.stock[i]-=s;G.back[i]=need-s;
+  if(i>0){G.arr[i-1][t+1]=(G.arr[i-1][t+1]||0)+s}
+  const wc=C_INV*G.stock[i]+C_BACK*G.back[i];G.cost[i]+=wc;
+  G.dem[i][t]=d;G.ship[i][t]=s;G.recv[i][t]=rec;G.stk[i][t]=G.stock[i];G.bk[i][t]=G.back[i];G.wc[i][t]=wc;
+ }
+ G.turnIdx=0;
+}
+function botOrder(i){
+ const t=G.t,d=G.dem[i][t];
+ const pipe=(G.arr[i][t+1]||0)+(G.arr[i][t+2]||0);
+ const pos=G.stock[i]-G.back[i]+pipe;
+ return Math.max(0,Math.round(d+0.5*(16-pos)));
+}
+function place(i,q){const t=G.t;G.orders[i][t]=q;if(i===3)G.arr[3][t+2]=(G.arr[3][t+2]||0)+q}
+function nextHuman(from){for(let i=from;i<4;i++)if(G.human[i])return i;return -1}
+function advance(){ // coloca pedidos de bots pendientes y pasa de semana; devuelve true si terminó
+ for(let j=0;j<4;j++)if(G.orders[j][G.t]===undefined)place(j,botOrder(j));
+ G.t++;
+ if(G.t>=G.weeks){G.over=true;save();return true}
+ startWeek();save();return false;
+}
+function stdev(a){if(!a.length)return 0;const m=a.reduce((x,y)=>x+y,0)/a.length;return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/a.length)}
+
+/* ---------- configuración ---------- */
+function setup(){
+ const prev=load();
+ app.innerHTML=`<div class="setup">
+ ${prev&&!prev.over?`<div class="sc note">Hay una partida en curso del equipo <b>${esc(prev.team)}</b> (semana ${prev.t}). <button class="btn bg" id="resume">Continuar partida</button></div>`:''}
+ <div class="sc"><h2>Cómo se juega</h2>${rulesHTML()}</div>
+ <div class="sc"><h2>Configurar el equipo</h2>
+ <label for="team">Nombre del equipo</label><input type="text" id="team" placeholder="Ej.: Equipo Manaure">
+ <label>¿Quién juega cada rol? Si nadie lo juega, lo juega el computador.</label>
+ <div class="roles">${ROLES.map((r,i)=>`<div class="role"><b>${i+1}. ${r}</b><label class="chk"><input type="checkbox" id="h${i}" checked>Lo juega una persona</label><input type="text" id="n${i}" placeholder="Nombre"></div>`).join('')}</div>
+ <details style="margin-top:12px"><summary><b>Opciones del instructor</b></summary>
+ <label for="pat">Demanda del consumidor</label>
+ <select id="pat"><option value="clasico">Clásica: 4 pacas y luego sube a 8 (recomendada)</option><option value="estable">Estable: siempre 4</option><option value="aleatorio">Aleatoria entre 3 y 6</option></select>
+ <label for="wks">Semanas</label>
+ <select id="wks"><option value="12">12 (unos 30 a 40 min)</option><option value="16">16</option><option value="20">20</option><option value="26">26</option><option value="0">Al azar entre 18 y 24</option></select>
+ <label class="chk" style="margin-top:8px"><input type="checkbox" id="showW">Mostrar a los aprendices el total de semanas</label>
+ </details>
+ <button class="btn bg" id="start" style="margin-top:14px">Empezar el juego</button></div></div>`;
+ if(prev&&!prev.over)$('#resume').onclick=()=>{G=prev;turn()};
+ $('#start').onclick=()=>{
+  const human=ROLES.map((r,i)=>$('#h'+i).checked);
+  const w=+$('#wks').value||18+Math.floor(Math.random()*7);
+  G={team:$('#team').value.trim()||'Equipo',human,names:ROLES.map((r,i)=>$('#n'+i).value.trim()),pattern:$('#pat').value,seed:Math.random()*100,weeks:w,showW:$('#showW').checked,t:0,turnIdx:0,over:false,
+   stock:[8,8,8,8],back:[0,0,0,0],cost:[0,0,0,0],arr:[{0:4},{0:4},{0:4},{0:4,1:4}],
+   orders:[[],[],[],[]],dem:[[],[],[],[]],ship:[[],[],[],[]],recv:[[],[],[],[]],stk:[[],[],[],[]],bk:[[],[],[],[]],wc:[[],[],[],[]],cons:[]};
+  fullVis=false;startWeek();save();turn()};
+}
+function rulesHTML(){return `<p>Cada aprendiz maneja un eslabón de la cadena de <b>Agua Wayúu Pura</b>. Cada semana recibes pacas de tu proveedor, atiendes el pedido de tu cliente y decides cuántas pacas pedir.</p>
+ <ul><li>Empiezas con <b>8 pacas</b> en stock.</li>
+ <li>Cada paca en stock cuesta <b>${money(C_INV)}</b> por semana. Cada paca pendiente (que debías y no entregaste) cuesta <b>${money(C_BACK)}</b> por semana.</li>
+ <li>Lo que pides llega en <b>2 semanas</b>, si tu proveedor tiene stock. La planta produce con 2 semanas de demora.</li>
+ <li>No ves los pedidos futuros de tu cliente: estima con las semanas anteriores.</li>
+ <li><b>Prohibido hablar</b> con los otros roles. Cada uno ve solo su tarjeta.</li>
+ <li>Si falta un jugador, su rol lo juega el computador.</li>
+ <li>Gana el equipo con el <b>menor costo total</b> de la cadena.</li></ul>`}
+
+/* ---------- tablero ---------- */
+const NODE=[[190,78],[810,78],[190,400],[810,400]];
+function tree(x,y,s=1){return `<g transform="translate(${x},${y}) scale(${s})"><ellipse cx="0" cy="34" rx="20" ry="6" fill="#9cc77d"/><rect x="-4" y="6" width="8" height="30" fill="#7a4a21"/><circle cx="0" cy="-6" r="20" fill="#5aa832"/><circle cx="-12" cy="4" r="13" fill="#4f9a2b"/><circle cx="12" cy="4" r="13" fill="#64b23a"/></g>`}
+function rock(x,y){return `<g transform="translate(${x},${y})"><ellipse cx="0" cy="8" rx="34" ry="8" fill="#a9cf8e"/><path d="M-28 6 L-18 -10 L4 -12 L16 -4 L-2 8 Z" fill="#8d949b"/><path d="M0 8 L14 -6 L30 -2 L32 8 Z" fill="#7b828a"/></g>`}
+function truck(x,y,cab,flip,rot=0,dx=0,dy=0,an=false){return `<g transform="translate(${x},${y})"><g class="${an?'drive':''}" style="--dx:${dx}px;--dy:${dy}px"><g transform="rotate(${rot}) ${flip?'scale(-1,1)':''}"><rect x="-52" y="-30" width="78" height="40" rx="3" fill="#f1f3f5" stroke="#c7ccd1"/><rect x="26" y="-18" width="24" height="28" rx="4" fill="${cab}"/><rect x="34" y="-14" width="12" height="9" fill="#3a4651"/><circle cx="-36" cy="12" r="6" fill="#2b2f33"/><circle cx="36" cy="12" r="6" fill="#2b2f33"/></g></g></g>`}
+function badge(x,y,q,w,an){return q===null?'':`<g transform="translate(${x},${y})"><g class="${an?'pop':''}"><rect x="-30" y="-17" width="60" height="34" rx="17" fill="#fff" opacity=".95"/><text x="-4" y="7" font-size="20" font-weight="800" text-anchor="middle" fill="#1d2733">${q}</text><text x="16" y="7" font-size="11" text-anchor="middle" fill="#3b4652">S${w}</text></g></g>`}
+function building(i){
+ const [x,y]=NODE[i];
+ if(i===0)return `<g transform="translate(${x},${y-6})"><path d="M-40 -10 L0 -34 L40 -10 Z" fill="#4a5560"/><rect x="-34" y="-10" width="68" height="44" fill="#f5e7cf"/><path d="M-40 -10 h80 v12 h-80z" fill="#fff"/>${[0,1,2,3,4].map(k=>`<rect x="${-40+k*16}" y="-10" width="8" height="12" fill="#d93a3a"/>`).join('')}<rect x="-24" y="8" width="16" height="26" fill="#6b4a2b"/><rect x="2" y="8" width="22" height="16" fill="#9ccbe8"/></g>`;
+ if(i===1)return `<g transform="translate(${x},${y-16})"><rect x="-38" y="-30" width="76" height="66" fill="#e9eef3" stroke="#b9c3cc"/>${[0,1,2,3].map(r=>[0,1,2,3].map(c=>`<rect x="${-32+c*18}" y="${-24+r*15}" width="12" height="9" fill="#7fa7d9"/>`).join('')).join('')}<rect x="-38" y="-36" width="76" height="8" fill="#e8a3a3"/></g>`;
+ if(i===2)return `<g transform="translate(${x},${y-10})"><path d="M-48 -6 L-20 -30 L48 -30 L48 -6 Z" fill="#7fa7d9"/><rect x="-48" y="-6" width="96" height="42" fill="#fdfdfd" stroke="#c7ccd1"/><rect x="-48" y="18" width="96" height="8" fill="#ea8a2a"/><rect x="10" y="4" width="26" height="32" fill="#d9dde1"/>${[0,1,2].map(k=>`<rect x="${-40+k*12}" y="2" width="7" height="6" fill="#3a4651"/>`).join('')}</g>`;
+ return `<g transform="translate(${x},${y-10})"><rect x="-48" y="0" width="96" height="36" fill="#f2c79a" stroke="#c98e57"/>${[0,1,2,3].map(k=>`<path d="M${-48+k*24} 0 L${-36+k*24} -16 L${-24+k*24} 0 Z" fill="#e7a86b"/>`).join('')}<rect x="20" y="-44" width="8" height="30" fill="#6b7280"/><rect x="34" y="-36" width="7" height="22" fill="#6b7280"/><circle cx="24" cy="-52" r="7" fill="#d5d9dd" opacity=".8"/></g>`;
+}
+const BX=[[52,26],[-142,26],[56,30],[-146,30]];
+function boxSVG(x,y,cls,st){return `<g class="${cls}" style="${st}"><g transform="translate(${x},${y})"><path d="M0 0 h14 v-11 h-14z" fill="#d79a5b" stroke="#9a6532" stroke-width="1"/><path d="M0 -11 l4 -4 h14 l-4 4z" fill="#e8b37a" stroke="#9a6532" stroke-width="1"/><path d="M14 0 l4 -4 v-11 l-4 4z" fill="#b97e43" stroke="#9a6532" stroke-width="1"/><path d="M5 -11 l4 -4" stroke="#9a6532" stroke-width="1.2"/></g></g>`}
+function stackSVG(i,an){
+ const t=G.t,[x0,y0]=NODE[i],[ox,oy]=BX[i],bx=x0+ox,by=y0+oy,CAP=36;
+ const prev=t===0?8:G.stk[i][t-1],rec=G.recv[i][t],sh=G.ship[i][t];
+ const peak=Math.min(CAP,prev+rec),endN=Math.min(CAP,G.stock[i]);
+ const pos=k=>[bx+(k%6)*15,by-Math.floor(k/6)*12];
+ let h='',tIn=0.3,step=0.16;
+ const nIn=an?Math.max(0,peak-Math.min(CAP,prev)):0;
+ const T1=tIn+step*nIn+0.35;
+ for(let k=0;k<(an?peak:endN);k++){
+  const [x,y]=pos(k);let cls='',st='';
+  const isNew=an&&k>=Math.min(CAP,prev);
+  const out=an&&k>=endN; // se despacha
+  const dOut=T1+step*(peak-1-k);
+  if(isNew&&out){cls='bin bout';st=`animation-delay:${(tIn+step*(k-Math.min(CAP,prev))).toFixed(2)}s,${dOut.toFixed(2)}s`}
+  else if(isNew){cls='bin';st=`animation-delay:${(tIn+step*(k-Math.min(CAP,prev))).toFixed(2)}s`}
+  else if(out){cls='bout';st=`animation-delay:${dOut.toFixed(2)}s`}
+  h+=boxSVG(x,y,cls,st);
+ }
+ const T2=an?T1+step*Math.max(0,peak-endN)+0.3:0;
+ const more=G.stock[i]>CAP?`<text x="${bx+45}" y="${by-Math.ceil(CAP/6)*12-8}" font-size="14" font-weight="800" text-anchor="middle" fill="#1d2733">+${G.stock[i]-CAP}</text>`:'';
+ return {svg:`<g>${h}${an?'':more}</g>`,T2};
+}
+let lastAnim=null;
+function mapSVG(){
+ const t=G.t,vis=k=>fullVis||G.over||reveal===k;
+ const key=G.team+'|'+t+'|'+(fullVis?'all':reveal),an=!G.over&&!autoRun&&(reveal!==null||fullVis)&&lastAnim!==key;if(reveal!==null||fullVis)lastAnim=key;
+ const stacks=[0,1,2,3].map(k=>vis(k)?stackSVG(k,an):{svg:'',T2:0});
+ const TD=Math.max(0.2,...stacks.map(x=>x.T2));
+ // camiones: envíos ya despachados que llegan la próxima semana
+ const q0=G.arr[0][t+1]||0,q1=G.arr[1][t+1]||0,q2=G.arr[2][t+1]||0;
+ const road=(d)=>`<path d="${d}" fill="none" stroke="#4d5359" stroke-width="40" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="22 26"/>`;
+ return `<svg class="map" style="--td:${TD.toFixed(2)}s" viewBox="0 0 1000 680" preserveAspectRatio="xMidYMid slice" aria-label="Mapa de la cadena: Tienda, Distribuidor, Centro de distribución y Planta unidos por carreteras">
+ <rect width="1000" height="680" fill="#c5e3a5"/>
+ ${road('M190 78 L810 78')}${road('M810 78 L190 400')}${road('M190 400 L810 400')}
+ ${NODE.map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="125" ry="52" fill="#4d5359" stroke="#cfd4d8" stroke-width="4"/>`).join('')}
+ ${tree(40,60,1)}${tree(60,190,.9)}${tree(640,190,1)}${tree(950,200,.8)}${tree(460,520,1)}${tree(620,530,.9)}${tree(500,300,.8)}${tree(90,560,.8)}
+ ${rock(330,170)}${rock(720,230)}${rock(560,610)}${rock(960,120)}
+ ${NODE.map((n,i)=>building(i)).join('')}
+ ${stacks.map(x=>x.svg).join('')}
+ ${truck(520,64,'#7b828a',true,0,290,14,an)}${badge(510,108,vis(0)?q0:null,t+1,an)}
+ ${truck(500,240,'#7b828a',false,-27,-250,128,an)}${badge(470,282,vis(1)?q1:null,t+1,an)}
+ ${truck(520,386,'#29a3e0',true,0,290,14,an)}${badge(510,430,vis(2)?q2:null,t+1,an)}
+ </svg>`;
+}
+function card(i){
+ const t=G.t,active=reveal===i&&!G.over,show=fullVis||G.over||active;
+ const decided=G.orders[i][t]!==undefined;
+ const tag=G.human[i]?(G.names[i]?`<small>${esc(G.names[i])}</small>`:''):'<small>computador</small>';
+ const ic=G.human[i]?'👤':'💻';
+ let body;
+ if(!show){
+  body=`<div class="lock">🔒 Información privada${G.human[i]?(decided?' · <span class="done">✔ ya pidió</span>':' · ⏳ esperando'):''}</div>`;
+ }else{
+  body=`<div class="kv"><span>Stock: <b>${G.stock[i]}</b></span><span>Costo: <span class="cost">${money(G.cost[i])}</span></span></div>
+  ${G.back[i]?`<div class="tr" style="justify-content:center;color:var(--red);font-weight:700">Pendientes: ${G.back[i]} pacas</div>`:''}
+  <div class="tx">Semana ${t} transacciones:</div>
+  <div class="tr"><span>Recibo: <span class="rv">${G.recv[i][t]}</span></span><span>Demanda: <span class="dm">${G.dem[i][t]}</span></span><span>Envío: <span class="en">${G.ship[i][t]}</span></span></div>`;
+  if(active){
+   const n1=G.arr[i][t+1]||0,n2=i===3?(G.arr[i][t+2]||0):null;
+   body+=`<div class="wip"><span>${i===3?'WIP:':'En camino:'}</span><div class="wipbar">
+   <div class="box" style="left:30%">📦${n1?'+'+n1:'0'}<span>S${t+1}</span></div>
+   ${i===3?`<div class="box" style="left:72%">📦${n2?'+'+n2:'0'}<span>S${t+2}</span></div>`:`<div class="box" style="left:72%;opacity:.55">?<span>S${t+2}</span></div>`}
+   </div></div>
+   <div class="step"><button class="pm m" id="dec" aria-label="Menos">−</button><input id="q" type="number" min="0" max="200" inputmode="numeric" value="${G.dem[i][t]}"><button class="pm p" id="inc" aria-label="Más">+</button><button class="go" id="ok">${i===3?'Producir':'Pedir'}</button></div>
+   <div class="hint">${i===3?'Plazo 2 semanas':'Llega en 2 semanas si '+SUP[i]+' tiene stock'} → recepción S${t+2}</div>`;
+  }else if(decided&&fullVis&&!G.over){body+=`<div class="hint">Pidió ${G.orders[i][t]} esta semana</div>`}
+ }
+ return `<div class="card c${i}"><h3>${ROLES[i]} ${tag}<span class="ic">${ic}</span></h3>${body}</div>`;
+}
+function humans(){return G.human.filter(x=>x).length}
+function decidedHumans(){return G.human.filter((h,i)=>h&&G.orders[i][G.t]!==undefined).length}
+function render(overlay){
+ const H=humans(),D=decidedHumans(),wkTxt=(G.showW||fullVis)?`${G.t}/${G.weeks}`:`${G.t}`;
+ app.innerHTML=`<div class="top"><div>👤 Jugadores ${H}/4</div><div>📋 Pedidos ${D}/${H}</div><div>🚩 Semana ${G.over?'final':wkTxt}</div><div class="prog-bg"></div><div class="prog" style="width:${H?D/H*100:0}%"></div></div>
+ <div class="wrap"><div class="side">
+ <div class="panel"><div class="ttl">Controles</div>
+ <div class="tog ${fullVis?'on':''}" id="vis" role="switch" aria-checked="${fullVis}" tabindex="0"><span class="sw"></span>Visibilidad completa</div>
+ <button class="sbtn" id="auto" ${G.over?'disabled':''}>▶ Ejecución automática</button>
+ <button class="sbtn" id="reset">⟳ Reiniciar</button></div>
+ <div class="panel"><button class="sbtn" id="ins">📖 Instrucciones</button><button class="sbtn" id="res">📅 Resumen semanal</button><button class="sbtn" id="sta" ${(fullVis||G.over)?'':'disabled'}>📈 Estadísticas</button></div>
+ </div>
+ <div class="board ${autoRun?'fast':''}">${mapSVG()}${[0,1,2,3].map(card).join('')}${overlay||''}</div></div>`;
+ const vis=$('#vis');const tv=()=>{if(!fullVis&&!G.over&&!vis.dataset.c){vis.dataset.c=1;toast('Muestra todo a todos. Toca otra vez para activar');setTimeout(()=>vis.dataset.c='',3000);return}fullVis=!fullVis;if(fullVis){if(reveal===null&&!G.over){const h=nextHuman(G.turnIdx);if(h>=0)reveal=h}render()}else{reveal=null;render(overlayFor())}};
+ vis.onclick=tv;vis.onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();tv()}};
+ const a=$('#auto');a.onclick=()=>{if(!a.dataset.c){a.dataset.c=1;a.textContent='Toca otra vez: el computador juega todo';setTimeout(()=>{a.dataset.c='';a.textContent='▶ Ejecución automática'},3000);return}runAuto()};
+ const r=$('#reset');r.onclick=()=>{if(!r.dataset.c){r.dataset.c=1;r.textContent='Toca otra vez para borrar la partida';setTimeout(()=>{r.dataset.c='';r.textContent='⟳ Reiniciar'},3000);return}if(autoRun)clearInterval(autoRun);G=null;reveal=null;fullVis=false;try{localStorage.removeItem(KEY)}catch(e){};setup()};
+ $('#ins').onclick=()=>modal('<h2>Instrucciones</h2>'+rulesHTML());
+ $('#res').onclick=weekly;
+ $('#sta').onclick=()=>modal('<h2>Estadísticas</h2>'+chart()+ampTable());
+ if(reveal!==null&&!G.over){
+  const q=$('#q');if(q){
+  $('#dec').onclick=()=>{q.value=Math.max(0,(parseInt(q.value,10)||0)-1)};
+  $('#inc').onclick=()=>{q.value=Math.min(200,(parseInt(q.value,10)||0)+1)};
+  $('#ok').onclick=()=>{const q2=parseInt(q.value,10);if(isNaN(q2)||q2<0||q2>200){toast('Escribe un número entre 0 y 200');return}
+   const i=reveal;place(i,q2);G.turnIdx=i+1;reveal=null;save();turn()};}
+ }
+ const go=$('#goBtn');if(go)go.onclick=()=>{reveal=+go.dataset.i;render()};
+ const ex=$('#exitBtn');if(ex)ex.onclick=()=>end();
+}
+function overlayFor(){
+ if(G.over)return '';
+ const i=nextHuman(G.turnIdx);if(i<0)return '';
+ const who=ROLES[i]+(G.names[i]?' · '+G.names[i]:'');
+ return `<div class="over"><p>Semana ${G.t} · ${esc(G.team)}</p><p>Pasa el dispositivo a</p><div class="who">${esc(who)}</div><p>Los demás no miran la pantalla.</p><button class="bigbtn" id="goBtn" data-i="${i}">Soy yo, mostrar mi tarjeta</button></div>`;
+}
+function turn(){
+ if(G.over){end();return}
+ let i=nextHuman(G.turnIdx);
+ while(i<0){if(advance()){end();return}i=nextHuman(0)}
+ for(let j=G.turnIdx;j<i;j++)if(!G.human[j]&&G.orders[j][G.t]===undefined)place(j,botOrder(j));
+ G.turnIdx=i;reveal=null;save();
+ render(fullVis?'':overlayFor());
+ if(fullVis){reveal=i;render()}
+}
+function runAuto(){
+ G.human=[false,false,false,false];reveal=null;fullVis=true;
+ autoRun=setInterval(()=>{if(advance()){clearInterval(autoRun);autoRun=null;end();return}render()},350);
+}
+function weekly(){
+ const rows=k=>{let h='';for(let t=0;t<=G.t&&t<G.weeks;t++){if(G.dem[k][t]===undefined)continue;h+=`<tr><td>S${t}</td><td>${G.recv[k][t]}</td><td>${G.dem[k][t]}</td><td>${G.ship[k][t]}</td><td>${G.stk[k][t]}</td><td>${G.bk[k][t]}</td><td>${G.orders[k][t]??'—'}</td><td>${money(G.wc[k][t])}</td></tr>`}return h};
+ const tbl=k=>`<h3>${ROLES[k]}</h3><table><tr><th>Semana</th><th>Recibo</th><th>Demanda</th><th>Envío</th><th>Stock</th><th>Pendientes</th><th>Pedido</th><th>Costo</th></tr>${rows(k)}</table>`;
+ if(fullVis||G.over)modal('<h2>Resumen semanal</h2>'+[0,1,2,3].map(tbl).join(''));
+ else if(reveal!==null)modal('<h2>Resumen semanal</h2>'+tbl(reveal));
+ else modal('<h2>Resumen semanal</h2><p>Abre tu tarjeta primero para ver tu resumen. Cada rol solo ve el suyo.</p>');
+}
+
+/* ---------- estadísticas y cierre ---------- */
+function chart(){
+ const n=Math.min(G.t,G.weeks);if(n<1)return '<p>Aún no hay semanas completas.</p>';
+ const W=800,H=320,P=40,series=[G.cons.slice(0,n),...G.orders.map(o=>o.slice(0,n))];
+ const mx=Math.max(8,...series.flat())*1.1;
+ const col=['#14261a','#39A900','#1f5fa8','#7a4fbf','#e07b00'];
+ const x=k=>P+(W-P-10)*(n<=1?0:k/(n-1)),y=v=>H-P-(H-P-10)*v/mx;
+ let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img" aria-label="Pedidos semanales de cada rol comparados con la demanda del consumidor">`;
+ for(let g=0;g<=4;g++){const v=mx*g/4;s+=`<line x1="${P}" x2="${W-10}" y1="${y(v)}" y2="${y(v)}" stroke="#e3e8e0"/><text x="${P-6}" y="${y(v)+4}" font-size="11" text-anchor="end" fill="#5a6b5e">${Math.round(v)}</text>`}
+ series.forEach((a,k)=>{s+=`<polyline fill="none" stroke="${col[k]}" stroke-width="${k===0?4:2.5}" ${k===0?'stroke-dasharray="6 4"':''} points="${a.map((v,j)=>x(j)+','+y(v)).join(' ')}"/>`});
+ s+=`<text x="${W/2}" y="${H-6}" font-size="12" text-anchor="middle" fill="#5a6b5e">Semanas</text></svg>`;
+ return s+`<div class="legend">${['Consumidor (demanda real, punteada)',...ROLES].map((r,k)=>`<span style="color:${col[k]}">━ ${r}</span>`).join('')}</div>`;
+}
+function ampTable(){
+ const n=Math.min(G.t,G.weeks);if(n<1)return '';
+ const sd=stdev(G.cons.slice(0,n))||0.0001;
+ return `<table style="margin-top:10px"><tr><th>Rol</th><th>Costo</th><th>Pedido mín</th><th>Pedido máx</th><th>Amplificación</th></tr>
+ ${ROLES.map((r,i)=>{const o=G.orders[i].slice(0,n);return `<tr><td>${r}${G.human[i]?'':' 💻'}</td><td>${money(G.cost[i])}</td><td>${Math.min(...o)}</td><td>${Math.max(...o)}</td><td>${(stdev(o)/sd).toFixed(1)}×</td></tr>`}).join('')}</table>
+ <p class="note">Amplificación = cuánto varían los pedidos de ese rol frente a la demanda real. Mayor que 1 = efecto látigo.</p>`;
+}
+function summary(){
+ const n=Math.min(G.t,G.weeks),cd=G.cons.slice(0,n),sd=stdev(cd)||0.0001,tot=G.cost.reduce((a,b)=>a+b,0);
+ const L=[`JUEGO DEL AGUA · EFECTO LÁTIGO`,`Equipo: ${G.team}`,`Semanas jugadas: ${n}`,`Costo total de la cadena: ${money(tot)}`,''];
+ ROLES.forEach((r,i)=>{const o=G.orders[i].slice(0,n);L.push(`${r}${G.names[i]?' ('+G.names[i]+')':''}: costo ${money(G.cost[i])} · pedido mín ${Math.min(...o)} / máx ${Math.max(...o)} · amplificación ${(stdev(o)/sd).toFixed(1)}x`)});
+ L.push('',`Demanda del consumidor: mín ${Math.min(...cd)} / máx ${Math.max(...cd)}`,'Pedidos por semana (consumidor | tienda | distribuidor | centro | planta):');
+ for(let t=0;t<n;t++)L.push(`S${t}: ${G.cons[t]} | ${G.orders.map(o=>o[t]).join(' | ')}`);
+ L.push('','LogiLab SENA · By Carlos Barrios · Instructor');return L.join('\n');
+}
+let DL=null;try{window.claude&&window.claude.use&&window.claude.use('downloads').then(d=>{DL=d}).catch(()=>{})}catch(e){}
+function end(){
+ G.over=true;save();fullVis=true;reveal=null;
+ const n=Math.min(G.t,G.weeks);
+ render();
+ if(n<1){modal('<h2>Fin del juego</h2><p>El juego terminó antes de completar una semana.</p>');return}
+ const tot=G.cost.reduce((a,b)=>a+b,0),txt=summary();
+ modal(`<h2>Resultados · ${esc(G.team)}</h2>
+ <p><b>${n}</b> semanas · Costo total de la cadena: <b>${money(tot)}</b></p>
+ ${chart()}${ampTable()}
+ <h3>Para la discusión</h3><ol>
+ <li>¿Cuánto creían que pedía el consumidor? Ahora miren la línea punteada.</li>
+ <li>¿Qué rol tuvo la mayor amplificación? ¿Por qué?</li>
+ <li>¿Qué habría cambiado si todos vieran la demanda real del consumidor?</li>
+ <li>¿Cómo ayudarían EDI, un ERP compartido o pedidos más frecuentes?</li></ol>
+ <h3>Guardar o enviar resultados</h3>
+ <a class="btn bg" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">WhatsApp</a>
+ <a class="btn bd" href="mailto:?subject=${encodeURIComponent('Juego del agua - '+G.team)}&body=${encodeURIComponent(txt)}">Correo</a>
+ <button class="btn bo" id="cp">Copiar</button><button class="btn bo" id="dl">Descargar .txt</button>
+ <textarea id="out" readonly style="width:100%;min-height:150px;margin-top:10px;font-family:ui-monospace,monospace;font-size:.8rem">${esc(txt)}</textarea>`);
+ $('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(txt);toast('Copiado')}catch(e){$('#out').select();try{document.execCommand('copy');toast('Copiado')}catch(e2){toast('Selecciona el texto y cópialo')}}};
+ $('#dl').onclick=async()=>{const fn='JuegoAgua_'+G.team.replace(/\s+/g,'_')+'.txt';
+  if(DL){try{await DL.save({filename:fn,data:txt})}catch(e){toast('Descarga cancelada')}return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));a.download=fn;document.body.appendChild(a);a.click();a.remove()};
+}
+setup();
+</script>
+</body>
+</html>

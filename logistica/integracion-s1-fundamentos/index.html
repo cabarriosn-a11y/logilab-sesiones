@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taller S1 · Fundamentos de la cadena logística</title>
+<style>
+:root{--g:#39A900;--gd:#2b7a00;--dk:#14261a;--bg:#f6f8f2;--ln:#d5ddd0;--or:#b35f00}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--dk);line-height:1.5}
+header{background:var(--dk);color:#f6f8f2;padding:20px 16px;border-left:8px solid var(--g)}
+header small{color:#7fd34a;font-weight:700;letter-spacing:1px}
+header h1{margin:6px 0 4px;font-size:1.5rem}
+header p{margin:0;color:#c9d6c4;font-size:.95rem}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:#fff;border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:5}
+nav button{flex:0 0 auto;border:1px solid var(--ln);background:#fff;padding:9px 14px;border-radius:999px;font-weight:600;cursor:pointer;color:var(--dk)}
+nav button.on{background:var(--g);border-color:var(--g);color:#0f1d12}
+main{max-width:900px;margin:0 auto;padding:16px}
+section.tab{display:none}section.tab.on{display:block}
+.card{background:#fff;border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:14px}
+h2{font-size:1.3rem;margin:4px 0 10px}h3{font-size:1.05rem;margin:0 0 8px}
+label{display:block;font-weight:600;margin:10px 0 4px}
+input,textarea,select{width:100%;padding:10px;border:1px solid #b9c4b4;border-radius:8px;font:inherit;background:#fff}
+textarea{min-height:90px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{padding:8px;border-bottom:1px solid var(--ln);text-align:left;vertical-align:middle}
+th{background:var(--dk);color:#f6f8f2}
+td input{padding:6px;max-width:90px}
+.tot td{font-weight:700;background:#e3f2d8}
+.q{border-top:1px solid var(--ln);padding:12px 0}
+.q:first-child{border-top:none}
+.q p{margin:0 0 6px;font-weight:600}
+.q label{font-weight:400;display:flex;gap:8px;align-items:flex-start;margin:4px 0;cursor:pointer}
+.q input{width:auto;margin-top:4px}
+.ok{color:var(--gd);font-weight:700}.bad{color:#b00020;font-weight:700}
+.btn{display:inline-block;border:none;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer;margin:4px 4px 4px 0;font-size:1rem;text-decoration:none}
+.bg{background:var(--g);color:#0f1d12}.bd{background:var(--dk);color:#fff}.bo{background:#fff;color:var(--dk);border:1px solid var(--dk)}
+.note{background:#fff7e8;border-left:4px solid var(--or);padding:10px 12px;border-radius:6px;font-size:.93rem}
+.score{font-size:1.2rem;font-weight:800}
+footer{text-align:center;color:#5a6b5e;font-size:.85rem;padding:24px 12px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--dk);color:#fff;padding:10px 16px;border-radius:999px;display:none;z-index:9}
+</style>
+</head>
+<body>
+<header>
+<a href="../../" style="color:#9be36a;font-weight:700;text-decoration:none;font-size:.9rem">← Portal LogiLab</a><br>
+<small>TECNÓLOGO EN GESTIÓN LOGÍSTICA · SESIÓN 1 DE 6</small>
+<h1>Taller S1 · Fundamentos de la cadena logística</h1>
+<p>Caso: Agua Wayúu Pura S.A.S. (empresa ficticia) · Miércoles 11 de noviembre</p>
+</header>
+<nav id="nav">
+<button data-t="datos" class="on">1. Datos</button>
+<button data-t="diag">2. Diagnóstico</button>
+<button data-t="caso">3. Caso</button>
+<button data-t="mapa">4. Taller: mapa</button>
+<button data-t="lt">5. Taller: lead time</button>
+<button data-t="quiz">6. Quiz</button>
+<button data-t="tarea">7. Tarea</button>
+<button data-t="entrega">8. Entregar</button>
+</nav>
+<main>
+
+<section class="tab on" id="datos">
+<div class="card">
+<h2>Tus datos</h2>
+<p>Llena esto primero. Tus respuestas se guardan en este dispositivo mientras trabajas.</p>
+<label for="nombre">Nombre completo</label><input id="nombre" data-k="nombre">
+<div class="row">
+<div><label for="ficha">Ficha</label><input id="ficha" data-k="ficha" value="3229854"></div>
+<div><label for="equipo">Nombre del equipo</label><input id="equipo" data-k="equipo"></div>
+</div>
+<label for="integrantes">Integrantes del equipo</label><textarea id="integrantes" data-k="integrantes" placeholder="Un nombre por línea"></textarea>
+</div>
+</section>
+
+<section class="tab" id="diag">
+<div class="card">
+<h2>Diagnóstico rápido (individual, 20 min)</h2>
+<p>Marca qué tanto conoces cada tema. No hay respuestas buenas ni malas.</p>
+<div id="diagList"></div>
+</div>
+</section>
+
+<section class="tab" id="caso">
+<div class="card">
+<h2>Agua Wayúu Pura S.A.S.</h2>
+<p>Empresa ficticia que embotella agua en Riohacha y vende pacas de 6 y 24 unidades.</p>
+<table>
+<tr><th>Eslabón</th><th>Quién es en el caso</th></tr>
+<tr><td>Proveedores</td><td>Preformas PET y tapas desde Barranquilla (≈ 285 km). Etiquetas desde Santa Marta.</td></tr>
+<tr><td>Fabricante</td><td>Planta en Riohacha: soplado, llenado, tapado y etiquetado.</td></tr>
+<tr><td>Centro de distribución</td><td>Bodega en Riohacha. Despacha en camión.</td></tr>
+<tr><td>Minoristas</td><td>Tiendas y minimercados de Maicao (≈ 77 km), Uribia (≈ 95 km) y Manaure (≈ 65 km).</td></tr>
+<tr><td>Consumidor</td><td>Familias, comunidades rurales y comercios.</td></tr>
+</table>
+<p class="note">Distancias aproximadas por carretera, con fines formativos.</p>
+</div>
+</section>
+
+<section class="tab" id="mapa">
+<div class="card">
+<h2>Taller 1 · Mapa de eslabones (equipo, 60 min)</h2>
+<ol>
+<li>Abran draw.io (o usen papel y tomen foto).</li>
+<li>Dibujen los 5 eslabones del caso, de izquierda a derecha.</li>
+<li>Dibujen los flujos con colores: <b>verde</b> bienes, <b>naranja</b> dinero, <b>azul</b> información, <b>gris</b> energía.</li>
+<li>En cada eslabón escriban qué documento o dato envía (pedido, factura, remisión).</li>
+</ol>
+<a class="btn bd" href="https://app.diagrams.net/" target="_blank" rel="noopener">Abrir draw.io</a>
+<label for="mapaLink">Enlace al diagrama o a la foto (Drive, draw.io)</label><input id="mapaLink" data-k="mapaLink" placeholder="https://...">
+<label for="fBienes">Flujo de bienes: ¿qué se mueve y entre quién?</label><textarea id="fBienes" data-k="fBienes"></textarea>
+<label for="fInfo">Flujo de información: ¿qué datos viajan y en qué sentido?</label><textarea id="fInfo" data-k="fInfo"></textarea>
+<label for="fDinero">Flujo de dinero: ¿quién le paga a quién y cómo?</label><textarea id="fDinero" data-k="fDinero"></textarea>
+<label for="fEnergia">Flujo de energía: ¿dónde se consume combustible o electricidad?</label><textarea id="fEnergia" data-k="fEnergia"></textarea>
+</div>
+</section>
+
+<section class="tab" id="lt">
+<div class="card">
+<h2>Taller 2 · Lead time total (equipo, 60 min)</h2>
+<p>Ya vimos que el lead time hasta Maicao es de 8 días. Calculen el de <b>Uribia</b> y el de <b>Manaure</b>. Estimen los días de transporte según la distancia; los demás valores ya están cargados y pueden ajustarlos con una justificación.</p>
+<table id="ltTable">
+<tr><th>Etapa</th><th>Uribia (días)</th><th>Manaure (días)</th></tr>
+</table>
+<label for="ltMejoras">Propongan dos mejoras para reducir el lead time y digan cuántos días ahorraría cada una</label>
+<textarea id="ltMejoras" data-k="ltMejoras" placeholder="1. ...&#10;2. ..."></textarea>
+<label for="ltJit">¿Se podría aplicar justo a tiempo en esta empresa? ¿Qué riesgo tendría en La Guajira?</label>
+<textarea id="ltJit" data-k="ltJit"></textarea>
+</div>
+</section>
+
+<section class="tab" id="quiz">
+<div class="card">
+<h2>Quiz individual (10 preguntas)</h2>
+<div id="quizList"></div>
+<button class="btn bg" id="calif">Calificar</button>
+<p id="quizRes" class="score"></p>
+</div>
+</section>
+
+<section class="tab" id="tarea">
+<div class="card">
+<h2>Tarea para mañana (individual)</h2>
+<p>Escoge una empresa <b>real</b> de La Guajira (panadería, distribuidora, ferretería, cooperativa, etc.).</p>
+<label for="tEmpresa">Empresa escogida y qué vende</label><input id="tEmpresa" data-k="tEmpresa">
+<label for="tEslabones">Sus 5 eslabones (quién es cada uno)</label><textarea id="tEslabones" data-k="tEslabones"></textarea>
+<label for="tFlujos">Sus flujos de bienes, información y dinero</label><textarea id="tFlujos" data-k="tFlujos"></textarea>
+<label for="tLT">Lead time total estimado y cómo lo calculaste</label><textarea id="tLT" data-k="tLT"></textarea>
+<p class="note">Mañana la usamos en el primer ejercicio de estrategia.</p>
+</div>
+</section>
+
+<section class="tab" id="entrega">
+<div class="card">
+<h2>Entregar</h2>
+<p>Revisa que tus datos estén completos. Usa el canal que te funcione; si uno falla, prueba el siguiente.</p>
+<a class="btn bg" id="bWa" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+<a class="btn bd" id="bMail" href="#">Enviar por correo</a>
+<button class="btn bo" id="bCopy">Copiar al portapapeles</button>
+<button class="btn bo" id="bDown">Descargar archivo .txt</button>
+<p class="note">Para la plataforma del SENA: descarga el archivo y súbelo a la evidencia de la sesión 1. Si el correo no se abre, copia el texto y pégalo en un correo nuevo a tu instructor.</p>
+<label for="prev">Vista previa</label>
+<textarea id="prev" readonly style="min-height:260px;font-family:ui-monospace,monospace;font-size:.85rem"></textarea>
+</div>
+</section>
+</main>
+<footer>LogiLab SENA · By Carlos Barrios · Instructor · <a href="../../">Portal</a></footer>
+<div id="toast"></div>
+
+<script>
+const KEY='logilab_s1_integracion';
+let st={};try{st=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){st={}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200)}
+
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id===b.dataset.t));
+if(b.dataset.t==='entrega')build();window.scrollTo(0,0)});
+
+const diag=['Qué es una cadena de abastecimiento','Eslabones de una cadena','Flujos de bienes, información y dinero','Lead time','Justo a tiempo','Efecto látigo','Indicadores logísticos','EDI, ERP y códigos de barras'];
+const lv=['Nada','Poco','Algo','Bien'];
+document.getElementById('diagList').innerHTML=diag.map((d,i)=>`<div class="q"><p>${i+1}. ${d}</p>${lv.map((l,j)=>`<label><input type="radio" name="d${i}" value="${l}" data-k="d${i}">${l}</label>`).join('')}</div>`).join('');
+
+const stages=[['Procesar pedido de preformas',2,2],['Transporte Barranquilla – Riohacha',1,1],['Recepción e inspección',0.5,0.5],['Producción',1,1],['Almacenamiento en centro de distribución',2,2],['Transporte Riohacha – destino (estimen)','',''],['Exhibición y venta',1,1]];
+const tb=document.getElementById('ltTable');
+stages.forEach((s,i)=>{const r=tb.insertRow();r.innerHTML=`<td>${s[0]}</td><td><input type="number" step="0.5" min="0" data-k="u${i}" value="${s[1]}"></td><td><input type="number" step="0.5" min="0" data-k="m${i}" value="${s[2]}"></td>`});
+const tr=tb.insertRow();tr.className='tot';tr.innerHTML='<td>Lead time total</td><td id="totU">0</td><td id="totM">0</td>';
+function calcLT(){let u=0,m=0;stages.forEach((s,i)=>{u+=parseFloat(document.querySelector(`[data-k=u${i}]`).value)||0;m+=parseFloat(document.querySelector(`[data-k=m${i}]`).value)||0});
+document.getElementById('totU').textContent=u.toFixed(1)+' días';document.getElementById('totM').textContent=m.toFixed(1)+' días';st.totU=u;st.totM=m;save()}
+
+const Q=[
+['¿Qué flujo va del consumidor hacia el proveedor?',['Bienes','Dinero','Energía','Ninguno'],1],
+['El lead time total de la cadena es:',['El tiempo de producción','El tiempo de transporte más largo','La suma de los tiempos de todos los eslabones','El tiempo que tarda el pago'],2],
+['El efecto látigo es:',['Que la demanda del consumidor cambia mucho','Que la variación de los pedidos crece hacia los eslabones de atrás','Que el transporte se demora','Que sobran camiones'],1],
+['¿Qué eslabón almacena, consolida y despacha?',['Proveedor','Fabricante','Centro de distribución','Consumidor'],2],
+['La mejor forma de reducir el efecto látigo es:',['Pedir siempre el doble','Hacer más promociones','Compartir las ventas reales del consumidor con toda la cadena','Pedir una vez al mes'],2],
+['Justo a tiempo busca:',['Tener mucho inventario por si acaso','Producir y entregar lo que se necesita, cuando se necesita','Producir solo de noche','Eliminar a los proveedores'],1],
+['Si el lead time es de 8 días y el almacenamiento baja de 2 a 1 día, el nuevo lead time es:',['6 días','7 días','9 días','8 días'],1],
+['El flujo de información viaja:',['Solo del proveedor al consumidor','Solo del consumidor al proveedor','En ambos sentidos','No viaja'],2],
+['EDI sirve para:',['Intercambiar documentos electrónicos entre empresas','Diseñar empaques','Contratar transporte','Medir la temperatura'],0],
+['¿Cuál NO es causa del efecto látigo?',['Pedidos grandes y poco frecuentes','Promociones de precio','Precios estables','Pedir de más por miedo al agotado'],2]];
+document.getElementById('quizList').innerHTML=Q.map((q,i)=>`<div class="q" id="q${i}"><p>${i+1}. ${q[0]}</p>${q[1].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}" data-k="q${i}">${o}</label>`).join('')}<span class="fb"></span></div>`).join('');
+document.getElementById('calif').onclick=()=>{let n=0;Q.forEach((q,i)=>{const v=st['q'+i];const fb=document.querySelector(`#q${i} .fb`);
+if(v===undefined){fb.className='fb bad';fb.textContent='Sin responder'}else if(+v===q[2]){n++;fb.className='fb ok';fb.textContent='✔ Correcta'}else{fb.className='fb bad';fb.textContent='✘ Correcta: '+q[1][q[2]]}});
+st.quiz=n;save();document.getElementById('quizRes').textContent=`Resultado: ${n} de 10`};
+
+document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k;
+if(el.type==='radio'){if(st[k]===el.value)el.checked=true;el.onchange=()=>{st[k]=el.value;save()}}
+else{if(st[k]!==undefined)el.value=st[k];el.oninput=()=>{st[k]=el.value;save();if(/^[um]\d$/.test(k))calcLT()}}});
+calcLT();
+
+function v(k){return (st[k]||'').toString().trim()||'(sin respuesta)'}
+function build(){
+const L=[];L.push('TALLER S1 · FUNDAMENTOS DE LA CADENA LOGÍSTICA','Caso: Agua Wayúu Pura S.A.S.','');
+L.push('Nombre: '+v('nombre'),'Ficha: '+v('ficha'),'Equipo: '+v('equipo'),'Integrantes: '+v('integrantes').replace(/\n/g,', '),'');
+L.push('— DIAGNÓSTICO —');diag.forEach((d,i)=>L.push(`${d}: ${v('d'+i)}`));L.push('');
+L.push('— TALLER 1: MAPA DE ESLABONES —','Enlace: '+v('mapaLink'),'Bienes: '+v('fBienes'),'Información: '+v('fInfo'),'Dinero: '+v('fDinero'),'Energía: '+v('fEnergia'),'');
+L.push('— TALLER 2: LEAD TIME —');stages.forEach((s,i)=>L.push(`${s[0]}: Uribia ${st['u'+i]??s[1]} · Manaure ${st['m'+i]??s[2]}`));
+L.push(`TOTAL: Uribia ${(st.totU||0).toFixed(1)} días · Manaure ${(st.totM||0).toFixed(1)} días`,'Mejoras: '+v('ltMejoras'),'Justo a tiempo: '+v('ltJit'),'');
+L.push('— QUIZ —',st.quiz===undefined?'(no calificado)':`Puntaje: ${st.quiz}/10`);Q.forEach((q,i)=>L.push(`${i+1}. ${st['q'+i]!==undefined?q[1][+st['q'+i]]:'(sin respuesta)'}`));L.push('');
+L.push('— TAREA —','Empresa: '+v('tEmpresa'),'Eslabones: '+v('tEslabones'),'Flujos: '+v('tFlujos'),'Lead time: '+v('tLT'),'','LogiLab SENA · By Carlos Barrios · Instructor');
+const txt=L.join('\n');document.getElementById('prev').value=txt;
+const subj='Taller S1 Integración cadena - '+(st.nombre||'aprendiz');
+document.getElementById('bWa').href='https://wa.me/?text='+encodeURIComponent(txt);
+document.getElementById('bMail').href='mailto:?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(txt);
+return txt}
+document.getElementById('bCopy').onclick=async()=>{const t=build();try{await navigator.clipboard.writeText(t);toast('Copiado')}catch(e){const p=document.getElementById('prev');p.select();try{document.execCommand('copy');toast('Copiado')}catch(e2){toast('Selecciona el texto y cópialo')}}};
+let DL=null;try{window.claude&&window.claude.use&&window.claude.use('downloads').then(d=>{DL=d}).catch(()=>{})}catch(e){}
+document.getElementById('bDown').onclick=async()=>{const t=build();const fn='TallerS1_'+(st.nombre||'aprendiz').replace(/\s+/g,'_')+'.txt';
+if(DL){try{await DL.save({filename:fn,data:t});return}catch(e){toast('Descarga cancelada');return}}
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'}));a.download=fn;document.body.appendChild(a);a.click();a.remove()};
+</script>
+</body>
+</html>

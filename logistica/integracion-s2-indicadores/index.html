@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taller S2 · Estrategia e indicadores de gestión</title>
+<style>
+:root{--g:#39A900;--gd:#2b7a00;--dk:#14261a;--bg:#f6f8f2;--ln:#d5ddd0;--or:#b35f00}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--dk);line-height:1.5}
+header{background:var(--dk);color:#f6f8f2;padding:20px 16px;border-left:8px solid var(--g)}
+header small{color:#7fd34a;font-weight:700;letter-spacing:1px}
+header h1{margin:6px 0 4px;font-size:1.5rem}
+header p{margin:0;color:#c9d6c4;font-size:.95rem}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:#fff;border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:5}
+nav button{flex:0 0 auto;border:1px solid var(--ln);background:#fff;padding:9px 14px;border-radius:999px;font-weight:600;cursor:pointer;color:var(--dk)}
+nav button.on{background:var(--g);border-color:var(--g);color:#0f1d12}
+main{max-width:900px;margin:0 auto;padding:16px}
+section.tab{display:none}section.tab.on{display:block}
+.card{background:#fff;border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:14px}
+h2{font-size:1.3rem;margin:4px 0 10px}h3{font-size:1.05rem;margin:0 0 8px}
+label{display:block;font-weight:600;margin:10px 0 4px}
+input,textarea,select{width:100%;padding:10px;border:1px solid #b9c4b4;border-radius:8px;font:inherit;background:#fff}
+textarea{min-height:90px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{padding:8px;border-bottom:1px solid var(--ln);text-align:left;vertical-align:middle}
+th{background:var(--dk);color:#f6f8f2}
+td input{padding:6px;max-width:90px}
+.tot td{font-weight:700;background:#e3f2d8}
+.q{border-top:1px solid var(--ln);padding:12px 0}
+.q:first-child{border-top:none}
+.q p{margin:0 0 6px;font-weight:600}
+.q label{font-weight:400;display:flex;gap:8px;align-items:flex-start;margin:4px 0;cursor:pointer}
+.q input{width:auto;margin-top:4px}
+.ok{color:var(--gd);font-weight:700}.bad{color:#b00020;font-weight:700}
+.btn{display:inline-block;border:none;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer;margin:4px 4px 4px 0;font-size:1rem;text-decoration:none}
+.bg{background:var(--g);color:#0f1d12}.bd{background:var(--dk);color:#fff}.bo{background:#fff;color:var(--dk);border:1px solid var(--dk)}
+.note{background:#fff7e8;border-left:4px solid var(--or);padding:10px 12px;border-radius:6px;font-size:.93rem}
+.score{font-size:1.2rem;font-weight:800}
+footer{text-align:center;color:#5a6b5e;font-size:.85rem;padding:24px 12px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--dk);color:#fff;padding:10px 16px;border-radius:999px;display:none;z-index:9}
+</style>
+</head>
+<body>
+<header>
+<a href="../../" style="color:#9be36a;font-weight:700;text-decoration:none;font-size:.9rem">← Portal LogiLab</a><br>
+<small>TECNÓLOGO EN GESTIÓN LOGÍSTICA · SESIÓN 2 DE 6</small>
+<h1>Taller S2 · Estrategia e indicadores de gestión</h1>
+<p>Caso: Agua Wayúu Pura S.A.S. (empresa ficticia) · Jueves 12 de noviembre</p>
+</header>
+<nav id="nav">
+<button data-t="datos" class="on">1. Datos</button>
+<button data-t="foda">2. FODA</button>
+<button data-t="kpi">3. Indicadores</button>
+<button data-t="bsc">4. BSC</button>
+<button data-t="abc">5. Costeo ABC</button>
+<button data-t="quiz">6. Quiz</button>
+<button data-t="tarea">7. Tarea</button>
+<button data-t="entrega">8. Entregar</button>
+</nav>
+<main>
+
+<section class="tab on" id="datos">
+<div class="card">
+<h2>Tus datos</h2>
+<p>Tus respuestas se guardan en este dispositivo mientras trabajas.</p>
+<label for="nombre">Nombre completo</label><input id="nombre" data-k="nombre">
+<div class="row">
+<div><label for="ficha">Ficha</label><input id="ficha" data-k="ficha" value="3229854"></div>
+<div><label for="equipo">Nombre del equipo</label><input id="equipo" data-k="equipo"></div>
+</div>
+<label for="integrantes">Integrantes del equipo</label><textarea id="integrantes" data-k="integrantes" placeholder="Un nombre por línea"></textarea>
+</div>
+</section>
+
+<section class="tab" id="foda">
+<div class="card">
+<h2>Taller 1 · FODA y estrategias (equipo, 60 min)</h2>
+<p>Usen lo que saben de Agua Wayúu Pura y de La Guajira (clima, vías, comunidades, puertos, frontera). Mínimo <b>3 puntos</b> por cuadrante.</p>
+<div class="row">
+<div><label for="fF">Fortalezas (internas)</label><textarea id="fF" data-k="fF"></textarea></div>
+<div><label for="fD">Debilidades (internas)</label><textarea id="fD" data-k="fD"></textarea></div>
+<div><label for="fO">Oportunidades (externas)</label><textarea id="fO" data-k="fO"></textarea></div>
+<div><label for="fA">Amenazas (externas)</label><textarea id="fA" data-k="fA"></textarea></div>
+</div>
+<h3 style="margin-top:16px">Una estrategia por cruce</h3>
+<label for="eFO">FO: usar fortalezas para aprovechar oportunidades</label><textarea id="eFO" data-k="eFO"></textarea>
+<label for="eDO">DO: corregir debilidades aprovechando oportunidades</label><textarea id="eDO" data-k="eDO"></textarea>
+<label for="eFA">FA: usar fortalezas para enfrentar amenazas</label><textarea id="eFA" data-k="eFA"></textarea>
+<label for="eDA">DA: reducir debilidades y evitar amenazas</label><textarea id="eDA" data-k="eDA"></textarea>
+<label for="eTipo">¿La cadena de Agua Wayúu Pura debe ser eficiente o ágil? Justifiquen.</label><textarea id="eTipo" data-k="eTipo"></textarea>
+</div>
+</section>
+
+<section class="tab" id="kpi">
+<div class="card">
+<h2>Taller 2 · Indicadores de noviembre (individual, 60 min)</h2>
+<p>Calcula cada indicador con su fórmula (usa la calculadora del celular u hoja de cálculo). Escribe tu resultado y presiona <b>Verificar</b>. Luego completa la meta y el responsable.</p>
+<table>
+<tr><th>Dato de noviembre</th><th>Valor</th></tr>
+<tr><td>Pacas pedidas por los clientes</td><td>14.000</td></tr>
+<tr><td>Pacas entregadas</td><td>12.880</td></tr>
+<tr><td>Pedidos totales</td><td>220</td></tr>
+<tr><td>Pedidos entregados completos y a tiempo</td><td>176</td></tr>
+<tr><td>Inventario inicial / final (pacas)</td><td>3.600 / 2.800</td></tr>
+<tr><td>Costo logístico total del mes</td><td>$20.608.000</td></tr>
+<tr><td>Costo de producción del mes</td><td>$61.824.000</td></tr>
+<tr><td>Precio de venta por paca</td><td>$8.000</td></tr>
+</table>
+<div id="kpiList"></div>
+<label for="kAnalisis">¿Qué indicador está peor? ¿Qué harías primero para mejorarlo?</label><textarea id="kAnalisis" data-k="kAnalisis"></textarea>
+</div>
+</section>
+
+<section class="tab" id="bsc">
+<div class="card">
+<h2>Taller 3 · Balanced Scorecard (equipo, 60 min)</h2>
+<p>Por cada perspectiva escriban un objetivo, el indicador que lo mide, la meta y una iniciativa (acción concreta). Usen los resultados de noviembre y las estrategias del FODA.</p>
+<div id="bscList"></div>
+</div>
+</section>
+
+<section class="tab" id="abc">
+<div class="card">
+<h2>Taller 4 · Costeo ABC del centro de distribución (individual, 35 min)</h2>
+<h3>Paso 1 · Tarifa de cada actividad</h3>
+<table id="abcT1"><tr><th>Actividad</th><th>Costo</th><th>Inductor</th><th>Cantidad</th><th>Tarifa ($)</th></tr></table>
+<h3 style="margin-top:16px">Paso 2 · Costo de atender cada ruta</h3>
+<p>Costo de la ruta = despachos × tarifa de despachar + posiciones × tarifa de almacenar. Costo por paca = costo de la ruta ÷ pacas.</p>
+<table id="abcT2"><tr><th>Ruta</th><th>Despachos</th><th>Posiciones</th><th>Pacas</th><th>Costo ruta ($)</th><th>Costo por paca ($)</th></tr></table>
+<button class="btn bd" id="abcVer" style="margin-top:10px">Verificar ABC</button>
+<p id="abcRes"></p>
+<label for="abcAnalisis">¿Qué ruta cuesta más por paca? ¿Por qué crees que pasa y qué actividad mejorarías (ABM)?</label><textarea id="abcAnalisis" data-k="abcAnalisis"></textarea>
+</div>
+</section>
+
+<section class="tab" id="quiz">
+<div class="card">
+<h2>Quiz individual (8 preguntas)</h2>
+<div id="quizList"></div>
+<button class="btn bg" id="calif">Calificar</button>
+<p id="quizRes" class="score"></p>
+</div>
+</section>
+
+<section class="tab" id="tarea">
+<div class="card">
+<h2>Tarea para el miércoles 18 (individual)</h2>
+<p>Usa la empresa real de La Guajira de tu tarea anterior.</p>
+<label for="tKpi">Tres indicadores para esa empresa: nombre, fórmula y meta</label><textarea id="tKpi" data-k="tKpi" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
+<label for="tMapa">Enlace a tu mapa en Google My Maps con sus proveedores y clientes principales</label><input id="tMapa" data-k="tMapa" placeholder="https://...">
+<a class="btn bd" href="https://www.google.com/maps/d/" target="_blank" rel="noopener">Abrir Google My Maps</a>
+<p class="note">El mapa es el punto de partida de la sesión 3 (red geográfica).</p>
+</div>
+</section>
+
+<section class="tab" id="entrega">
+<div class="card">
+<h2>Entregar</h2>
+<p>Usa el canal que te funcione; si uno falla, prueba el siguiente.</p>
+<a class="btn bg" id="bWa" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+<a class="btn bd" id="bMail" href="#">Enviar por correo</a>
+<button class="btn bo" id="bCopy">Copiar al portapapeles</button>
+<button class="btn bo" id="bDown">Descargar archivo .txt</button>
+<p class="note">Para la plataforma del SENA: descarga el archivo y súbelo a la evidencia de la sesión 2. Si el correo no se abre, copia el texto y pégalo en un correo nuevo a tu instructor.</p>
+<label for="prev">Vista previa</label>
+<textarea id="prev" readonly style="min-height:260px;font-family:ui-monospace,monospace;font-size:.85rem"></textarea>
+</div>
+</section>
+</main>
+<footer>LogiLab SENA · By Carlos Barrios · Instructor · <a href="../../">Portal</a></footer>
+<div id="toast"></div>
+
+<script>
+const KEY='logilab_s2_integracion';
+let st={};try{st=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){st={}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200)}
+const fmt=n=>n.toLocaleString('es-CO',{maximumFractionDigits:2});
+const num=s=>{if(s===undefined||s===null)return NaN;s=String(s).trim().replace(/[$%\s]/g,'');if(/,\d{1,2}$/.test(s))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/[.,](?=\d{3}(\D|$))/g,'');return parseFloat(s)};
+const close=(a,b)=>!isNaN(a)&&Math.abs(a-b)<=Math.max(0.05,Math.abs(b)*0.01);
+
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id===b.dataset.t));
+if(b.dataset.t==='entrega')build();window.scrollTo(0,0)});
+
+const KPI=[
+['ns','Nivel de servicio (%)','Pacas entregadas ÷ pacas pedidas × 100',12880/14000*100],
+['otif','OTIF (%)','Pedidos completos y a tiempo ÷ pedidos totales × 100',176/220*100],
+['rot','Rotación de inventario (veces al mes)','Pacas entregadas ÷ inventario promedio',12880/3200],
+['dias','Días de inventario','30 ÷ rotación',30/(12880/3200)],
+['cpu','Costo logístico por paca ($)','Costo logístico ÷ pacas entregadas',20608000/12880],
+['cv','Costo logístico sobre ventas (%)','Costo logístico ÷ ventas × 100 (ventas = pacas entregadas × precio)',20608000/(12880*8000)*100],
+['mg','Margen (%)','(Ventas − costo de producción − costo logístico) ÷ ventas × 100',(12880*8000-61824000-20608000)/(12880*8000)*100]];
+document.getElementById('kpiList').innerHTML=KPI.map(k=>`<div class="q" id="k_${k[0]}"><p>${k[1]}</p><small>${k[2]}</small>
+<div class="row"><div><label for="kv_${k[0]}">Tu resultado</label><input id="kv_${k[0]}" data-k="kv_${k[0]}" inputmode="decimal"></div>
+<div><label for="km_${k[0]}">Meta propuesta</label><input id="km_${k[0]}" data-k="km_${k[0]}"></div></div>
+<label for="kr_${k[0]}">Responsable y frecuencia</label><input id="kr_${k[0]}" data-k="kr_${k[0]}" placeholder="Ej.: jefe de despacho, semanal">
+<button class="btn bo" data-ver="${k[0]}" style="margin-top:8px">Verificar</button> <span class="fb"></span></div>`).join('');
+document.querySelectorAll('[data-ver]').forEach(b=>b.onclick=()=>{const k=KPI.find(x=>x[0]===b.dataset.ver);const v=num(st['kv_'+k[0]]);const fb=b.nextElementSibling;
+if(close(v,k[3])){fb.className='fb ok';fb.textContent='✔ Correcto';st['ok_'+k[0]]=1}else{fb.className='fb bad';fb.textContent=isNaN(v)?'Escribe un número':'✘ Revisa la fórmula';st['ok_'+k[0]]=0}save()});
+
+const PERS=['Financiera','Cliente','Procesos internos','Aprendizaje y crecimiento'];
+document.getElementById('bscList').innerHTML=PERS.map((p,i)=>`<div class="q"><p>${p}</p><div class="row">
+<div><label for="b${i}o">Objetivo</label><input id="b${i}o" data-k="b${i}o"></div><div><label for="b${i}i">Indicador</label><input id="b${i}i" data-k="b${i}i"></div>
+<div><label for="b${i}m">Meta</label><input id="b${i}m" data-k="b${i}m"></div><div><label for="b${i}n">Iniciativa</label><input id="b${i}n" data-k="b${i}n"></div></div></div>`).join('');
+
+const ACT=[['Recibir',3300000,'Recepciones',60],['Almacenar',4400000,'Posiciones de estiba',200],['Despachar',6000000,'Despachos',240]];
+const RUT=[['Maicao',100,80,6000],['Uribia',60,50,3000],['Manaure',80,70,3880]];
+const t1=document.getElementById('abcT1');ACT.forEach((a,i)=>{const r=t1.insertRow();r.innerHTML=`<td>${a[0]}</td><td>$${fmt(a[1])}</td><td>${a[2]}</td><td>${a[3]}</td><td><input data-k="ta${i}" inputmode="decimal" style="max-width:120px"></td>`});
+const t2=document.getElementById('abcT2');RUT.forEach((r_,i)=>{const r=t2.insertRow();r.innerHTML=`<td>${r_[0]}</td><td>${r_[1]}</td><td>${r_[2]}</td><td>${fmt(r_[3])}</td><td><input data-k="rc${i}" inputmode="decimal" style="max-width:130px"></td><td><input data-k="rp${i}" inputmode="decimal" style="max-width:110px"></td>`});
+const tar=ACT.map(a=>a[1]/a[3]),rc=RUT.map(r=>r[1]*tar[2]+r[2]*tar[1]),rp=RUT.map((r,i)=>rc[i]/r[3]);
+document.getElementById('abcVer').onclick=()=>{let ok=0,tot=0,msg=[];
+ACT.forEach((a,i)=>{tot++;if(close(num(st['ta'+i]),tar[i]))ok++;else msg.push('tarifa de '+a[0])});
+RUT.forEach((r,i)=>{tot+=2;if(close(num(st['rc'+i]),rc[i]))ok++;else msg.push('costo de '+r[0]);if(close(num(st['rp'+i]),rp[i]))ok++;else msg.push('costo por paca de '+r[0])});
+st.abcScore=ok+'/'+tot;save();const el=document.getElementById('abcRes');el.className=ok===tot?'ok':'bad';el.textContent=`${ok} de ${tot} correctos`+(msg.length?'. Revisa: '+msg.join(', '):'. ¡Muy bien!')};
+
+const Q=[
+['El nivel de servicio mide:',['Pedidos completos y a tiempo','Unidades entregadas frente a unidades pedidas','El costo del transporte','Los días de inventario'],1],
+['El OTIF mide:',['Pedidos entregados completos y a tiempo','Las ventas del mes','La rotación del inventario','El número de camiones'],0],
+['Una cadena ágil conviene cuando:',['La demanda es estable','Se busca solo el menor costo','La demanda cambia y el cliente valora la rapidez','Hay un solo producto'],2],
+['En el FODA, las amenazas son:',['Factores internos negativos','Factores externos negativos','Factores internos positivos','Factores externos positivos'],1],
+['Si la rotación es de 4 veces al mes, los días de inventario son aproximadamente:',['4','7,5','30','120'],1],
+['¿Qué perspectiva del Balanced Scorecard incluye la capacitación del personal?',['Financiera','Cliente','Procesos internos','Aprendizaje y crecimiento'],3],
+['En el costeo ABC, la tarifa de una actividad se calcula:',['Costo de la actividad ÷ cantidad del inductor','Ventas ÷ costo','Costo total ÷ número de empleados','Precio × cantidad'],0],
+['Si el costo logístico baja y las ventas no cambian, el margen:',['Baja','Sube','No cambia','Se vuelve negativo'],1]];
+document.getElementById('quizList').innerHTML=Q.map((q,i)=>`<div class="q" id="q${i}"><p>${i+1}. ${q[0]}</p>${q[1].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}" data-k="q${i}">${o}</label>`).join('')}<span class="fb"></span></div>`).join('');
+document.getElementById('calif').onclick=()=>{let n=0;Q.forEach((q,i)=>{const v=st['q'+i];const fb=document.querySelector(`#q${i} .fb`);
+if(v===undefined){fb.className='fb bad';fb.textContent='Sin responder'}else if(+v===q[2]){n++;fb.className='fb ok';fb.textContent='✔ Correcta'}else{fb.className='fb bad';fb.textContent='✘ Correcta: '+q[1][q[2]]}});
+st.quiz=n;save();document.getElementById('quizRes').textContent=`Resultado: ${n} de ${Q.length}`};
+
+document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k;
+if(el.type==='radio'){if(st[k]===el.value)el.checked=true;el.onchange=()=>{st[k]=el.value;save()}}
+else{if(st[k]!==undefined)el.value=st[k];el.oninput=()=>{st[k]=el.value;save()}}});
+
+function v(k){return (st[k]||'').toString().trim()||'(sin respuesta)'}
+function build(){
+const L=['TALLER S2 · ESTRATEGIA E INDICADORES DE GESTIÓN','Caso: Agua Wayúu Pura S.A.S.',''];
+L.push('Nombre: '+v('nombre'),'Ficha: '+v('ficha'),'Equipo: '+v('equipo'),'Integrantes: '+v('integrantes').replace(/\n/g,', '),'');
+L.push('— TALLER 1: FODA —','Fortalezas: '+v('fF'),'Debilidades: '+v('fD'),'Oportunidades: '+v('fO'),'Amenazas: '+v('fA'),'FO: '+v('eFO'),'DO: '+v('eDO'),'FA: '+v('eFA'),'DA: '+v('eDA'),'Tipo de cadena: '+v('eTipo'),'');
+L.push('— TALLER 2: INDICADORES —');KPI.forEach(k=>L.push(`${k[1]}: ${v('kv_'+k[0])} ${st['ok_'+k[0]]===1?'[verificado ✔]':st['ok_'+k[0]]===0?'[no coincide]':'[sin verificar]'} · Meta: ${v('km_'+k[0])} · Responsable: ${v('kr_'+k[0])}`));
+L.push('Análisis: '+v('kAnalisis'),'');
+L.push('— TALLER 3: BALANCED SCORECARD —');PERS.forEach((p,i)=>L.push(`${p}: objetivo ${v('b'+i+'o')} · indicador ${v('b'+i+'i')} · meta ${v('b'+i+'m')} · iniciativa ${v('b'+i+'n')}`));L.push('');
+L.push('— TALLER 4: COSTEO ABC —');ACT.forEach((a,i)=>L.push(`Tarifa ${a[0]}: ${v('ta'+i)}`));RUT.forEach((r,i)=>L.push(`${r[0]}: costo ${v('rc'+i)} · por paca ${v('rp'+i)}`));
+L.push('Verificación: '+(st.abcScore||'(sin verificar)'),'Análisis: '+v('abcAnalisis'),'');
+L.push('— QUIZ —',st.quiz===undefined?'(no calificado)':`Puntaje: ${st.quiz}/${Q.length}`);Q.forEach((q,i)=>L.push(`${i+1}. ${st['q'+i]!==undefined?q[1][+st['q'+i]]:'(sin respuesta)'}`));L.push('');
+L.push('— TAREA —','Indicadores: '+v('tKpi'),'Mapa: '+v('tMapa'),'','LogiLab SENA · By Carlos Barrios · Instructor');
+const txt=L.join('\n');document.getElementById('prev').value=txt;
+document.getElementById('bWa').href='https://wa.me/?text='+encodeURIComponent(txt);
+document.getElementById('bMail').href='mailto:?subject='+encodeURIComponent('Taller S2 Integración cadena - '+(st.nombre||'aprendiz'))+'&body='+encodeURIComponent(txt);
+return txt}
+document.getElementById('bCopy').onclick=async()=>{const t=build();try{await navigator.clipboard.writeText(t);toast('Copiado')}catch(e){const p=document.getElementById('prev');p.select();try{document.execCommand('copy');toast('Copiado')}catch(e2){toast('Selecciona el texto y cópialo')}}};
+let DL=null;try{window.claude&&window.claude.use&&window.claude.use('downloads').then(d=>{DL=d}).catch(()=>{})}catch(e){}
+document.getElementById('bDown').onclick=async()=>{const t=build();const fn='TallerS2_'+(st.nombre||'aprendiz').replace(/\s+/g,'_')+'.txt';
+if(DL){try{await DL.save({filename:fn,data:t})}catch(e){toast('Descarga cancelada')}return}
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'}));a.download=fn;document.body.appendChild(a);a.click();a.remove()};
+</script>
+</body>
+</html>
