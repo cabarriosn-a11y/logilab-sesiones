@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SICETAC · Detective del flete · LogiLab SENA</title>
+<style>
+:root{--g:#39A900;--gd:#2b7a00;--dk:#14261a;--bg:#f6f8f2;--card:#fff;--ln:#d5ddd0;--mut:#5b6757;--ok:#2b7a00;--okb:#e7f5dd;--bad:#c0392b;--badb:#fbe5e1;--warn:#a86b00;--warnb:#fdf1d6;--info:#1f5fd1;--infob:#e3ecfd}
+:root[data-theme="dark"]{--dk:#e6ede2;--bg:#11150f;--card:#1a2016;--ln:#2e3628;--mut:#9da897;--okb:#1e2d15;--badb:#3a1c17;--warnb:#352b10;--infob:#172440}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--dk:#e6ede2;--bg:#11150f;--card:#1a2016;--ln:#2e3628;--mut:#9da897;--okb:#1e2d15;--badb:#3a1c17;--warnb:#352b10;--infob:#172440}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--dk);line-height:1.5}
+header{background:#14261a;color:#f6f8f2;padding:18px 16px;border-left:8px solid var(--g);display:flex;gap:12px;align-items:flex-start}
+header .t{flex:1}
+header small{color:#7fd34a;font-weight:700;letter-spacing:1px}
+header h1{margin:6px 0 4px;font-size:1.5rem}
+header p{margin:0;color:#c9d6c4;font-size:.95rem}
+header button{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:16px}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:5}
+nav button{flex:0 0 auto;border:1px solid var(--ln);background:var(--card);color:var(--dk);padding:9px 14px;border-radius:999px;font-weight:600;cursor:pointer}
+nav button.on{background:var(--g);border-color:var(--g);color:#0f1d12}
+main{max-width:920px;margin:0 auto;padding:16px}
+section.tab{display:none}section.tab.on{display:block}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:14px}
+h2{font-size:1.3rem;margin:4px 0 10px}h3{font-size:1.05rem;margin:0 0 8px}
+label{display:block;font-weight:600;margin:10px 0 4px;font-size:.95rem}
+input,textarea,select{width:100%;padding:10px;border:1px solid var(--ln);border-radius:8px;font:inherit;background:var(--card);color:var(--dk)}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--g);border-color:transparent}
+textarea{min-height:80px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:640px){.row,.row3{grid-template-columns:1fr}}
+.btn{background:var(--g);color:#0f1d12;border:0;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:.95rem}
+.btn:hover{filter:brightness(.95)}
+.btn.sec{background:transparent;color:var(--dk);border:1px solid var(--ln)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.mut{color:var(--mut)}.small{font-size:.88rem}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.8rem;font-weight:700}
+.ok{background:var(--okb);color:var(--ok)}.bad{background:var(--badb);color:var(--bad)}.warn{background:var(--warnb);color:var(--warn)}.info{background:var(--infob);color:var(--info)}
+.box{border-radius:10px;padding:12px 14px;margin:10px 0;font-weight:500}
+.big{font-size:1.6rem;font-weight:800}
+ol.pasos li{margin-bottom:8px}
+.chip{display:inline-block;background:var(--okb);color:var(--ok);font-weight:700;padding:2px 8px;border-radius:6px;font-family:ui-monospace,monospace;font-size:.9rem}
+table{width:100%;border-collapse:collapse;font-size:.93rem}
+th,td{padding:8px;border-bottom:1px solid var(--ln);text-align:left;vertical-align:middle}
+th{background:#14261a;color:#f6f8f2}
+.equipo{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.equipo button{border:2px solid var(--ln);background:var(--card);color:var(--dk);border-radius:10px;padding:10px;text-align:left;cursor:pointer}
+.equipo button.on{border-color:var(--g);background:var(--okb)}
+.oferta{border:2px solid var(--ln);border-radius:12px;padding:14px;cursor:pointer;background:var(--card)}
+.oferta.on{border-color:var(--g)}
+.ofertas{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.q{margin-bottom:14px}.q label{font-weight:500;display:flex;gap:8px;align-items:flex-start;margin:4px 0}
+.q input{width:auto;margin-top:4px}
+footer{text-align:center;color:var(--mut);font-size:.85rem;padding:20px}
+a{color:var(--gd)}
+:root[data-theme="dark"] a{color:#7fd34a}
+</style>
+</head>
+<body>
+<header>
+  <div class="t"><small>LOGILAB SENA · GESTIÓN LOGÍSTICA · TRANSPORTE DE CARGA</small>
+  <h1>🕵️ SICETAC · Detective del flete</h1>
+  <p>Consulta en la herramienta oficial del Ministerio de Transporte cuánto cuesta, como mínimo, mover un camión desde La Guajira, y descubre qué ofertas de flete serían ilegales.</p></div>
+  <button onclick="tema()" title="Tema claro u oscuro" aria-label="Cambiar tema">🌓</button>
+</header>
+<nav id="nav">
+  <button data-t="t0" class="on">0 · Apuesta</button>
+  <button data-t="t1">1 · ¿Qué es?</button>
+  <button data-t="t2">2 · Cómo consultar</button>
+  <button data-t="t3">3 · Ficha de mi ruta</button>
+  <button data-t="t4">4 · Experimento</button>
+  <button data-t="t5">5 · Detective</button>
+  <button data-t="t6">6 · Quiz</button>
+  <button data-t="t7">7 · Entregar</button>
+</nav>
+<main>
+
+<!-- 0 APUESTA -->
+<section class="tab on" id="t0">
+  <div class="card">
+    <h2>0 · Antes de empezar: tu equipo y tu apuesta</h2>
+    <div class="row">
+      <label>Integrantes del equipo<input id="integrantes" placeholder="Nombres y apellidos, separados por coma"></label>
+      <label>Ficha<input id="ficha" placeholder="3229854"></label>
+    </div>
+    <label>Escojan su número de equipo (cada equipo consulta una ruta distinta)</label>
+    <div class="equipo" id="equipos"></div>
+    <div class="box info" id="rutaAsig" style="display:none"></div>
+  </div>
+  <div class="card">
+    <h3>🎲 La apuesta</h3>
+    <p>Sin buscar nada, ¿cuánto creen que debe pagarse <b>como mínimo</b> por llevar una tractomula (3S3) cargada en su ruta? Escriban su número. Al final verán qué tan cerca quedaron.</p>
+    <label>Nuestra apuesta (pesos colombianos)<input id="apuesta" type="number" min="0" step="10000" placeholder="Ej: 5000000" inputmode="numeric"></label>
+    <div class="btns"><button class="btn" onclick="ir('t1')">Siguiente →</button></div>
+  </div>
+</section>
+
+<!-- 1 QUÉ ES -->
+<section class="tab" id="t1">
+  <div class="card">
+    <h2>1 · ¿Qué es el SICETAC?</h2>
+    <p><b>SICETAC</b> significa <b>Sistema de Información de Costos Eficientes para el Transporte Automotor de Carga</b>. Es la herramienta en línea del <b>Ministerio de Transporte</b> que calcula cuánto cuesta operar un viaje de carga por carretera, según:</p>
+    <ul>
+      <li><b>Origen y destino</b> (la ruta, con sus kilómetros y peajes).</li>
+      <li><b>Configuración del vehículo</b>: camión de 2 ejes, 3 ejes, tractomula 3S2, 3S3…</li>
+      <li><b>Tipo de carga</b>: general, contenedor, granel, refrigerada…</li>
+      <li><b>Horas de cargue, descargue y espera</b>.</li>
+    </ul>
+    <p>El resultado se arma con <b>costos fijos</b> (capital, salario del conductor, seguros, parqueo), <b>costos variables</b> (combustible, llantas, mantenimiento, lubricantes, peajes) y <b>otros costos</b>.</p>
+  </div>
+  <div class="card">
+    <h3>⚖️ ¿Por qué importa?</h3>
+    <p>Antes era una referencia. Desde la <b>Resolución 20243040057465 de 2024</b> (actualizada en 2026), los costos eficientes del SICETAC son de <b>cumplimiento obligatorio</b> y funcionan como <b>costo mínimo</b>:</p>
+    <div class="box bad">🚫 No se puede pactar ni pagar un flete por debajo del SICETAC. El sistema RNDC no expide el <b>manifiesto de carga</b> si el valor es menor, y la <b>Superintendencia de Transporte</b> sanciona a las empresas que lo hagan.</div>
+    <div class="box warn">💡 Ojo: el SICETAC son costos de operación. <b>No incluye la utilidad</b> de la empresa transportadora ni comisiones. Un flete real normalmente queda <b>por encima</b>.</div>
+    <div class="btns"><button class="btn" onclick="ir('t2')">Siguiente →</button></div>
+  </div>
+</section>
+
+<!-- 2 CÓMO CONSULTAR -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>2 · Cómo consultar el SICETAC</h2>
+    <p>La consulta es <b>gratis y sin usuario ni contraseña</b>. Se hace desde el <b>Portal Logístico de Colombia</b> del Ministerio de Transporte.</p>
+    <div class="btns"><a class="btn" href="https://plc.mintransporte.gov.co/" target="_blank" rel="noopener" style="text-decoration:none">🌐 Abrir el Portal Logístico (plc.mintransporte.gov.co)</a></div>
+    <ol class="pasos" style="margin-top:14px">
+      <li>En el portal busquen la opción <b>SICE-TAC / Costos eficientes</b>.</li>
+      <li>Escojan el <b>periodo</b> más reciente (año y mes).</li>
+      <li><b>Configuración del vehículo:</b> <span class="chip">Tractocamión de tres ejes con semirremolque de tres ejes (3S3)</span>.</li>
+      <li><b>Tipo de carga:</b> <span class="chip">Carga general</span> (en el experimento la cambian).</li>
+      <li><b>Origen y destino:</b> los de su equipo (pestaña 0). Si su municipio no aparece, usen la ciudad más cercana y anótenlo.</li>
+      <li><b>Horas:</b> cargue <span class="chip">2</span>, descargue <span class="chip">2</span>, espera en cargue <span class="chip">1</span>, espera en descargue <span class="chip">1</span>.</li>
+      <li>Resuelvan la suma de verificación y den <b>CALCULAR</b>.</li>
+      <li>Busquen en el resultado: <b>Costo total del viaje</b>, <b>Costo tonelada del viaje</b>, <b>toneladas de la configuración</b>, <b>kilómetros</b>, <b>peajes</b>, <b>valor del galón de ACPM</b> y <b>costo hora adicional</b>. Tomen <b>captura de pantalla</b>.</li>
+    </ol>
+    <div class="box info">📱 Funciona en el celular, pero se ve mejor en computador. Si la página del Ministerio está lenta, esperen y vuelvan a dar CALCULAR: a veces tarda.</div>
+    <div class="btns"><button class="btn" onclick="ir('t3')">Ir a la ficha →</button></div>
+  </div>
+</section>
+
+<!-- 3 FICHA -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>3 · Ficha de consulta de nuestra ruta</h2>
+    <p class="mut small" id="fichaRuta">Primero escojan su equipo en la pestaña 0.</p>
+    <div class="row">
+      <label>Origen consultado<input id="f_origen"></label>
+      <label>Destino consultado<input id="f_destino"></label>
+    </div>
+    <div class="row3">
+      <label>Periodo (AAAAMM)<input id="f_periodo" placeholder="202611" inputmode="numeric"></label>
+      <label>Kilómetros del viaje<input id="f_km" type="number" min="0" inputmode="decimal"></label>
+      <label>Toneladas de la configuración<input id="f_ton" type="number" min="0" inputmode="decimal" placeholder="34"></label>
+    </div>
+    <div class="row3">
+      <label>💰 Costo total del viaje ($)<input id="f_total" type="number" min="0" inputmode="decimal"></label>
+      <label>Costo tonelada del viaje ($)<input id="f_cton" type="number" min="0" inputmode="decimal"></label>
+      <label>Peajes del viaje ($)<input id="f_peajes" type="number" min="0" inputmode="decimal"></label>
+    </div>
+    <div class="row">
+      <label>Valor galón ACPM ($)<input id="f_acpm" type="number" min="0" inputmode="decimal"></label>
+      <label>Costo hora adicional ($)<input id="f_hora" type="number" min="0" inputmode="decimal"></label>
+    </div>
+    <div class="btns"><button class="btn" onclick="verificar()">✔ Verificar y calcular</button></div>
+    <div id="verif"></div>
+  </div>
+</section>
+
+<!-- 4 EXPERIMENTO -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>4 · Experimento: ¿qué mueve el costo?</h2>
+    <p>Vuelvan al SICETAC con <b>la misma ruta</b> y cambien <b>una sola cosa a la vez</b>. Anoten el nuevo <b>costo total del viaje</b>.</p>
+    <table>
+      <thead><tr><th>Cambio</th><th>Nuevo costo total ($)</th><th>Variación</th></tr></thead>
+      <tbody id="expTabla"></tbody>
+    </table>
+    <label>¿Qué variable movió más el costo y por qué creen que pasa?</label>
+    <textarea id="e_conclusion" placeholder="Escriban su explicación con sus palabras"></textarea>
+    <div class="btns"><button class="btn" onclick="ir('t5')">Siguiente →</button></div>
+  </div>
+</section>
+
+<!-- 5 DETECTIVE -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>5 · 🕵️ El caso: Distribuidora Wayúu Pura</h2>
+    <p>La <b>Distribuidora Wayúu Pura</b> necesita mandar una tractomula con carga general por <b>su ruta</b>. Tres empresas de transporte le enviaron cotización. Ustedes son los analistas logísticos: tienen el valor del SICETAC.</p>
+    <div id="ofertas"><div class="box warn">Primero llenen y verifiquen el <b>costo total del viaje</b> en la pestaña 3.</div></div>
+    <label>Justificación de la decisión (mínimo 2 razones)</label>
+    <textarea id="d_justif" placeholder="¿Por qué escogieron esa oferta? ¿Qué pasa con las demás?"></textarea>
+    <div id="detRes"></div>
+  </div>
+</section>
+
+<!-- 6 QUIZ -->
+<section class="tab" id="t6">
+  <div class="card">
+    <h2>6 · Quiz rápido</h2>
+    <div id="quiz"></div>
+    <div class="btns"><button class="btn" onclick="calificar()">Calificar</button></div>
+    <div id="quizRes"></div>
+  </div>
+</section>
+
+<!-- 7 ENTREGAR -->
+<section class="tab" id="t7">
+  <div class="card">
+    <h2>7 · Entregar al instructor</h2>
+    <div id="resumenApuesta"></div>
+    <p class="mut small">Revisen el texto. Envíenlo por el medio que funcione; si uno falla, usen otro. Adjunten la captura del SICETAC por WhatsApp.</p>
+    <textarea id="txtEntrega" style="min-height:260px;font-family:ui-monospace,monospace;font-size:.85rem" readonly></textarea>
+    <div class="btns">
+      <button class="btn" onclick="enviar('wa')">💬 WhatsApp</button>
+      <button class="btn sec" onclick="enviar('mail')">✉️ Correo</button>
+      <button class="btn sec" onclick="enviar('copy')">📋 Copiar</button>
+      <button class="btn sec" onclick="enviar('file')">⬇ Descargar .txt</button>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer>Datos de referencia: SICE-TAC · Ministerio de Transporte de Colombia · LogiLab SENA · By Carlos Barrios · Instructor · <a href="../../">Portal</a></footer>
+
+<script>
+const WHATSAPP = '';   // opcional: número del instructor, ej. 573001234567
+const CORREO = '';     // opcional: correo del instructor
+const RUTAS = {1:['Riohacha','Barranquilla'],2:['Riohacha','Bogotá'],3:['Maicao','Santa Marta'],4:['Riohacha','Medellín'],
+  5:['Riohacha','Bucaramanga'],6:['Maicao','Cartagena'],7:['Riohacha','Valledupar'],8:['Riohacha','Cali']};
+const EXP = [
+  ['ex_c2','Configuración: camión de 2 ejes (C2) en vez de 3S3'],
+  ['ex_esp','Horas de espera: 6 en cargue y 6 en descargue (en vez de 1 y 1)'],
+  ['ex_tipo','Tipo de carga: refrigerada o contenedor (en vez de general)'],
+  ['ex_inv','Ruta al revés: destino → origen']];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cop = n => '$' + Math.round(Number(n)||0).toLocaleString('es-CO');
+const LSK = 'sicetac_detective_v1';
+let S = {}; try { S = JSON.parse(localStorage.getItem(LSK)) || {}; } catch {}
+function guardar(){ try{ localStorage.setItem(LSK, JSON.stringify(S)); }catch{} }
+function tema(){ const r=document.documentElement, o=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches; r.dataset.theme=o?'light':'dark'; try{localStorage.setItem('ll_tema',r.dataset.theme)}catch{} }
+try{ const t=localStorage.getItem('ll_tema'); if(t) document.documentElement.dataset.theme=t; }catch{}
+
+// navegación
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>ir(b.dataset.t));
+function ir(t){
+  document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on', s.id===t));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.t===t));
+  if (t==='t5') pintarOfertas();
+  if (t==='t7') armarEntrega();
+  scrollTo({top:0,behavior:'smooth'});
+}
+
+// equipos
+function pintarEquipos(){
+  $('#equipos').innerHTML = Object.entries(RUTAS).map(([n,[o,d]])=>`<button class="${S.equipo==n?'on':''}" onclick="elegirEquipo(${n})"><b>Equipo ${n}</b><br><span class="small">${o} → ${d}</span></button>`).join('');
+  if (S.equipo) {
+    const [o,d] = RUTAS[S.equipo];
+    $('#rutaAsig').style.display='block';
+    $('#rutaAsig').innerHTML = `🚛 Su ruta: <b>${o} → ${d}</b> · tractomula 3S3 · carga general`;
+    $('#fichaRuta').innerHTML = `Equipo ${S.equipo}: <b>${o} → ${d}</b> · 3S3 · carga general · horas 2/2/1/1`;
+    if (!$('#f_origen').value) $('#f_origen').value = S.f_origen = o;
+    if (!$('#f_destino').value) $('#f_destino').value = S.f_destino = d;
+    guardar();
+  }
+}
+function elegirEquipo(n){ S.equipo = n; S.oferta = null; guardar(); pintarEquipos(); campos(); }
+
+// campos con autoguardado
+const CAMPOS = ['integrantes','ficha','apuesta','f_origen','f_destino','f_periodo','f_km','f_ton','f_total','f_cton','f_peajes','f_acpm','f_hora','e_conclusion','d_justif'];
+function campos(){ EXP.forEach(([id])=>CAMPOS.includes(id)||CAMPOS.push(id)); }
+function pintarExp(){
+  $('#expTabla').innerHTML = EXP.map(([id,t])=>`<tr><td>${t}</td><td><input id="${id}" type="number" min="0" inputmode="decimal" style="max-width:170px"></td><td id="${id}_v">—</td></tr>`).join('');
+  EXP.forEach(([id])=>$('#'+id).addEventListener('input', varExp));
+}
+function varExp(){
+  const base = Number(S.f_total);
+  EXP.forEach(([id])=>{
+    const v = Number($('#'+id).value), el = $('#'+id+'_v');
+    if (!base || !v) { el.textContent='—'; return; }
+    const p = (v-base)/base*100;
+    el.innerHTML = `<span class="pill ${p>0?'bad':p<0?'ok':'info'}">${p>0?'+':''}${p.toFixed(1)} %</span>`;
+  });
+}
+
+// verificación de la ficha
+function num(id){ return Number($('#'+id).value) || 0; }
+function verificar(){
+  const km=num('f_km'), ton=num('f_ton'), total=num('f_total'), cton=num('f_cton'), peajes=num('f_peajes'), acpm=num('f_acpm');
+  const out=[];
+  if (!total || !km || !ton) { $('#verif').innerHTML='<div class="box warn">Faltan datos: costo total, kilómetros y toneladas son obligatorios.</div>'; return; }
+  const ctonCalc = total/ton;
+  if (cton) {
+    const dif = Math.abs(cton-ctonCalc)/ctonCalc*100;
+    out.push(dif<=3 ? `<div class="box ok">✔ Datos coherentes: costo total ÷ toneladas = ${cop(ctonCalc)} y el SICETAC dice ${cop(cton)}.</div>`
+                    : `<div class="box warn">⚠ Revisen: costo total ÷ toneladas da ${cop(ctonCalc)}, pero anotaron ${cop(cton)} como costo tonelada (diferencia ${dif.toFixed(1)} %). ¿Copiaron bien los números?</div>`);
+  }
+  if (km < 20 || km > 2500) out.push('<div class="box warn">⚠ Esos kilómetros se ven raros para un viaje por carretera en Colombia. Revisen.</div>');
+  const porKm = total/km, porTonKm = total/ton/km;
+  out.push(`<div class="card" style="margin-top:10px">
+    <h3>📊 Indicadores de su ruta</h3>
+    <table>
+      <tr><td>Costo por kilómetro</td><td class="big" style="font-size:1.2rem">${cop(porKm)}</td></tr>
+      <tr><td>Costo por tonelada</td><td><b>${cop(ctonCalc)}</b></td></tr>
+      <tr><td>Costo por tonelada-kilómetro</td><td><b>${cop(porTonKm)}</b></td></tr>
+      ${peajes?`<tr><td>Peso de los peajes en el costo total</td><td><b>${(peajes/total*100).toFixed(1)} %</b></td></tr>`:''}
+      ${acpm?`<tr><td>Galones de ACPM que equivalen al costo total</td><td><b>${Math.round(total/acpm).toLocaleString('es-CO')} gal</b></td></tr>`:''}
+    </table>
+    <p class="small mut">Costo por tonelada-km = costo total ÷ toneladas ÷ kilómetros. Sirve para comparar rutas de distinta longitud: compárenlo con los otros equipos.</p></div>`);
+  if (S.apuesta) {
+    const e=(Number(S.apuesta)-total)/total*100;
+    out.push(`<div class="box info">🎲 Su apuesta fue ${cop(S.apuesta)}: quedaron ${Math.abs(e).toFixed(0)} % ${e>0?'por encima':'por debajo'} del SICETAC.</div>`);
+  }
+  S.verificado = true; S.indic = { porKm, ctonCalc, porTonKm }; guardar();
+  $('#verif').innerHTML = out.join('') + '<div class="btns"><button class="btn" onclick="ir(\'t4\')">Siguiente: experimento →</button></div>';
+  varExp();
+}
+
+// caso detective
+const EMPRESAS = [
+  {id:'A', nom:'TransCaribe Express', f:0.84, extra:'Promete salir hoy mismo. "Les damos el mejor precio de la costa".'},
+  {id:'B', nom:'Logística Guajira SAS', f:1.00, extra:'Cumple el mínimo exacto. Sin GPS ni seguro adicional.'},
+  {id:'C', nom:'Carga Segura del Norte', f:1.17, extra:'Incluye GPS, seguro de mercancía y entrega en 48 h garantizada.'}];
+function pintarOfertas(){
+  const total = Number(S.f_total);
+  if (!total) return;
+  const orden = ['C','A','B'];
+  $('#ofertas').innerHTML = `<p class="small mut">Valor SICETAC de su ruta: <b>${cop(total)}</b></p><div class="ofertas">${orden.map(id=>{const e=EMPRESAS.find(x=>x.id===id);return `
+    <div class="oferta ${S.oferta===id?'on':''}" onclick="elegirOferta('${id}')">
+      <div class="pill info">Oferta ${id}</div><h3 style="margin-top:6px">${e.nom}</h3>
+      <div class="big">${cop(total*e.f)}</div><p class="small mut">${e.extra}</p></div>`}).join('')}</div>`;
+  if (S.oferta) retro();
+}
+function elegirOferta(id){ S.oferta=id; guardar(); pintarOfertas(); }
+function retro(){
+  const r = {A:'<div class="box bad">❌ La oferta A está <b>por debajo del SICETAC</b> (16 % menos). Es ilegal: el RNDC no expide el manifiesto de carga y la Superintendencia de Transporte puede sancionar a la empresa transportadora y al generador de carga. Barato no siempre es mejor.</div>',
+    B:'<div class="box ok">✔ La oferta B es <b>legal</b>, porque cumple el mínimo. Pero ojo: el SICETAC no incluye utilidad. Una empresa que cobra exactamente el costo mínimo ¿de dónde saca su ganancia? Pregúntense si es sostenible y qué riesgo corre su carga.</div>',
+    C:'<div class="box ok">✔ La oferta C es <b>legal</b> y está 17 % por encima del mínimo. Ese margen cubre la utilidad y servicios extra (GPS, seguro, tiempo garantizado). Es una buena decisión si el valor de la carga o el tiempo de entrega lo justifican.</div>'}[S.oferta];
+  $('#detRes').innerHTML = r;
+}
+
+// quiz
+const QUIZ = [
+  {p:'¿Qué entidad creó y administra el SICETAC?', o:['La DIAN','El Ministerio de Transporte','La Cámara de Comercio','El SENA'], c:1},
+  {p:'Hoy, ¿se puede pagar un flete por debajo del valor del SICETAC?', o:['Sí, si las dos partes están de acuerdo','Sí, solo en rutas cortas','No: es un costo mínimo obligatorio','Solo si la carga es refrigerada'], c:2},
+  {p:'¿Qué NO incluye el valor del SICETAC?', o:['El combustible','Los peajes','La utilidad de la empresa transportadora','El salario del conductor'], c:2},
+  {p:'¿Qué significa la configuración 3S3?', o:['Camión de 3 toneladas','Tractocamión de 3 ejes con semirremolque de 3 ejes','Camión sencillo de 3 ejes','Tres servicios por semana'], c:1},
+  {p:'¿Qué entidad vigila y sanciona el incumplimiento del SICETAC?', o:['Superintendencia de Transporte','Superintendencia Financiera','Policía de Carreteras','Invías'], c:0},
+  {p:'Si aumentan las horas de espera en cargue y descargue, el costo del viaje…', o:['Baja','No cambia','Sube','Depende del peaje'], c:2}];
+function pintarQuiz(){
+  $('#quiz').innerHTML = QUIZ.map((q,i)=>`<div class="q"><b>${i+1}. ${q.p}</b>${q.o.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}" ${S['q'+i]==j?'checked':''} onchange="S['q${i}']=${j};guardar()"> ${o}</label>`).join('')}</div>`).join('');
+}
+function calificar(){
+  let ok=0; QUIZ.forEach((q,i)=>{ if(Number(S['q'+i])===q.c) ok++; });
+  S.quizNota = ok; guardar();
+  $('#quizRes').innerHTML = `<div class="box ${ok>=5?'ok':ok>=3?'warn':'bad'}">Resultado: <b>${ok} / ${QUIZ.length}</b>${ok<QUIZ.length?' · Revisen la pestaña 1 y vuelvan a intentar.':' · ¡Excelente! 🎉'}</div>`;
+}
+
+// entrega
+function armarEntrega(){
+  const r = S.equipo ? RUTAS[S.equipo] : ['?','?'];
+  const ind = S.indic || {};
+  const exp = EXP.map(([id,t])=>{ const v=Number(S[id]); const b=Number(S.f_total); return `- ${t}: ${v?cop(v):'sin dato'}${v&&b?` (${((v-b)/b*100).toFixed(1)} %)`:''}`; }).join('\n');
+  const of = S.oferta ? EMPRESAS.find(e=>e.id===S.oferta) : null;
+  const txt = `SICETAC · DETECTIVE DEL FLETE · LogiLab SENA
+Ficha: ${S.ficha||'-'} · Equipo ${S.equipo||'-'} (${r[0]} → ${r[1]})
+Integrantes: ${S.integrantes||'-'}
+
+1) CONSULTA SICETAC (3S3, carga general, horas 2/2/1/1)
+Origen-destino consultado: ${S.f_origen||'-'} → ${S.f_destino||'-'} · Periodo ${S.f_periodo||'-'}
+Kilómetros: ${S.f_km||'-'} · Toneladas: ${S.f_ton||'-'}
+Costo total del viaje: ${cop(S.f_total)}
+Costo tonelada: ${cop(S.f_cton)} · Peajes: ${cop(S.f_peajes)} · ACPM/galón: ${cop(S.f_acpm)} · Hora adicional: ${cop(S.f_hora)}
+Indicadores: ${cop(ind.porKm)}/km · ${cop(ind.porTonKm)}/ton-km
+Apuesta inicial: ${cop(S.apuesta)}${S.apuesta&&S.f_total?` (${((S.apuesta-S.f_total)/S.f_total*100).toFixed(0)} % frente al SICETAC)`:''}
+
+2) EXPERIMENTO
+${exp}
+Conclusión: ${S.e_conclusion||'-'}
+
+3) CASO DETECTIVE
+Oferta escogida: ${of?of.id+' · '+of.nom+' · '+cop(Number(S.f_total)*of.f):'-'}
+Justificación: ${S.d_justif||'-'}
+
+4) QUIZ: ${S.quizNota!=null?S.quizNota+' / '+QUIZ.length:'sin calificar'}`;
+  $('#txtEntrega').value = txt;
+  const faltan = [!S.equipo&&'equipo', !S.f_total&&'costo total', !S.oferta&&'oferta del caso', S.quizNota==null&&'quiz'].filter(Boolean);
+  $('#resumenApuesta').innerHTML = faltan.length ? `<div class="box warn">Les falta: ${faltan.join(', ')}.</div>` : '<div class="box ok">✔ Todo completo. ¡Envíenlo!</div>';
+}
+async function enviar(m){
+  armarEntrega(); const t=$('#txtEntrega').value;
+  if (m==='wa') open('https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(t),'_blank');
+  if (m==='mail') location.href='mailto:'+CORREO+'?subject='+encodeURIComponent('SICETAC Detective del flete · Equipo '+(S.equipo||''))+'&body='+encodeURIComponent(t);
+  if (m==='copy') { try{ await navigator.clipboard.writeText(t); alert('Copiado ✓'); }catch{ $('#txtEntrega').select(); document.execCommand('copy'); alert('Copiado ✓'); } }
+  if (m==='file') { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'})); a.download='SICETAC_Equipo'+(S.equipo||'')+'.txt'; a.click(); }
+}
+
+// inicio
+pintarExp(); campos(); pintarQuiz();
+CAMPOS.forEach(id=>{ const el=$('#'+id); if(!el) return; if(S[id]!=null) el.value=S[id]; el.addEventListener('input',()=>{ S[id]=el.value; guardar(); }); });
+pintarEquipos(); varExp();
+</script>
+</body>
+</html>
