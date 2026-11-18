@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Naturaleza de la carga · Unidad 1 · LogiLab</title>
+<style>
+:root{--n:#0B2545;--g:#D99A0B;--bg:#F4F6F9;--t:#1C2B3D;--m:#5A6878}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:var(--n);color:#fff;padding:16px 20px;border-bottom:5px solid var(--g)}
+header p{margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--g);font-weight:700}
+header h1{margin:4px 0 0;font-size:22px}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.stage{position:relative;background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(11,37,69,.12);overflow:hidden;aspect-ratio:16/9}
+.stage img{width:100%;height:100%;object-fit:contain;display:block}
+.bar{display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0}
+button{font:inherit;font-weight:700;background:var(--n);color:#fff;border:0;border-radius:8px;padding:10px 18px;cursor:pointer;min-width:48px}
+button:disabled{opacity:.35;cursor:default}button:focus-visible{outline:3px solid var(--g);outline-offset:2px}
+#cnt{font-weight:700;min-width:70px;text-align:center}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:8px}
+.thumbs button{padding:0;background:#fff;border:2px solid transparent;border-radius:6px;overflow:hidden}
+.thumbs button[aria-current=true]{border-color:var(--g)}
+.thumbs img{width:100%;display:block}
+.back{display:inline-block;color:#fff;opacity:.85;font-size:13px;text-decoration:none;margin-bottom:6px}.dl{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:6px 0 14px}.dl a{background:#fff;color:var(--n);border:2px solid var(--n);border-radius:8px;padding:8px 14px;font-weight:700;text-decoration:none}@media (prefers-color-scheme:dark){:root{--bg:#0f1722;--t:#e8edf4;--m:#a8b4c4}.dl a{background:#16233a;color:#fff;border-color:var(--g)}}
+footer{text-align:center;color:var(--m);font-size:13px;padding:20px}
+</style></head><body>
+<header><a class="back" href="../../">← Portal LogiLab</a><p>Unitarización y Embalaje de la Carga · 732235 · Unidad 1</p><h1>Naturaleza de la carga</h1></header>
+<main>
+<div class="stage"><img id="cur" alt="Diapositiva 1"></div>
+<div class="bar"><button id="prev" aria-label="Anterior">◀</button><span id="cnt"></span><button id="next" aria-label="Siguiente">▶</button><button id="fs">⛶</button></div>
+<div class="dl"><a href="Naturaleza_de_la_Carga_U1.pdf">📄 Ver en PDF</a><a href="Naturaleza_de_la_Carga_U1.pptx" download>⬇ Descargar PowerPoint</a></div>
+<div class="thumbs" id="th"></div>
+</main>
+<footer>Universidad de La Guajira · Administración Marítima y Portuaria · By Carlos Barrios · Docente</footer>
+<script>
+const N=15,src=i=>'img/s'+String(i).padStart(2,'0')+'.jpg';let k=1;
+const cur=document.getElementById('cur'),th=document.getElementById('th');
+for(let i=1;i<=N;i++){const b=document.createElement('button');b.innerHTML='<img loading="lazy" alt="Diapositiva '+i+'" src="'+src(i)+'">';b.onclick=()=>go(i);th.appendChild(b)}
+function go(i){k=Math.max(1,Math.min(N,i));cur.src=src(k);cur.alt='Diapositiva '+k;document.getElementById('cnt').textContent=k+' / '+N;
+prev.disabled=k==1;next.disabled=k==N;[...th.children].forEach((b,j)=>b.setAttribute('aria-current',j+1==k));try{history.replaceState(null,'','#s'+k)}catch(e){}}
+prev.onclick=()=>go(k-1);next.onclick=()=>go(k+1);
+fs.onclick=()=>{const s=document.querySelector('.stage');try{(s.requestFullscreen||s.webkitRequestFullscreen).call(s)}catch(e){}};
+document.addEventListener('keydown',e=>{if(e.key=='ArrowRight')go(k+1);if(e.key=='ArrowLeft')go(k-1)});
+let x0=null;const st=document.querySelector('.stage');st.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+st.addEventListener('touchend',e=>{if(x0==null)return;const d=e.changedTouches[0].clientX-x0;if(Math.abs(d)>40)go(k+(d<0?1:-1));x0=null});
+const m=location.hash.match(/^#s(\d+)$/);go(m?+m[1]:1);
+</script></body></html>
