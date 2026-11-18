@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>El Negociador · LogiLab SENA</title>
+<meta name="description" content="Simulador de negociación de fletes Colombia ⇄ Brasil por grupos. LogiLab SENA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{--sena:#39A900;--sena-d:#2B7F00;--sena-l:#EAF6E1;--bg:#F4F6F1;--card:#fff;--ink:#1B2118;--mut:#5F6A5A;--line:#DFE4D8;
+  --col:#C8102E;--col-l:#FCE6E9;--bra:#0B6E3B;--bra-l:#E1F3E8;--warn:#B77900;--warn-l:#FDF2D6;--bad:#C93A23;--bad-l:#FBE4DF;--info:#1F5FD1;--info-l:#E2EBFD;--gold:#F2B705}
+:root[data-theme="dark"]{--bg:#11150F;--card:#1A2016;--ink:#E8EDE4;--mut:#9DA897;--line:#2E3628;--sena-l:#1E2D15;--col-l:#3A1820;--bra-l:#14301F;--warn-l:#352B10;--bad-l:#3A1C17;--info-l:#172440}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11150F;--card:#1A2016;--ink:#E8EDE4;--mut:#9DA897;--line:#2E3628;--sena-l:#1E2D15;--col-l:#3A1820;--bra-l:#14301F;--warn-l:#352B10;--bad-l:#3A1C17;--info-l:#172440}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "Work Sans",system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--sena-d)}
+header{background:var(--sena);color:#fff;padding:10px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+header .logo{font-weight:800;font-size:18px;letter-spacing:.2px}
+header .logo small{font-weight:500;opacity:.85;font-size:13px;margin-left:6px}
+header .sp{flex:1}
+header .chip{background:rgba(0,0,0,.18);padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600}
+header .reloj{font-family:"JetBrains Mono",monospace;font-size:20px;font-weight:700;background:#fff;color:var(--sena-d);padding:3px 12px;border-radius:8px;min-width:96px;text-align:center}
+header .reloj.urg{color:var(--bad);animation:lat 1s infinite}
+@keyframes lat{50%{opacity:.55}}
+header button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
+main{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:20px 16px 30px}
+footer{text-align:center;color:var(--mut);font-size:12.5px;padding:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.grid{display:grid;gap:14px}
+.grid>*{min-width:0}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.lay{grid-template-columns:300px 1fr}
+@media(max-width:860px){.lay{grid-template-columns:1fr}}
+@media(max-width:600px){header{padding:8px 12px;gap:8px}header .logo small{display:none}header .chip{font-size:12px;padding:3px 9px}header .reloj{font-size:17px;min-width:80px}main{padding:14px 10px}.card{padding:14px}h1{font-size:23px}}
+h1{font-size:28px;margin:0 0 6px;line-height:1.15}
+h2{font-size:18px;margin:0 0 12px}
+h3{font-size:13px;margin:0 0 8px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+.mut{color:var(--mut)} .small{font-size:13px} .mono{font-family:"JetBrains Mono",monospace}
+.btn{background:var(--sena);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;transition:background .15s,transform .05s}
+.btn:hover{background:var(--sena-d)} .btn:active{transform:translateY(1px)} .btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line)} .btn.sec:hover{border-color:var(--sena)}
+.btn.rojo{background:var(--bad)} .btn.sm{padding:6px 11px;font-size:13px;border-radius:8px}
+.btn.w{width:100%}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--mut)}
+input,select{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-weight:500}
+input:focus,select:focus{outline:2px solid var(--sena);outline-offset:0;border-color:transparent}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.form{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));align-items:end}
+.hero{display:grid;gap:18px;grid-template-columns:1.2fr 1fr;align-items:center;margin-bottom:22px}
+@media(max-width:760px){.hero{grid-template-columns:1fr}}
+.mapa{background:linear-gradient(135deg,var(--col-l),var(--bra-l));border-radius:16px;padding:22px;display:flex;align-items:center;justify-content:space-around;font-size:15px;font-weight:700;text-align:center;gap:8px}
+.mapa .f{font-size:44px;line-height:1}
+.mapa .ruta{flex:1;max-width:180px;border-top:3px dashed var(--mut);position:relative;margin-top:-26px}
+.mapa .ruta::after{content:"🚛";position:absolute;top:-17px;left:0;font-size:24px;animation:camion 4s ease-in-out infinite alternate}
+@keyframes camion{to{left:calc(100% - 28px)}}
+.opc{cursor:pointer;text-align:left;border:2px solid var(--line);transition:border-color .15s,transform .15s}
+.opc:hover{border-color:var(--sena);transform:translateY(-2px)}
+.opc .ic{font-size:34px}
+.roles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.rol{border:2px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;background:var(--card);text-align:left}
+.rol.on{border-color:var(--sena);background:var(--sena-l)}
+.rol:disabled{opacity:.5;cursor:not-allowed}
+.rol b{display:block;font-size:15px}
+.meta{background:var(--sena-l);border-radius:12px;padding:14px;margin:12px 0}
+.big{font-size:44px;font-weight:800;line-height:1;text-align:center;font-variant-numeric:tabular-nums}
+.par{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-weight:700;font-variant-numeric:tabular-nums}
+.b{display:inline-block;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
+.b-col{background:var(--col-l);color:var(--col)} .b-bra{background:var(--bra-l);color:var(--bra)}
+.b-ok{background:var(--sena-l);color:var(--sena-d)} .b-warn{background:var(--warn-l);color:var(--warn)} .b-bad{background:var(--bad-l);color:var(--bad)}
+.b-info{background:var(--info-l);color:var(--info)} .b-mut{background:var(--line);color:var(--mut)}
+.tbl{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
+th{font-size:12px;color:var(--mut);background:var(--bg);position:sticky;top:0}
+tr.nueva{animation:nueva 2s}
+@keyframes nueva{from{background:var(--warn-l)}}
+tr.gana td{background:color-mix(in srgb,var(--gold) 16%,transparent)}
+td.izq{text-align:left}
+.lista{list-style:none;margin:0;padding:0;font-size:12.5px;text-align:left;max-height:130px;overflow:auto}
+.lista li{border-bottom:1px dashed var(--line);padding:2px 0}
+.aviso{border-radius:12px;padding:14px 16px;margin-bottom:14px;font-weight:600}
+.aviso.ok{background:var(--sena-l);color:var(--sena-d)} .aviso.warn{background:var(--warn-l);color:var(--warn)} .aviso.info{background:var(--info-l);color:var(--info)} .aviso.bad{background:var(--bad-l);color:var(--bad)}
+.espera{text-align:center;padding:50px 20px}
+.espera .ic{font-size:60px;animation:flota 2.4s ease-in-out infinite}
+@keyframes flota{50%{transform:translateY(-8px)}}
+.sala{border-left:5px solid var(--line)} .sala.act{border-left-color:var(--sena)}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:12px;font-weight:600;opacity:0;transition:.2s;pointer-events:none;z-index:60;max-width:92vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.toast.err{background:var(--bad);color:#fff}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);width:min(1100px,96vw);padding:0}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog .hd{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:0;background:var(--card);z-index:2}
+dialog .bd{padding:16px 18px;max-height:75vh;overflow:auto}
+.esc{font-size:12.5px;line-height:1.55}
+.oculto{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">🤝 El Negociador<small>LogiLab SENA</small></span>
+  <span id="hdInfo" class="row"></span>
+  <span class="sp"></span>
+  <span id="hdReloj"></span>
+  <button onclick="tema()" title="Tema claro u oscuro" aria-label="Cambiar tema">🌓</button>
+</header>
+<main id="app"><div class="espera"><div class="ic">🚛</div><p class="mut">Cargando…</p></div></main>
+<footer>Simulador de negociación de fletes Colombia ⇄ Brasil · LogiLab SENA · By Carlos Barrios · Instructor · <a href="../../">Portal</a></footer>
+<dialog id="dlg"><div class="hd"><strong id="dlgT"></strong><button class="btn sec sm" onclick="dlg.close()">Cerrar</button></div><div class="bd" id="dlgB"></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ═══════════ CONFIGURACIÓN ═══════════
+// Pega aquí la dirección de tu Worker de Cloudflare (Workers & Pages → logilab-negociador → URL).
+const API_DEF = 'https://logilab-negociador.TU-SUBDOMINIO.workers.dev';
+const WHATSAPP_INSTRUCTOR = '';   // opcional: 57300XXXXXXX para que los aprendices te envíen su resultado
+
+const ROLES = {
+  fabrica_col:{nombre:'Fábrica Colombia',tipo:'fabrica',ic:'🏭',f:'🇨🇴'},
+  fabrica_bra:{nombre:'Fábrica Brasil',tipo:'fabrica',ic:'🏭',f:'🇧🇷'},
+  transp_col:{nombre:'Transportista Colombia',tipo:'transporte',ic:'🚛',f:'🇨🇴'},
+  transp_bra:{nombre:'Transportista Brasil',tipo:'transporte',ic:'🚛',f:'🇧🇷'}};
+const ESC = {1:{fabrica_col:[500,500],fabrica_bra:[500,500]},2:{fabrica_col:[700,300],fabrica_bra:[300,700]},
+  3:{fabrica_col:[800,200],fabrica_bra:[200,800]},4:{fabrica_col:[100,900],fabrica_bra:[900,100]}};
+const RUTA = {col_bra:'🇨🇴 ➡️ 🇧🇷', bra_col:'🇧🇷 ➡️ 🇨🇴'};
+const RANGO = '1.00 – 1.80';
+
+// ═══════════ utilidades ═══════════
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => (Number(n)<0?'−':'') + '$' + Math.abs(Number(n||0)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num = n => Number(n||0).toLocaleString('es-CO');
+const LS = { get(k){try{return JSON.parse(localStorage.getItem('neg_'+k))}catch{return null}}, set(k,v){try{localStorage.setItem('neg_'+k,JSON.stringify(v))}catch{}}, del(k){try{localStorage.removeItem('neg_'+k)}catch{}} };
+function toast(t, err){ const e=$('#toast'); e.textContent=t; e.className='toast on'+(err?' err':''); clearTimeout(e._t); e._t=setTimeout(()=>e.className='toast',err?4200:2400); }
+function tema(){ const r=document.documentElement, oscuro=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches; r.dataset.theme=oscuro?'light':'dark'; LS.set('tema',r.dataset.theme); }
+if (LS.get('tema')) document.documentElement.dataset.theme = LS.get('tema');
+const params = new URLSearchParams(location.search);
+if (params.get('api')) LS.set('api', params.get('api').replace(/\/+$/,''));
+const API = () => LS.get('api') || API_DEF;
+const sinServidor = () => API().includes('TU-SUBDOMINIO');
+async function api(ruta, body, admin){
+  const h = {'content-type':'application/json'};
+  if (admin) h['x-admin-key'] = LS.get('clave') || '';
+  let r;
+  try { r = await fetch(API()+'/api/'+ruta, {method: body===undefined?'GET':'POST', headers:h, body: body===undefined?undefined:JSON.stringify(body)}); }
+  catch { throw Object.assign(new Error('Sin conexión con el servidor del juego. Revisa tu internet.'),{red:true}); }
+  if (ruta.startsWith('admin/csv') && r.ok) return r.blob();
+  const j = await r.json().catch(()=>({ok:false,error:'Respuesta inválida del servidor ('+r.status+')'}));
+  if (!j.ok) throw Object.assign(new Error(j.error||'Error'),{status:r.status});
+  return j;
+}
+function descargar(nombre, blob){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nombre; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); }
+async function copiar(t){ try{ await navigator.clipboard.writeText(t); toast('Copiado ✓'); } catch { prompt('Copia este texto:', t); } }
+let offset = 0;  // diferencia reloj servidor - reloj local
+const ahora = () => Date.now() + offset;
+function mmss(ms){ const s=Math.max(0,Math.ceil(ms/1000)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function confeti(){ if(!window.confetti) return; const fin=Date.now()+2500; (function f(){ confetti({particleCount:40,spread:70,origin:{x:Math.random()*.6+.2,y:.3}}); if(Date.now()<fin) setTimeout(f,250); })(); }
+
+// ═══════════ enrutador simple ═══════════
+let timer = null, reloj = null;
+function parar(){ clearTimeout(timer); clearInterval(reloj); timer=null; $('#hdReloj').innerHTML=''; $('#hdInfo').innerHTML=''; }
+function ir(v){ parar(); history.replaceState(null,'',location.pathname+location.search+(v?'#'+v:'')); render(); }
+function render(){
+  const h = location.hash.slice(1);
+  if (h === 'instructor') return vInstructor();
+  const ses = LS.get('sesion');
+  if (h === 'juego' && ses) return vJuego();
+  if (h === 'entrar' || params.get('sala')) return vEntrar(params.get('sala') || '');
+  if (ses && !h) return vJuego();
+  vInicio();
+}
+window.addEventListener('hashchange', ()=>{ parar(); render(); });
+
+// ═══════════ INICIO ═══════════
+function vInicio(){
+  $('#app').innerHTML = `
+  <div class="hero">
+    <div><span class="b b-ok">Gestión Logística · Negociación de fletes</span>
+      <h1 style="margin-top:10px">Negocia el transporte de carga entre Colombia y Brasil</h1>
+      <p class="mut">Dos fábricas necesitan mover su carga y dos transportistas tienen camiones. Cada grupo juega en su propia <b>sala</b>: las fábricas buscan pagar lo menos posible y los transportistas, ganar lo máximo. Tienes 15 minutos por ronda.</p></div>
+    <div class="mapa"><div><div class="f">🇨🇴</div>Colombia</div><div class="ruta"></div><div><div class="f">🇧🇷</div>Brasil</div></div>
+  </div>
+  <div class="grid g2">
+    <button class="card opc" onclick="ir('entrar')"><div class="ic">🎓</div><h2>Soy aprendiz</h2><p class="mut">Entra con el código de sala que te dio tu instructor.</p></button>
+    <button class="card opc" onclick="ir('instructor')"><div class="ic">🧑‍🏫</div><h2>Soy instructor</h2><p class="mut">Crea salas por grupo, inicia rondas y mira resultados.</p></button>
+  </div>
+  <div class="card" style="margin-top:14px"><h2>¿Cómo se juega?</h2>
+    <ul class="small" style="margin:0;padding-left:18px;line-height:1.7">
+      <li>Cada viaje recorre <b>2.000 km</b>. El precio se negocia en <b>dólares por km</b> (rango sugerido ${RANGO}).</li>
+      <li><b>Fábricas:</b> cada viaje que no logres contratar te cuesta una <b>multa de $5.000</b>. Gana la fábrica que gaste menos.</li>
+      <li><b>Transportistas:</b> cada camión que quede vacío te cuesta <b>$5.000</b>. Si vendes más viajes de los que tienes, debes tercerizarlos en el mercado externo a un precio aleatorio entre $1 y $4 por km. Gana el de mayor utilidad.</li>
+      <li>Solo se negocia entre tipos distintos: fábrica ⇄ transportista. Las ofertas se aceptan, se rechazan o se retiran.</li>
+    </ul></div>`;
+}
+
+// ═══════════ ENTRAR (aprendiz) ═══════════
+let selRol = null;
+function vEntrar(codigo){
+  selRol = null;
+  $('#app').innerHTML = `
+  <div class="card" style="max-width:720px;margin:0 auto">
+    <h2>🎓 Entrar a una sala</h2>
+    <div class="form" style="grid-template-columns:1fr auto">
+      <label>Código de la sala<input id="eSala" value="${esc(codigo)}" placeholder="Ej: 3229854-E1" style="text-transform:uppercase" autocomplete="off"></label>
+      <button class="btn" onclick="buscarSala()">Buscar</button>
+    </div>
+    <div id="eRoles" style="margin-top:16px"></div>
+  </div>
+  <p class="small mut" style="text-align:center"><a href="#" onclick="ir('');return false">← Volver</a></p>`;
+  $('#eSala').addEventListener('keydown', e=>{ if(e.key==='Enter') buscarSala(); });
+  if (codigo) buscarSala();
+}
+async function buscarSala(){
+  const c = $('#eSala').value.trim().toUpperCase();
+  if (!c) return toast('Escribe el código de la sala', true);
+  if (sinServidor()) return toast('El juego aún no está conectado a su servidor. Avísale al instructor.', true);
+  try {
+    const { sala } = await api('sala?c='+encodeURIComponent(c));
+    $('#eRoles').innerHTML = `
+      <div class="aviso ok">Sala <b>${esc(sala.codigo)}</b> · ${esc(sala.nombre)}</div>
+      <h3>Escoge tu rol</h3>
+      <div class="roles">${sala.roles.map(r=>`<button class="rol" data-r="${r.id}" ${r.libre?'':'disabled'} onclick="elegir('${r.id}')">
+        <span style="font-size:22px">${ROLES[r.id].ic} ${ROLES[r.id].f}</span><b>${esc(r.nombre)}</b>
+        <span class="small mut">${r.libre?(r.tipo==='fabrica'?'Contrata viajes al menor precio':'Vende viajes al mejor precio'):'OCUPADO'}</span></button>`).join('')}</div>
+      <label style="margin-top:14px">Tu nombre<input id="eNom" maxlength="40" placeholder="Nombre y apellido" autocomplete="name"></label>
+      <button class="btn w" style="margin-top:14px" onclick="unirse('${esc(sala.codigo)}')">Entrar a negociar</button>`;
+  } catch(e){ $('#eRoles').innerHTML = `<div class="aviso bad">${esc(e.message)}</div>`; }
+}
+function elegir(r){ selRol=r; document.querySelectorAll('.rol').forEach(b=>b.classList.toggle('on', b.dataset.r===r)); }
+async function unirse(sala){
+  const nombre = $('#eNom').value.trim();
+  if (!selRol) return toast('Escoge un rol', true);
+  if (nombre.length < 2) return toast('Escribe tu nombre', true);
+  try {
+    const { token } = await api('unirse', { sala, rol: selRol, nombre });
+    LS.set('sesion', { sala, rol: selRol, token, nombre });
+    ir('juego');
+  } catch(e){ toast(e.message, true); buscarSala(); }
+}
+
+// ═══════════ JUEGO (aprendiz) ═══════════
+let V = null, vistos = new Set(), festejado = null, enviando = false;
+function vJuego(){
+  V = null; vistos = new Set();
+  $('#app').innerHTML = `<div class="espera"><div class="ic">🚛</div><p class="mut">Conectando con la sala…</p></div>`;
+  sondear(true);
+  reloj = setInterval(pintarReloj, 500);
+}
+async function sondear(forzar){
+  clearTimeout(timer);
+  const ses = LS.get('sesion'); if (!ses) return ir('');
+  try {
+    const j = await api('estado', { sala: ses.sala, rol: ses.rol, token: ses.token, v: forzar ? -1 : (V?.v ?? -1) });
+    offset = j.now - Date.now();
+    if (!j.same) { V = j; pintarJuego(); }
+  } catch(e){
+    if (e.status === 401 || e.status === 404) { LS.del('sesion'); toast(e.message, true); return ir('entrar'); }
+    toast(e.message, true);
+  }
+  if (location.hash === '#juego' || (!location.hash && LS.get('sesion')))
+    timer = setTimeout(()=>sondear(), document.hidden ? 8000 : (V?.activa ? 2000 : 4000));
+}
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && V && timer) sondear(); });
+function pintarReloj(){
+  const el = $('#hdReloj'); if (!V) return;
+  if (!V.activa) { el.innerHTML = ''; return; }
+  const rest = V.inicio + V.dur*1000 - ahora();
+  el.innerHTML = `<span class="reloj ${rest<60000?'urg':''}">⏱ ${mmss(rest)}</span>`;
+  const p = $('#panelOferta'); if (p) p.classList.toggle('oculto', rest <= 0 || V.yo.tipo==='fabrica' && V.yo.total<=0);
+  if (rest <= 0 && !V._pedido) { V._pedido = true; setTimeout(()=>sondear(), 1200); }
+}
+function pintarJuego(){
+  const y = V.yo;
+  if (!V.activa) $('#hdReloj').innerHTML = '';
+  $('#hdInfo').innerHTML = `<span class="chip">Sala ${esc(V.sala.codigo)}</span>${V.ronda?`<span class="chip">Ronda ${V.ronda}</span>`:''}<span class="chip">${ROLES[y.rol].ic} ${esc(y.jugador||'')}</span>`;
+  if (!V.activa && !V.resultado) {
+    $('#app').innerHTML = `<div class="card espera"><div class="ic">${ROLES[y.rol].ic}</div><h2>Hola, ${esc(y.jugador)}. Eres ${esc(y.nombre)}.</h2>
+      <p class="mut">Sala <b>${esc(V.sala.codigo)}</b> · ${esc(V.sala.nombre)}<br>Espera a que el instructor inicie la ronda. Esta pantalla se actualiza sola.</p>
+      <button class="btn sec sm" onclick="salir()">Salir y liberar mi rol</button></div>`;
+    return;
+  }
+  if (!V.activa && V.resultado) return pintarResultadoJugador();
+  const fab = y.tipo === 'fabrica';
+  const tieneFoco = document.activeElement && ['oRec','oTra','oPre','oVia'].includes(document.activeElement.id);
+  const valores = tieneFoco || $('#oRec') ? { r:$('#oRec')?.value, t:$('#oTra')?.value, p:$('#oPre')?.value, c:$('#oVia')?.value, f:document.activeElement?.id } : null;
+  const celda = (v, tr) => v < 0 ? `<span class="b b-bad">${num(v)} (tercerizado)</span>` : num(v);
+  const listo = y.total <= 0;
+  $('#app').innerHTML = `
+  ${listo ? `<div class="aviso ok" style="text-align:center;font-size:17px">🎉 ${fab?'¡Objetivo logrado! Cubriste el 100 % de tus rutas.':'¡Camiones llenos! No te quedan viajes vacíos.'}</div>`:''}
+  <div class="grid lay">
+    <div class="card">
+      <h3>${ROLES[y.rol].ic} Mi empresa</h3>
+      <h2 style="color:var(--sena-d);margin-bottom:0">${esc(y.nombre)}</h2>
+      <div class="small mut">${fab?'Contratas viajes · gana quien gaste menos':'Vendes viajes · gana quien tenga mayor utilidad'}</div>
+      <div class="meta">
+        <div class="small mut" style="font-weight:700">${fab?'Viajes por contratar':'Camiones disponibles'}</div>
+        <div class="big" style="color:${listo?'var(--sena-d)':'var(--ink)'}">${num(y.total)}</div>
+        <div class="par"><span>${RUTA.col_bra}</span><span>${celda(y.col_bra)}</span></div>
+        <div class="par"><span>${RUTA.bra_col}</span><span>${celda(y.bra_col)}</span></div>
+      </div>
+      <div class="par"><span class="mut small">${fab?'Gastado en contratos':'Ingresos por contratos'}</span><span>${money(y.balance)}</span></div>
+      <div class="par"><span class="mut small">Rango ideal</span><span class="b b-ok">$${RANGO} / km</span></div>
+      <div class="par"><span class="mut small">Multa por viaje ${fab?'no cubierto':'vacío'}</span><span>$5,000</span></div>
+      ${y.contratos.length?`<h3 style="margin-top:12px">Mis acuerdos (${y.contratos.length})</h3><ul class="lista">${y.contratos.map(c=>`<li>✔️ ${esc(c)}</li>`).join('')}</ul>`:''}
+      <button class="btn sec sm w" style="margin-top:12px" onclick="salir()">Salir</button>
+    </div>
+    <div class="card">
+      <h2>Mercado privado de ofertas</h2>
+      <div id="panelOferta" class="form ${listo&&fab?'oculto':''}" style="margin-bottom:16px">
+        <label>A quién ofertar<select id="oRec">${V.destinatarios.map(d=>`<option value="${d.id}">${ROLES[d.id].ic} ${esc(d.nombre)}${d.jugador?' · '+esc(d.jugador):' (vacante)'}</option>`).join('')}</select></label>
+        <label>Ruta<select id="oTra"><option value="col_bra">${RUTA.col_bra}</option><option value="bra_col">${RUTA.bra_col}</option></select></label>
+        <label>$ por km<input id="oPre" type="number" step="0.01" min="0.01" max="20" placeholder="1.25" inputmode="decimal"></label>
+        <label>Viajes<input id="oVia" type="number" step="1" min="1" max="2000" placeholder="100" inputmode="numeric"></label>
+        <button class="btn" onclick="ofertar()">Enviar oferta</button>
+      </div>
+      <div id="vistaPrevia" class="small mut" style="margin:-8px 0 12px"></div>
+      <div class="tbl"><table>
+        <thead><tr><th>De</th><th>Para</th><th>Ruta</th><th>$/km</th><th>Viajes</th><th>Total</th><th>Acción</th></tr></thead>
+        <tbody>${V.ofertas.length ? V.ofertas.map(filaOferta).join('') : '<tr><td colspan="7" class="mut">Aún no hay ofertas. ¡Haz la primera!</td></tr>'}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+  V.ofertas.forEach(o=>vistos.add(o.id+o.estado));
+  if (valores) { if(valores.r)$('#oRec').value=valores.r; if(valores.t)$('#oTra').value=valores.t; $('#oPre').value=valores.p||''; $('#oVia').value=valores.c||''; if(valores.f&&$('#'+valores.f)) $('#'+valores.f).focus(); }
+  ['oPre','oVia'].forEach(id=>$('#'+id)?.addEventListener('input', previa));
+  previa(); pintarReloj();
+}
+function previa(){ const p=Number($('#oPre')?.value), c=Number($('#oVia')?.value), el=$('#vistaPrevia'); if(!el) return;
+  el.textContent = p>0&&c>0 ? `Valor de la oferta: ${c} viajes × 2.000 km × $${p} = ${money(p*2000*c)}` : ''; }
+function filaOferta(o){
+  const mia = o.emisor === V.yo.rol, nueva = !vistos.has(o.id+o.estado);
+  let acc;
+  if (o.estado === 'Pendiente') acc = mia
+    ? `<span class="b b-warn">Esperando…</span><br><button class="btn sec sm" style="margin-top:4px" onclick="accion('desistir','${o.id}')">Retirar</button>`
+    : `<div class="row" style="justify-content:center;gap:6px"><button class="btn sm" onclick="accion('responder','${o.id}','Aceptada')">Aceptar</button><button class="btn rojo sm" onclick="accion('responder','${o.id}','Rechazada')">Rechazar</button></div>`;
+  else acc = {Aceptada:'<span class="b b-ok">Acuerdo cerrado 🤝</span>',Rechazada:'<span class="b b-bad">Rechazada ❌</span>',Desistida:'<span class="b b-mut">Retirada 🚫</span>',Vencida:'<span class="b b-mut">Vencida ⌛</span>'}[o.estado];
+  return `<tr class="${nueva?'nueva':''}"><td>${mia?'<b>Yo</b>':esc(o.emisorNombre)}</td><td>${mia?esc(o.receptorNombre):'<b>Yo</b>'}</td>
+    <td><span class="b ${o.trayecto==='col_bra'?'b-col':'b-bra'}">${RUTA[o.trayecto]}</span></td><td class="mono">$${Number(o.precio).toFixed(2)}</td><td class="mono">${num(o.viajes)}</td><td class="mono small">${money(o.total)}</td><td>${acc}</td></tr>`;
+}
+async function ofertar(){
+  if (enviando) return;
+  const ses = LS.get('sesion');
+  const b = { sala:ses.sala, rol:ses.rol, token:ses.token, receptor:$('#oRec').value, trayecto:$('#oTra').value, precio:Number($('#oPre').value), viajes:Number($('#oVia').value) };
+  if (!(b.precio>0) || !(b.viajes>0)) return toast('Escribe el precio por km y la cantidad de viajes', true);
+  enviando = true;
+  try { V = await api('ofertar', b); $('#oPre').value=''; $('#oVia').value=''; pintarJuego(); toast('Oferta enviada ✓'); }
+  catch(e){ toast(e.message, true); }
+  finally { enviando = false; }
+}
+async function accion(ruta, id, respuesta){
+  if (enviando) return;
+  if (ruta==='desistir' && !confirm('¿Retirar esta oferta? La otra empresa ya no podrá aceptarla.')) return;
+  const ses = LS.get('sesion'); enviando = true;
+  document.querySelectorAll('td .btn').forEach(b=>b.disabled=true);
+  try { V = await api(ruta, { sala:ses.sala, rol:ses.rol, token:ses.token, id, respuesta }); pintarJuego();
+    toast(respuesta==='Aceptada'?'¡Acuerdo cerrado! 🤝':respuesta==='Rechazada'?'Oferta rechazada':'Oferta retirada'); }
+  catch(e){ toast(e.message, true); sondear(true); }
+  finally { enviando = false; }
+}
+async function salir(){
+  if (!confirm('¿Salir de la sala? Tu rol quedará libre para otra persona.')) return;
+  const ses = LS.get('sesion');
+  try { await api('salir', { sala:ses.sala, rol:ses.rol, token:ses.token }); } catch {}
+  LS.del('sesion'); ir('');
+}
+function pintarResultadoJugador(){
+  const y = V.yo, rep = V.resultado, mio = rep.find(r=>r.rol===y.rol);
+  $('#app').innerHTML = `
+    <div class="card" style="text-align:center;margin-bottom:14px">
+      <h3>Ronda ${V.ronda} terminada · Sala ${esc(V.sala.codigo)}</h3>
+      <h1>${mio.ganador?'👑 ¡Ganaste la ronda!':'Ronda cerrada'}</h1>
+      <p class="mut">${y.tipo==='fabrica'?'Gasto total':'Utilidad neta'}: <b style="font-size:22px;color:var(--ink)">${money(mio.resultado)}</b></p>
+      <div class="row" style="justify-content:center">
+        <button class="btn sec sm" onclick="copiar(textoResultado())">📋 Copiar mi resultado</button>
+        <a class="btn sec sm" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP_INSTRUCTOR}?text=${encodeURIComponent(textoResultado())}" style="text-decoration:none">💬 Enviar por WhatsApp</a>
+        <a class="btn sec sm" href="mailto:?subject=${encodeURIComponent('El Negociador · Ronda '+V.ronda)}&body=${encodeURIComponent(textoResultado())}" style="text-decoration:none">✉️ Correo</a>
+        <button class="btn sec sm" onclick="descargar('Negociador_${esc(V.sala.codigo)}_R${V.ronda}.txt', new Blob([textoResultado()],{type:'text/plain'}))">⬇ Descargar</button>
+      </div>
+      <p class="small mut" style="margin-bottom:0">Espera la siguiente ronda: esta pantalla cambia sola cuando el instructor la inicie.</p>
+    </div>
+    ${tablasResultado(rep, y.rol)}`;
+  if (mio.ganador && festejado !== V.sala.codigo+V.ronda) { festejado = V.sala.codigo+V.ronda; confeti(); }
+}
+function textoResultado(){
+  const y=V.yo, m=V.resultado.find(r=>r.rol===y.rol);
+  return `EL NEGOCIADOR · LogiLab SENA\nSala ${V.sala.codigo} (${V.sala.nombre}) · Ronda ${V.ronda}\n${y.jugador} · ${y.nombre}\n`+
+    `Viajes ${y.tipo==='fabrica'?'incumplidos':'vacíos'}: ${m.faltantes}\nContratos: ${money(m.dinero)}\nMulta: ${money(m.penalizacion)}\n`+
+    (m.costo_terc?`Tercerización: ${money(m.costo_terc)} (${m.detalle_terc})\n`:'')+
+    `RESULTADO: ${money(m.resultado)}${m.ganador?' 👑 GANADOR':''}\nAcuerdos:\n${m.contratos.map(c=>'- '+c).join('\n')||'- Sin acuerdos'}`;
+}
+function tablasResultado(rep, yo){
+  const fila = (f, fab) => `<tr class="${f.ganador?'gana':''}">
+    <td class="izq"><b>${f.ganador?'👑 ':''}${esc(f.nombre)}</b>${f.rol===yo?' <span class="b b-info">Tú</span>':''}<div class="small mut">${esc(f.jugador)}</div></td>
+    <td>${f.faltantes>0?`<span class="b b-bad">${num(f.faltantes)}</span>`:`<span class="b b-ok">${fab?'Meta 100 %':'Sin vacíos'}</span>`}</td>
+    <td><ul class="lista">${f.contratos.length?f.contratos.map(c=>`<li>✔️ ${esc(c)}</li>`).join(''):'<li class="mut">Sin acuerdos</li>'}</ul></td>
+    <td class="mono">${money(f.dinero)}</td>
+    <td class="small">${fab?`+ ${money(f.penalizacion)}`:`${f.penalizacion?`Multa: −${money(f.penalizacion)}<br>`:''}${f.costo_terc?`Terceros: −${money(f.costo_terc)}<br><span class="mut">${esc(f.detalle_terc)}</span>`:''}${!f.penalizacion&&!f.costo_terc?'<span class="b b-ok">Operación limpia</span>':''}`}</td>
+    <td class="mono" style="font-weight:800;font-size:17px">${money(f.resultado)}</td></tr>`;
+  const tabla = (fab) => `<div class="card" style="margin-bottom:14px"><h2>${fab?'🏭 Fábricas <span class="small mut">(gana quien gastó menos)</span>':'🚛 Transportistas <span class="small mut">(gana la mayor utilidad)</span>'}</h2>
+    <div class="tbl"><table><thead><tr><th>Empresa</th><th>${fab?'Viajes incumplidos':'Camiones vacíos'}</th><th style="width:32%">Acuerdos</th><th>${fab?'Gasto en contratos':'Ingreso por contratos'}</th><th>${fab?'Multa':'Multa / terceros'}</th><th>${fab?'💰 Gasto total':'💸 Utilidad neta'}</th></tr></thead>
+    <tbody>${rep.filter(r=>(r.tipo==='fabrica')===fab).map(f=>fila(f,fab)).join('')}</tbody></table></div></div>`;
+  return tabla(true) + tabla(false);
+}
+
+// ═══════════ INSTRUCTOR ═══════════
+let A = { salas: [] }, abierta = null;
+function vInstructor(){
+  if (!LS.get('clave')) return vClave();
+  $('#hdInfo').innerHTML = '<span class="chip">🧑‍🏫 Panel del instructor</span>';
+  $('#app').innerHTML = `
+  ${sinServidor()?`<div class="aviso warn">Falta conectar el servidor. Pega la URL de tu Worker abajo o edita <code>API_DEF</code> en el archivo.</div>`:''}
+  <div class="card" style="margin-bottom:14px">
+    <h2>➕ Nueva sala (un grupo de 4 aprendices)</h2>
+    <div class="form">
+      <label>Ficha / grupo<input id="nFicha" placeholder="3229854" value="${esc(LS.get('ultFicha')||'')}"></label>
+      <label>Equipo<input id="nEq" placeholder="E1" value="E1"></label>
+      <label>Nombre visible<input id="nNom" placeholder="Gestión Logística · Equipo 1"></label>
+      <button class="btn" onclick="crearSala()">Crear sala</button>
+      <button class="btn sec" onclick="crearVarias()">Crear varias…</button>
+    </div>
+    <p class="small mut" style="margin:10px 0 0">El código queda como <b>FICHA-EQUIPO</b> (ej. 3229854-E1). Comparte el enlace de cada sala por WhatsApp: el aprendiz entra directo con el código puesto.</p>
+  </div>
+  <div class="row" style="justify-content:space-between;margin-bottom:10px">
+    <h2 style="margin:0">Salas</h2>
+    <div class="row"><button class="btn sec sm" onclick="csvSala('TODAS')">⬇ CSV de todas las salas</button><button class="btn sec sm" onclick="cargarSalas()">↻ Actualizar</button>
+      <button class="btn sec sm" onclick="config()">⚙ Servidor y clave</button></div>
+  </div>
+  <div id="lista" class="grid g2"><div class="mut">Cargando salas…</div></div>`;
+  cargarSalas();
+  reloj = setInterval(()=>document.querySelectorAll('[data-fin]').forEach(e=>{ const r=Number(e.dataset.fin)-ahora(); e.textContent=r>0?'⏱ '+mmss(r):'⏱ 0:00'; }), 500);
+}
+function vClave(){
+  $('#app').innerHTML = `<div class="card" style="max-width:520px;margin:30px auto">
+    <h2>🔒 Clave del instructor</h2>
+    <p class="small mut">Es la variable <b>ADMIN_KEY</b> que guardaste en Cloudflare. Se pide una vez por dispositivo y se queda solo en este navegador; nunca va en el código.</p>
+    <label>Clave<input id="kClave" type="password" autocomplete="current-password"></label>
+    <label style="margin-top:10px">URL del servidor (Worker)<input id="kApi" value="${esc(sinServidor()?'':API())}" placeholder="https://logilab-negociador.xxxx.workers.dev"></label>
+    <button class="btn w" style="margin-top:14px" onclick="guardarClave()">Entrar</button>
+    <p class="small mut" style="text-align:center"><a href="#" onclick="ir('');return false">← Volver</a></p></div>`;
+  $('#kClave').focus();
+  $('#kClave').addEventListener('keydown', e=>{ if(e.key==='Enter') guardarClave(); });
+}
+async function guardarClave(){
+  const k = $('#kClave').value.trim(), u = $('#kApi').value.trim().replace(/\/+$/,'');
+  if (u) LS.set('api', u);
+  if (sinServidor()) return toast('Pega la URL de tu Worker', true);
+  LS.set('clave', k);
+  try { await api('admin/salas', undefined, true); vInstructor(); }
+  catch(e){ LS.del('clave'); toast(e.message, true); }
+}
+function config(){ if (confirm('¿Cambiar la URL del servidor o la clave? Se cerrará la sesión de instructor en este dispositivo.')) { LS.del('clave'); vClave(); } }
+async function cargarSalas(){
+  clearTimeout(timer);
+  try {
+    const j = await api('admin/salas', undefined, true);
+    offset = j.now - Date.now(); A.salas = j.salas; pintarSalas();
+    if (abierta && $('#dlg').open) verResultados(abierta, true);
+  } catch(e){ if (e.status === 401) { LS.del('clave'); toast(e.message, true); return vClave(); } toast(e.message, true); }
+  if (location.hash === '#instructor') timer = setTimeout(cargarSalas, document.hidden ? 15000 : 4000);
+}
+const enlace = c => location.origin + location.pathname + '?sala=' + encodeURIComponent(c);
+function pintarSalas(){
+  const el = $('#lista'); if (!el) return;
+  if (!A.salas.length) { el.innerHTML = '<div class="card mut">Aún no hay salas. Crea una arriba.</div>'; return; }
+  el.innerHTML = A.salas.map(s => {
+    const ocup = Object.values(s.roles).filter(r=>r.jugador).length;
+    const rondas = Object.keys(s.historial).map(Number);
+    return `<div class="card sala ${s.activa?'act':''}">
+      <div class="row" style="justify-content:space-between">
+        <div><div class="mono" style="font-size:19px;font-weight:700">${esc(s.codigo)}</div><div class="small mut">${esc(s.nombre)}</div></div>
+        ${s.activa?`<span class="b b-ok">Ronda ${s.ronda} en curso <span data-fin="${s.inicio+s.dur*1000}"></span></span>`:`<span class="b b-mut">${s.ronda?'Pausada · última ronda '+s.ronda:'Sin iniciar'}</span>`}
+      </div>
+      <div style="margin:12px 0" class="small">
+        ${Object.entries(s.roles).map(([id,r])=>`<div class="par" style="font-weight:500;padding:3px 0"><span>${ROLES[id].ic} ${ROLES[id].nombre}</span>
+          <span>${r.jugador?`<b>${esc(r.jugador)}</b> <button class="btn sec sm" title="Liberar rol" onclick="adm('liberar','${esc(s.codigo)}',{rol:'${id}'},'¿Liberar el rol ${ROLES[id].nombre} de ${esc(r.jugador)}?')">✕</button>`:'<span class="mut">libre</span>'}</span></div>`).join('')}
+        <div class="mut" style="margin-top:4px">${ocup}/4 jugadores · ${s.n_ofertas} ofertas · ${s.n_acuerdos} acuerdos</div>
+      </div>
+      ${s.activa ? `<button class="btn rojo w" onclick="adm('cerrar','${esc(s.codigo)}',{},'¿Cerrar ya la ronda ${s.ronda}? Se calculan los resultados.')">⏹ Cerrar ronda ${s.ronda} ahora</button>`
+        : `<div class="row" style="margin-bottom:8px"><span class="small mut">Iniciar ronda:</span>
+           ${[1,2,3,4].map(n=>`<button class="btn sm ${rondas.includes(n)?'sec':''}" title="${escTxt(n)}" onclick="iniciar('${esc(s.codigo)}',${n})">${n}${rondas.includes(n)?' ✓':''}</button>`).join('')}
+           <label style="flex-direction:row;align-items:center;gap:4px;font-weight:500">min <input id="min_${esc(s.codigo)}" type="number" value="15" min="3" max="60" style="width:62px;padding:6px"></label></div>`}
+      <div class="row" style="margin-top:10px">
+        <button class="btn sec sm" onclick="verResultados('${esc(s.codigo)}')">📊 Resultados${rondas.length?' ('+rondas.length+')':''}</button>
+        <button class="btn sec sm" onclick="copiar(enlace('${esc(s.codigo)}'))">🔗 Enlace</button>
+        <a class="btn sec sm" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('🤝 El Negociador · Sala '+s.codigo+'\nEntra aquí, escoge tu rol y escribe tu nombre:\n'+enlace(s.codigo))}">💬 WhatsApp</a>
+        <button class="btn sec sm" onclick="csvSala('${esc(s.codigo)}')">⬇ CSV</button>
+        <button class="btn sec sm" onclick="adm('reiniciar','${esc(s.codigo)}',{},'¿Reiniciar la sala ${esc(s.codigo)}? Se borran resultados y se liberan los 4 roles (nuevo grupo).')">🔄</button>
+        <button class="btn sec sm" onclick="adm('borrar','${esc(s.codigo)}',{},'¿BORRAR la sala ${esc(s.codigo)} y todos sus resultados? Descarga antes el CSV.')">🗑</button>
+      </div></div>`;
+  }).join('');
+}
+const escTxt = n => `Ronda ${n} · Fábrica COL ${ESC[n].fabrica_col[0]}→ / ${ESC[n].fabrica_col[1]}← · Fábrica BRA ${ESC[n].fabrica_bra[0]}→ / ${ESC[n].fabrica_bra[1]}← · Transportistas 500 / 500`;
+async function crearSala(){
+  const f = $('#nFicha').value.trim(), e = $('#nEq').value.trim();
+  const codigo = (f && e ? f+'-'+e : f || e).toUpperCase().replace(/[^A-Z0-9-]/g,'');
+  if (codigo.length < 3) return toast('Escribe la ficha y el equipo', true);
+  LS.set('ultFicha', f);
+  try { await api('admin/crear', { codigo, nombre: $('#nNom').value.trim() || ('Ficha '+f+' · Equipo '+e) }, true);
+    toast('Sala '+codigo+' creada ✓'); const m=e.match(/^(\D*)(\d+)$/); if(m) $('#nEq').value=m[1]+(Number(m[2])+1); $('#nNom').value=''; cargarSalas(); }
+  catch(err){ toast(err.message, true); }
+}
+async function crearVarias(){
+  const f = $('#nFicha').value.trim(); if (!f) return toast('Escribe primero la ficha', true);
+  const n = Number(prompt('¿Cuántos equipos de 4 aprendices? (ej: 6 para 24 aprendices)', '5')); if (!(n>0 && n<=20)) return;
+  let ok = 0;
+  for (let i=1;i<=n;i++) { try { await api('admin/crear', { codigo:(f+'-E'+i).toUpperCase(), nombre:'Ficha '+f+' · Equipo '+i }, true); ok++; } catch {} }
+  LS.set('ultFicha', f); toast(ok+' salas creadas ✓'); cargarSalas();
+}
+async function adm(ruta, sala, extra, pregunta){
+  if (pregunta && !confirm(pregunta)) return;
+  try { await api('admin/'+ruta, { sala, ...extra }, true); toast('Listo ✓'); cargarSalas(); }
+  catch(e){ toast(e.message, true); }
+}
+function iniciar(sala, n){
+  const min = Number(document.getElementById('min_'+sala)?.value || 15);
+  adm('iniciar', sala, { ronda:n, minutos:min }, `¿Iniciar la ronda ${n} en ${sala}? (${min} minutos)\n\n${escTxt(n)}`);
+}
+async function csvSala(c){
+  try { descargar(`Resultados_El_Negociador_${c}.csv`, await api('admin/csv?c='+encodeURIComponent(c), undefined, true)); }
+  catch(e){ toast(e.message, true); }
+}
+function verResultados(c, refresco){
+  const s = A.salas.find(x=>x.codigo===c); if (!s) return;
+  abierta = c;
+  const rondas = Object.keys(s.historial).sort((a,b)=>b-a);
+  $('#dlgT').textContent = `📊 Sala ${s.codigo} · ${s.nombre}`;
+  $('#dlgB').innerHTML = (s.en_vivo ? `<div class="aviso info">🟢 Ronda ${s.ronda} en curso: vista previa en vivo (la tercerización se estima a $2.50/km; el precio real se sortea al cerrar).</div>${tablasResultado(s.en_vivo)}` : '')
+    + (rondas.length ? rondas.map(r=>`<h2 style="margin-top:8px">🏆 Ronda ${r}</h2>${tablasResultado(s.historial[r])}`).join('') : (s.en_vivo?'':'<p class="mut">Aún no hay rondas cerradas en esta sala.</p>'))
+    + `<div class="row"><button class="btn sec sm" onclick="csvSala('${esc(c)}')">⬇ Descargar CSV (Excel)</button><button class="btn sec sm" onclick="copiar(resumenSala('${esc(c)}'))">📋 Copiar resumen</button>
+       <a class="btn sec sm" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(resumenSala(c))}">💬 WhatsApp</a></div>`;
+  if (!refresco) { $('#dlg').showModal(); if (rondas.length) confeti(); }
+}
+$('#dlg').addEventListener('close', ()=>abierta=null);
+function resumenSala(c){
+  const s = A.salas.find(x=>x.codigo===c); if (!s) return '';
+  return `EL NEGOCIADOR · Sala ${s.codigo} (${s.nombre})\n` + Object.entries(s.historial).map(([r,rep])=>`\nRonda ${r}\n`+rep.map(f=>`${f.ganador?'👑 ':'· '}${f.nombre} (${f.jugador}): ${money(f.resultado)}`).join('\n')).join('\n');
+}
+
+render();
+</script>
+</body>
+</html>
