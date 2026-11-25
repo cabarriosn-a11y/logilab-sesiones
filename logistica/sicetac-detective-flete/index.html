@@ -55,6 +55,7 @@ th{background:#14261a;color:#f6f8f2}
 footer{text-align:center;color:var(--mut);font-size:.85rem;padding:20px}
 a{color:var(--gd)}
 :root[data-theme="dark"] a{color:#7fd34a}
+@media(max-width:600px){header{flex-direction:column-reverse}header>div:last-child{justify-content:flex-start!important}}
 </style>
 </head>
 <body>
@@ -62,7 +63,7 @@ a{color:var(--gd)}
   <div class="t"><small>LOGILAB SENA · GESTIÓN LOGÍSTICA · TRANSPORTE DE CARGA</small>
   <h1>🕵️ SICETAC · Detective del flete</h1>
   <p>Consulta en la herramienta oficial del Ministerio de Transporte cuánto cuesta, como mínimo, mover un camión desde La Guajira, y descubre qué ofertas de flete serían ilegales.</p></div>
-  <button onclick="tema()" title="Tema claro u oscuro" aria-label="Cambiar tema">🌓</button>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><a href="https://logilab-notas.cabarriosn.workers.dev/admin" target="_blank" rel="noopener" title="Solo el instructor: calificar entregas" style="background:rgba(255,255,255,.12);color:#fff;border-radius:8px;padding:6px 10px;text-decoration:none;font-size:14px">Zona instructor</a><button onclick="tema()" title="Tema claro u oscuro" aria-label="Cambiar tema">🌓</button></div>
 </header>
 <nav id="nav">
   <button data-t="t0" class="on">0 · Apuesta</button>
@@ -206,8 +207,17 @@ a{color:var(--gd)}
 
 <!-- 7 ENTREGAR -->
 <section class="tab" id="t7">
+  <div class="card" id="llCard">
+    <h2>Entregar en LogiLab (recomendado)</h2>
+    <p>La entrega llega directo al instructor para calificarla. Escriban el <b>documento de cada integrante</b> (sin puntos), uno por línea: cada uno queda con su entrega y su nota.</p>
+    <label for="llDocs">Documentos de los integrantes</label>
+    <textarea id="llDocs" inputmode="numeric" placeholder="1118123456&#10;1124987654" style="min-height:90px"></textarea>
+    <div class="btns"><button class="btn" type="button" id="llBtn">📤 Enviar a LogiLab</button></div>
+    <div id="llRes"></div>
+    <p class="small mut">Si sale un error, no se preocupen: usen abajo WhatsApp, correo, copiar o descargar.</p>
+  </div>
   <div class="card">
-    <h2>7 · Entregar al instructor</h2>
+    <h2>7 · Respaldo: WhatsApp, correo, copiar o descargar</h2>
     <div id="resumenApuesta"></div>
     <p class="mut small">Revisen el texto. Envíenlo por el medio que funcione; si uno falla, usen otro. Adjunten la captura del SICETAC por WhatsApp.</p>
     <textarea id="txtEntrega" style="min-height:260px;font-family:ui-monospace,monospace;font-size:.85rem" readonly></textarea>
@@ -394,6 +404,39 @@ async function enviar(m){
   if (m==='mail') location.href='mailto:'+CORREO+'?subject='+encodeURIComponent('SICETAC Detective del flete · Equipo '+(S.equipo||''))+'&body='+encodeURIComponent(t);
   if (m==='copy') { try{ await navigator.clipboard.writeText(t); alert('Copiado ✓'); }catch{ $('#txtEntrega').select(); document.execCommand('copy'); alert('Copiado ✓'); } }
   if (m==='file') { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'})); a.download='SICETAC_Equipo'+(S.equipo||'')+'.txt'; a.click(); }
+}
+
+
+/* ---------- Entrega a LogiLab Notas (sin claves: solo puede ENVIAR) ---------- */
+{
+const LL_API='https://logilab-notas.cabarriosn.workers.dev';
+const llEsc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const llBox=document.getElementById('llRes'),llBtn=document.getElementById('llBtn'),llDocs=document.getElementById('llDocs');
+try{llDocs.value=localStorage.getItem('ll_docs_s1')||''}catch(e){}
+llDocs.addEventListener('input',()=>{try{localStorage.setItem('ll_docs_s1',llDocs.value)}catch(e){}});
+llBtn.addEventListener('click',async()=>{
+  const ficha=String(S.ficha||'').replace(/\D/g,'');
+  const docs=[...new Set((llDocs.value.match(/\d[\d.]{4,}/g)||[]).map(d=>d.replace(/\D/g,'')))];
+  if(!ficha){llBox.innerHTML='<div class="box warn">Escriban el número de ficha en la pestaña 0.</div>';return}
+  if(!docs.length){llBox.innerHTML='<div class="box warn">Escriban al menos un documento.</div>';return}
+  const llTxt=(armarEntrega(),document.getElementById('txtEntrega').value);
+  const contenido={actividad:'SICETAC · Detective del flete',equipo:S.equipo||null,reporte:llTxt.split('\n')};
+  const actividad='GL'+ficha+'-SICETAC1';
+  llBtn.disabled=true;const out=[];
+  for(const documento of docs){
+    llBtn.textContent='Enviando '+(out.length+1)+' de '+docs.length+'…';
+    try{
+      const r=await fetch(LL_API+'/api/entregar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({documento,actividad,contenido,puntaje:S.quizNota!=null?Math.round(S.quizNota/6*100):null})});
+      const j=await r.json().catch(()=>({ok:false,error:'Sin respuesta del servidor'}));
+      if(j.ok)out.push('<div class="box ok">✔ '+llEsc(j.nombre)+' ('+documento+') · Recibo <b>'+llEsc(j.recibo)+'</b></div>');
+      else{let m=j.error||'Error';if(r.status===404)m='Este documento no está en la ficha '+ficha+' o la actividad aún no está creada. Revisen el número y avisen al instructor.';if(r.status===429)m='Muchos envíos desde esta red. Esperen 10 minutos o usen un respaldo.';if(r.status===403)m='La actividad no está recibiendo entregas. Usen un respaldo y avisen al instructor.';
+        out.push('<div class="box bad">✘ '+documento+': '+llEsc(m)+'</div>')}
+    }catch(e){out.push('<div class="box bad">✘ '+documento+': sin conexión con LogiLab. Usen un respaldo.</div>')}
+    llBox.innerHTML=out.join('');
+  }
+  llBtn.disabled=false;llBtn.textContent='📤 Enviar a LogiLab';
+  llBox.innerHTML+='<p class="small mut">Tomen captura de los recibos. Si corrigen algo, pueden volver a enviar: el instructor ve la última entrega.</p>';
+});
 }
 
 // inicio

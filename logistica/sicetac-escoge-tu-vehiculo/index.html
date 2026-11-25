@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SICETAC 2 · Escoge tu vehículo · LogiLab SENA</title>
+<style>
+:root{--g:#39A900;--gd:#2b7a00;--dk:#14261a;--bg:#f6f8f2;--card:#fff;--ln:#d5ddd0;--mut:#5b6757;--ok:#2b7a00;--okb:#e7f5dd;--bad:#c0392b;--badb:#fbe5e1;--warn:#a86b00;--warnb:#fdf1d6;--info:#1f5fd1;--infob:#e3ecfd}
+:root[data-theme="dark"]{--dk:#e6ede2;--bg:#11150f;--card:#1a2016;--ln:#2e3628;--mut:#9da897;--okb:#1e2d15;--badb:#3a1c17;--warnb:#352b10;--infob:#172440}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--dk:#e6ede2;--bg:#11150f;--card:#1a2016;--ln:#2e3628;--mut:#9da897;--okb:#1e2d15;--badb:#3a1c17;--warnb:#352b10;--infob:#172440}}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--dk);line-height:1.5}
+header{background:#14261a;color:#f6f8f2;padding:18px 16px;border-left:8px solid var(--g);display:flex;gap:12px;align-items:flex-start}
+header .t{flex:1}header small{color:#7fd34a;font-weight:700}
+header h1{margin:6px 0 4px;font-size:1.5rem}header p{margin:0;color:#c9d6c4;font-size:.95rem}
+header a,header button{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:15px;text-decoration:none;min-height:40px;display:inline-flex;align-items:center}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:5}
+nav button{flex:0 0 auto;border:1px solid var(--ln);background:var(--card);color:var(--dk);padding:9px 14px;border-radius:999px;font-weight:600;cursor:pointer}
+nav button.on{background:var(--g);border-color:var(--g);color:#0f1d12}
+main{max-width:920px;margin:0 auto;padding:16px}
+section.tab{display:none}section.tab.on{display:block}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:14px}
+h2{font-size:1.3rem;margin:4px 0 10px}h3{font-size:1.05rem;margin:0 0 8px}
+label{display:block;font-weight:600;margin:10px 0 4px;font-size:.95rem}
+input,textarea,select{width:100%;padding:10px;border:1px solid var(--ln);border-radius:8px;font:inherit;font-size:16px;background:var(--card);color:var(--dk)}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--g);border-color:transparent}
+textarea{min-height:80px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+.btn{background:var(--g);color:#0f1d12;border:0;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:.95rem;min-height:44px;text-decoration:none;display:inline-flex;align-items:center}
+.btn.sec{background:transparent;color:var(--dk);border:1px solid var(--ln)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.mut{color:var(--mut)}.small{font-size:.88rem}
+.box{border-radius:10px;padding:12px 14px;margin:10px 0;font-weight:500}
+.ok{background:var(--okb);color:var(--ok)}.bad{background:var(--badb);color:var(--bad)}.warn{background:var(--warnb);color:var(--warn)}.info{background:var(--infob);color:var(--info)}
+.chip{display:inline-block;background:var(--okb);color:var(--ok);font-weight:700;padding:2px 8px;border-radius:6px;font-size:.9rem}
+.equipo{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+.equipo button{border:2px solid var(--ln);background:var(--card);color:var(--dk);border-radius:10px;padding:10px;text-align:left;cursor:pointer;font:inherit}
+.equipo button.on{border-color:var(--g);background:var(--okb)}
+.caso{border-left:6px solid var(--g);background:var(--okb);border-radius:10px;padding:14px;margin-top:12px}
+.caso b.big{font-size:1.2rem;display:block}
+.opt{border:2px solid var(--ln);border-radius:12px;padding:14px}
+.opt h3 span{color:var(--gd)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.93rem}
+th,td{padding:8px;border-bottom:1px solid var(--ln);text-align:left}
+th{background:#14261a;color:#f6f8f2}td.n,th.n{text-align:right;white-space:nowrap}
+.barra{height:22px;background:var(--g);border-radius:6px;min-width:4px}
+.barras div{margin:6px 0}
+ol.pasos li{margin-bottom:8px}
+footer{text-align:center;color:var(--mut);font-size:.85rem;padding:20px}
+a{color:var(--gd)}:root[data-theme="dark"] a{color:#7fd34a}
+@media(max-width:600px){header{flex-direction:column-reverse}header>div:last-child{justify-content:flex-start!important}}
+</style>
+<script>try{const t=localStorage.getItem('ll_tema');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header>
+ <div class="t"><small>LOGILAB SENA · GESTIÓN LOGÍSTICA · TRANSPORTE DE CARGA</small>
+ <h1>SICETAC 2 · Escoge tu vehículo</h1>
+ <p>Cada equipo recibe una carga real que sale de La Guajira. Ustedes deciden qué vehículo la lleva, lo comprueban en el SICETAC contra una alternativa y defienden su decisión con números.</p></div>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><a href="../../">Portal</a><a href="https://logilab-notas.cabarriosn.workers.dev/admin" target="_blank" rel="noopener" title="Solo el instructor: calificar entregas">Zona instructor</a><button type="button" id="tema" aria-label="Cambiar tema">Tema</button></div>
+</header>
+<nav id="nav">
+ <button data-t="t0" class="on">0 · Equipo y carga</button>
+ <button data-t="t1">1 · Analiza la carga</button>
+ <button data-t="t2">2 · Consulta el SICETAC</button>
+ <button data-t="t3">3 · Compara</button>
+ <button data-t="t4">4 · Decide</button>
+ <button data-t="t5">5 · Entregar</button>
+</nav>
+<main>
+
+<section class="tab on" id="t0">
+ <div class="card">
+  <h2>0 · Su equipo y su carga</h2>
+  <div class="row">
+   <label>Integrantes del equipo<input id="integrantes" data-k="integrantes" placeholder="Nombres y apellidos, separados por coma"></label>
+   <label>Ficha<input id="ficha" data-k="ficha" inputmode="numeric" placeholder="3229854"></label>
+  </div>
+  <label>Escojan su número de equipo (cada equipo tiene una carga distinta)</label>
+  <div class="equipo" id="equipos"></div>
+  <div id="caso"></div>
+  <div class="btns"><button class="btn" data-ir="t1">Siguiente →</button></div>
+ </div>
+</section>
+
+<section class="tab" id="t1">
+ <div class="card">
+  <h2>1 · Analicen la carga antes de escoger</h2>
+  <p>Un buen logístico no pide "una tractomula" por costumbre: primero mira qué va a mover. Respondan con su caso a la vista.</p>
+  <div id="caso1"></div>
+  <div class="row">
+   <label>¿Qué clase de carga es?
+    <select data-k="clase"><option value="">Escojan…</option><option>Carga general (cajas, bultos, piezas)</option><option>Contenerizada</option><option>Granel sólido</option><option>Granel líquido</option><option>Refrigerada o congelada</option></select></label>
+   <label>¿Qué carrocería o equipo necesita?
+    <select data-k="carroceria"><option value="">Escojan…</option><option>Furgón cerrado</option><option>Estacas o carrocería abierta con carpa</option><option>Plancha o chasis portacontenedor</option><option>Tanque (cisterna)</option><option>Furgón refrigerado (termoking)</option><option>Volco</option></select></label>
+  </div>
+  <label>¿Qué pesa más en su decisión: el peso, el volumen, el cuidado especial o el tiempo? Expliquen en una o dos frases.</label>
+  <textarea data-k="analisis" placeholder="Ej: la carga pesa 32 t y es pesada pero poco voluminosa, así que lo que manda es el peso…"></textarea>
+  <div class="row">
+   <label>Opción A · el vehículo que ustedes escogen<select data-k="cfgA" id="cfgA"></select></label>
+   <label>Opción B · una alternativa para comparar<select data-k="cfgB" id="cfgB"></select></label>
+  </div>
+  <div class="box info">¿Dudas con los códigos 3S3, 2S2…? Repasen la <a href="../configuraciones-vehiculares/" target="_blank" rel="noopener">guía de configuraciones vehiculares</a>. La alternativa B debe ser distinta: por ejemplo, un vehículo más pequeño que haga más viajes, o uno más grande.</div>
+  <div id="m1"></div>
+  <div class="btns"><button class="btn sec" data-ir="t0">← Atrás</button><button class="btn" data-ir="t2">Siguiente →</button></div>
+ </div>
+</section>
+
+<section class="tab" id="t2">
+ <div class="card">
+  <h2>2 · Consulten el SICETAC dos veces: opción A y opción B</h2>
+  <div class="btns"><a class="btn" href="https://plc.mintransporte.gov.co/" target="_blank" rel="noopener">Abrir el Portal Logístico (plc.mintransporte.gov.co)</a></div>
+  <ol class="pasos" style="margin-top:14px">
+   <li>En el portal entren a <b>SICE-TAC / Costos eficientes</b> y escojan el <b>periodo</b> más reciente.</li>
+   <li><b>Origen y destino:</b> los de su caso. Si el municipio no aparece, usen la ciudad más cercana y anótenlo.</li>
+   <li><b>Configuración:</b> primero la de la opción A. <b>Tipo de carga:</b> el que más se parezca a su carga.</li>
+   <li><b>Horas:</b> cargue <span class="chip">2</span>, descargue <span class="chip">2</span>, espera en cargue <span class="chip">1</span>, espera en descargue <span class="chip">1</span>. Den <b>CALCULAR</b> y tomen captura.</li>
+   <li>Repitan todo igual, cambiando <b>solo la configuración</b> a la de la opción B. Tomen otra captura.</li>
+  </ol>
+  <div class="row">
+   <label>Periodo consultado<input data-k="periodo" placeholder="Ej: noviembre 2026"></label>
+   <label>Tipo de carga que escogieron en el SICETAC (como aparece)<input data-k="tipoSicetac" placeholder="Ej: Carga general"></label>
+  </div>
+  <div class="row" style="margin-top:12px">
+   <div class="opt"><h3>Opción A · <span id="lA">—</span></h3>
+    <label>Costo total del viaje ($)<input data-k="costoA" type="number" min="0" inputmode="numeric"></label>
+    <label>Toneladas de la configuración<input data-k="tonA" type="number" min="0" step="0.1" inputmode="decimal"></label>
+    <label>Kilómetros<input data-k="kmA" type="number" min="0" inputmode="numeric"></label>
+    <label>Valor de peajes ($)<input data-k="peajeA" type="number" min="0" inputmode="numeric"></label></div>
+   <div class="opt"><h3>Opción B · <span id="lB">—</span></h3>
+    <label>Costo total del viaje ($)<input data-k="costoB" type="number" min="0" inputmode="numeric"></label>
+    <label>Toneladas de la configuración<input data-k="tonB" type="number" min="0" step="0.1" inputmode="decimal"></label>
+    <label>Kilómetros<input data-k="kmB" type="number" min="0" inputmode="numeric"></label>
+    <label>Valor de peajes ($)<input data-k="peajeB" type="number" min="0" inputmode="numeric"></label></div>
+  </div>
+  <div id="m2"></div>
+  <div class="btns"><button class="btn sec" data-ir="t1">← Atrás</button><button class="btn" data-ir="t3">Ver la comparación →</button></div>
+ </div>
+</section>
+
+<section class="tab" id="t3">
+ <div class="card">
+  <h2>3 · ¿Cuánto cuesta mover TODA la carga?</h2>
+  <p>El SICETAC da el costo de <b>un viaje</b>. Si la carga no cabe en un vehículo, hay que hacer varios viajes. La página lo calcula con las toneladas que ustedes copiaron.</p>
+  <div id="cmp"></div>
+  <div class="btns"><button class="btn sec" data-ir="t2">← Atrás</button><button class="btn" data-ir="t4">Decidir →</button></div>
+ </div>
+</section>
+
+<section class="tab" id="t4">
+ <div class="card">
+  <h2>4 · Su decisión como coordinadores de transporte</h2>
+  <label>Vehículo que contratan finalmente<select data-k="final" id="final"></select></label>
+  <label>¿Por qué? Usen los números de la comparación (costo total, viajes, costo por tonelada, ocupación) y el tipo de carga.</label>
+  <textarea data-k="porque" placeholder="Escogemos… porque…"></textarea>
+  <label>Si su opción no fue la más barata, ¿qué la justifica? (tiempo, cuidado de la carga, acceso a la ciudad, un solo viaje…). Si fue la más barata, escriban qué riesgo tiene.</label>
+  <textarea data-k="riesgo"></textarea>
+  <label>El cliente propone pagar el 85 % del costo SICETAC "porque el transportador tiene que volver vacío de todos modos". ¿Qué le responden?</label>
+  <textarea data-k="cliente"></textarea>
+  <div class="btns"><button class="btn sec" data-ir="t3">← Atrás</button><button class="btn" data-ir="t5">Entregar →</button></div>
+ </div>
+</section>
+
+<section class="tab" id="t5">
+  <div class="card" id="llCard">
+    <h2>Entregar en LogiLab (recomendado)</h2>
+    <p>La entrega llega directo al instructor para calificarla. Escriban el <b>documento de cada integrante</b> (sin puntos), uno por línea: cada uno queda con su entrega y su nota.</p>
+    <label for="llDocs">Documentos de los integrantes</label>
+    <textarea id="llDocs" inputmode="numeric" placeholder="1118123456&#10;1124987654" style="min-height:90px"></textarea>
+    <div class="btns"><button class="btn" type="button" id="llBtn">📤 Enviar a LogiLab</button></div>
+    <div id="llRes"></div>
+    <p class="small mut">Si sale un error, no se preocupen: usen abajo WhatsApp, correo, copiar o descargar.</p>
+  </div>
+ <div class="card">
+  <h2>5 · Respaldo: WhatsApp, correo, copiar o descargar</h2>
+  <div id="faltan"></div>
+  <p class="small mut">Envíen este reporte y además las <b>dos capturas del SICETAC</b> (opción A y opción B) por el mismo medio.</p>
+  <textarea id="txt" readonly style="min-height:260px;font-family:ui-monospace,monospace;font-size:.85rem"></textarea>
+  <div class="btns">
+   <button class="btn" data-m="wa">WhatsApp</button><button class="btn sec" data-m="mail">Correo</button>
+   <button class="btn sec" data-m="copy">Copiar</button><button class="btn sec" data-m="file">Descargar .txt</button>
+  </div>
+  <div id="m5"></div>
+ </div>
+</section>
+</main>
+<footer>LogiLab SENA · Gestión Logística · <b>By Carlos Barrios · Instructor</b> · <a href="../../">Portal</a></footer>
+
+<script>
+{
+const WHATSAPP='';   // opcional: número del instructor, ej. 573001234567
+const CORREO='';     // opcional: correo del instructor
+const LSK='ll_sicetac2';
+const $=s=>document.querySelector(s);
+const CFG={C2:{n:"C2 · Camión de 2 ejes",pbv:16},C3:{n:"C3 · Camión de 3 ejes (doble troque)",pbv:28},"2S2":{n:"2S2 · Tractocamión 2 ejes + semirremolque 2 ejes",pbv:32},"2S3":{n:"2S3 · Tractocamión 2 ejes + semirremolque 3 ejes",pbv:40.5},"3S2":{n:"3S2 · Tractocamión 3 ejes + semirremolque 2 ejes",pbv:48},"3S3":{n:"3S3 · Tractocamión 3 ejes + semirremolque 3 ejes",pbv:52}};
+const CASOS={
+1:{o:"Riohacha",d:"Barranquilla",c:"32 t de sal marina en bultos de 50 kg",t:32,x:"Pesada y compacta. Los bultos se arruman y se cubren con carpa: no debe mojarse."},
+2:{o:"Riohacha",d:"Bogotá",c:"1 contenedor de 40 pies con 22 t de repuestos",t:22,x:"El contenedor llegó por puerto y debe viajar cerrado y sellado hasta la bodega del cliente."},
+3:{o:"Maicao",d:"Santa Marta",c:"5 t de electrodomésticos en cajas (neveras, lavadoras, televisores)",t:5,x:"Liviana pero frágil y voluminosa. El cliente queda en el centro de la ciudad."},
+4:{o:"Riohacha",d:"Medellín",c:"9 t de mochilas y artesanías wayuu empacadas en cajas",t:9,x:"Muy voluminosa para su peso: ocupa mucho espacio. Debe ir protegida del polvo y la lluvia."},
+5:{o:"Riohacha",d:"Bucaramanga",c:"15 t de agua embotellada en pacas",t:15,x:"Pesada, se arruma en estibas. El cliente recibe en una bodega con muelle de cargue."},
+6:{o:"Maicao",d:"Cartagena",c:"60 t de arroz en bultos de 50 kg",t:60,x:"No cabe en un solo vehículo: decidan cuántos viajes y con qué vehículo sale más barato."},
+7:{o:"Riohacha",d:"Valledupar",c:"30.000 litros de aceite de palma (unas 27 t)",t:27,x:"Líquido a granel: necesita tanque limpio y certificado para alimentos."},
+8:{o:"Riohacha",d:"Cali",c:"18 t de pescado y camarón congelado",t:18,x:"Debe mantenerse a −18 °C todo el viaje. Si se rompe la cadena de frío se pierde la carga."}};
+let S={};try{S=JSON.parse(localStorage.getItem(LSK))||{}}catch(e){}
+const save=()=>{try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}};
+const num=k=>parseFloat(S[k])||0;
+const $$=n=>Math.round(n).toLocaleString('es-CO');
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const opts='<option value="">Escojan…</option>'+Object.entries(CFG).map(([k,v])=>`<option value="${k}">${v.n}</option>`).join('');
+["#cfgA","#cfgB","#final"].forEach(s=>$(s).innerHTML=opts);
+document.querySelectorAll('[data-k]').forEach(el=>{el.value=S[el.dataset.k]??'';el.addEventListener('input',()=>{S[el.dataset.k]=el.value;save();pintar()})});
+
+function casoHTML(){const c=CASOS[S.equipo];if(!c)return'<div class="box warn">Escojan primero su número de equipo en la pestaña 0.</div>';
+ return`<div class="caso"><b class="big">Equipo ${S.equipo}: ${c.o} → ${c.d}</b><b>${c.c}</b><div>${c.x}</div></div>`}
+function equipos(){$('#equipos').innerHTML=Object.entries(CASOS).map(([n,c])=>`<button type="button" data-e="${n}" class="${S.equipo==n?'on':''}"><b>Equipo ${n}</b><br><span class="small">${c.o} → ${c.d}</span><br><span class="small mut">${c.c}</span></button>`).join('');
+ $('#caso').innerHTML=S.equipo?casoHTML():'';$('#caso1').innerHTML=casoHTML()}
+$('#equipos').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.equipo=b.dataset.e;save();equipos();pintar()});
+
+function calc(o){const ton=num('ton'+o),costo=num('costo'+o),km=num('km'+o),t=S.equipo?CASOS[S.equipo].t:0;
+ if(!ton||!costo||!t)return null;const v=Math.ceil(t/ton-1e-9),tot=v*costo;
+ return{cfg:S['cfg'+o],ton,costo,km,v,tot,ct:tot/t,ctk:km?tot/(t*km):0,occ:t/(v*ton)*100}}
+function avisos(o){const m=[],c=S['cfg'+o],ton=num('ton'+o),costo=num('costo'+o),km=num('km'+o);
+ if(c&&ton&&ton>=CFG[c].pbv)m.push(`Opción ${o}: ${ton} t no puede ser la capacidad de un ${c}; su peso bruto máximo (vehículo + carga) es ${CFG[c].pbv} t. Revisen "toneladas de la configuración".`);
+ if(costo&&costo<100000)m.push(`Opción ${o}: un viaje de $${$$(costo)} es demasiado bajo. ¿Copiaron el costo por tonelada en vez del costo total del viaje?`);
+ if(km&&costo&&costo/km>60000)m.push(`Opción ${o}: más de $60.000 por km parece alto. Revisen si copiaron bien el costo total.`);
+ return m}
+function pintar(){
+ $('#lA').textContent=S.cfgA||'—';$('#lB').textContent=S.cfgB||'—';
+ const m1=[];if(S.cfgA&&S.cfgA===S.cfgB)m1.push('Las opciones A y B son iguales: escojan una alternativa distinta para comparar.');
+ if(S.clase==='Contenerizada'&&S.carroceria&&S.carroceria!=='Plancha o chasis portacontenedor')m1.push('Una carga contenerizada viaja sobre plancha o chasis portacontenedor.');
+ if(S.clase==='Granel líquido'&&S.carroceria&&S.carroceria!=='Tanque (cisterna)')m1.push('Un granel líquido necesita tanque (cisterna).');
+ if(S.clase==='Refrigerada o congelada'&&S.carroceria&&S.carroceria!=='Furgón refrigerado (termoking)')m1.push('Una carga congelada necesita furgón refrigerado.');
+ $('#m1').innerHTML=m1.map(x=>`<div class="box warn">${x}</div>`).join('');
+ const m2=[...avisos('A'),...avisos('B')];
+ if(num('kmA')&&num('kmB')&&Math.abs(num('kmA')-num('kmB'))>5)m2.push('Los kilómetros de A y B deberían ser iguales: es la misma ruta. ¿Cambiaron el origen o el destino?');
+ $('#m2').innerHTML=m2.map(x=>`<div class="box warn">${x}</div>`).join('');
+ const A=calc('A'),B=calc('B'),c=CASOS[S.equipo];
+ if(!A||!B){$('#cmp').innerHTML='<div class="box warn">Completen en la pestaña 2 el costo total y las toneladas de las dos opciones.</div>'}
+ else{const R=[['Toneladas por viaje',A.ton+' t',B.ton+' t'],['Viajes necesarios para '+c.t+' t',A.v,B.v],['Costo de un viaje','$'+$$(A.costo),'$'+$$(B.costo)],['Costo total del despacho','$'+$$(A.tot),'$'+$$(B.tot)],['Costo por tonelada movida','$'+$$(A.ct),'$'+$$(B.ct)],['Costo por tonelada-km',A.ctk?'$'+A.ctk.toFixed(1):'—',B.ctk?'$'+B.ctk.toFixed(1):'—'],['Ocupación del vehículo',A.occ.toFixed(0)+' %',B.occ.toFixed(0)+' %']];
+  const mx=Math.max(A.tot,B.tot),gan=A.tot<=B.tot?'A':'B',dif=Math.abs(A.tot-B.tot);
+  $('#cmp').innerHTML=`<div class="scroll"><table><tr><th>Indicador</th><th class="n">A · ${esc(A.cfg)}</th><th class="n">B · ${esc(B.cfg)}</th></tr>${R.map(r=>`<tr><td>${r[0]}</td><td class="n">${r[1]}</td><td class="n">${r[2]}</td></tr>`).join('')}</table></div>
+  <div class="barras"><div><b>A · ${esc(A.cfg)}</b> $${$$(A.tot)}<div class="barra" style="width:${A.tot/mx*100}%"></div></div><div><b>B · ${esc(B.cfg)}</b> $${$$(B.tot)}<div class="barra" style="width:${B.tot/mx*100}%;background:#1f5fd1"></div></div></div>
+  <div class="box ${gan==='A'?'ok':'info'}">Según el SICETAC, mover las ${c.t} t sale más barato con la opción <b>${gan}</b> (${esc(gan==='A'?A.cfg:B.cfg)}): $${$$(dif)} menos${dif===0?' (empatan)':''}.</div>
+  ${Math.min(A.occ,B.occ)<60?'<div class="box warn">Una opción va con menos del 60 % de ocupación: se paga capacidad que viaja vacía. Ténganlo en cuenta al decidir.</div>':''}`}
+ entrega()}
+function texto(){const c=CASOS[S.equipo]||{},A=calc('A'),B=calc('B'),f=x=>x?`${x.cfg}: ${x.v} viaje(s) × $${$$(x.costo)} = $${$$(x.tot)} · $${$$(x.ct)}/t · ocupación ${x.occ.toFixed(0)} %`:'(incompleto)';
+ return`SICETAC 2 · ESCOGE TU VEHÍCULO · LogiLab SENA
+Equipo ${S.equipo||'?'} · Ficha ${S.ficha||''}
+Integrantes: ${S.integrantes||''}
+Caso: ${c.o||'?'} → ${c.d||'?'} · ${c.c||''}
+
+1. ANÁLISIS
+Clase de carga: ${S.clase||''}
+Carrocería: ${S.carroceria||''}
+Criterio: ${S.analisis||''}
+Opción A: ${S.cfgA||''} · Opción B: ${S.cfgB||''}
+
+2. SICETAC (periodo ${S.periodo||''} · tipo de carga: ${S.tipoSicetac||''})
+A: costo viaje $${$$(num('costoA'))} · ${num('tonA')} t · ${num('kmA')} km · peajes $${$$(num('peajeA'))}
+B: costo viaje $${$$(num('costoB'))} · ${num('tonB')} t · ${num('kmB')} km · peajes $${$$(num('peajeB'))}
+
+3. COMPARACIÓN
+A → ${f(A)}
+B → ${f(B)}
+
+4. DECISIÓN: ${S.final||''}
+Por qué: ${S.porque||''}
+Justificación / riesgo: ${S.riesgo||''}
+Respuesta al cliente (85 %): ${S.cliente||''}
+
+(Adjuntar las 2 capturas del SICETAC)`}
+function entrega(){$('#txt').value=texto();const f=[];
+ if(!S.integrantes)f.push('integrantes');if(!S.equipo)f.push('número de equipo');if(!S.cfgA||!S.cfgB)f.push('opciones A y B');
+ if(!calc('A')||!calc('B'))f.push('datos del SICETAC');if(!S.final)f.push('vehículo final');if((S.porque||'').length<40)f.push('justificación (mínimo 40 caracteres)');
+ $('#faltan').innerHTML=f.length?`<div class="box warn">Les falta: ${f.join(', ')}.</div>`:'<div class="box ok">Reporte completo. Envíenlo con las dos capturas.</div>'}
+document.querySelector('#t5 .btns').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const t=texto(),m=b.dataset.m;
+ if(m==='wa')window.open('https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(t),'_blank');
+ if(m==='mail')location.href='mailto:'+CORREO+'?subject='+encodeURIComponent('SICETAC 2 · Equipo '+(S.equipo||''))+'&body='+encodeURIComponent(t);
+ if(m==='copy'){try{await navigator.clipboard.writeText(t)}catch(x){$('#txt').select();document.execCommand('copy')}$('#m5').innerHTML='<div class="box ok">Copiado. Péguenlo en el chat o correo del instructor.</div>'}
+ if(m==='file'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'}));a.download='SICETAC2_Equipo'+(S.equipo||'')+'.txt';a.click();$('#m5').innerHTML='<div class="box ok">Archivo descargado.</div>'}});
+function ir(id){document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id===id));document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===id));pintar();scrollTo({top:0,behavior:'smooth'})}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)ir(b.dataset.t)});
+document.querySelectorAll('[data-ir]').forEach(b=>b.addEventListener('click',()=>ir(b.dataset.ir)));
+$('#tema').addEventListener('click',()=>{const r=document.documentElement,o=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=o?'light':'dark';try{localStorage.setItem('ll_tema',r.dataset.theme)}catch(x){}});
+equipos();pintar();
+
+/* ---------- Entrega a LogiLab Notas (sin claves: solo puede ENVIAR) ---------- */
+{
+const LL_API='https://logilab-notas.cabarriosn.workers.dev';
+const llEsc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const llBox=document.getElementById('llRes'),llBtn=document.getElementById('llBtn'),llDocs=document.getElementById('llDocs');
+try{llDocs.value=localStorage.getItem('ll_docs_s2')||''}catch(e){}
+llDocs.addEventListener('input',()=>{try{localStorage.setItem('ll_docs_s2',llDocs.value)}catch(e){}});
+llBtn.addEventListener('click',async()=>{
+  const ficha=String(S.ficha||'').replace(/\D/g,'');
+  const docs=[...new Set((llDocs.value.match(/\d[\d.]{4,}/g)||[]).map(d=>d.replace(/\D/g,'')))];
+  if(!ficha){llBox.innerHTML='<div class="box warn">Escriban el número de ficha en la pestaña 0.</div>';return}
+  if(!docs.length){llBox.innerHTML='<div class="box warn">Escriban al menos un documento.</div>';return}
+  const llTxt=texto();
+  const contenido={actividad:'SICETAC 2 · Escoge tu vehículo',equipo:S.equipo||null,reporte:llTxt.split('\n')};
+  const actividad='GL'+ficha+'-SICETAC2';
+  llBtn.disabled=true;const out=[];
+  for(const documento of docs){
+    llBtn.textContent='Enviando '+(out.length+1)+' de '+docs.length+'…';
+    try{
+      const r=await fetch(LL_API+'/api/entregar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({documento,actividad,contenido})});
+      const j=await r.json().catch(()=>({ok:false,error:'Sin respuesta del servidor'}));
+      if(j.ok)out.push('<div class="box ok">✔ '+llEsc(j.nombre)+' ('+documento+') · Recibo <b>'+llEsc(j.recibo)+'</b></div>');
+      else{let m=j.error||'Error';if(r.status===404)m='Este documento no está en la ficha '+ficha+' o la actividad aún no está creada. Revisen el número y avisen al instructor.';if(r.status===429)m='Muchos envíos desde esta red. Esperen 10 minutos o usen un respaldo.';if(r.status===403)m='La actividad no está recibiendo entregas. Usen un respaldo y avisen al instructor.';
+        out.push('<div class="box bad">✘ '+documento+': '+llEsc(m)+'</div>')}
+    }catch(e){out.push('<div class="box bad">✘ '+documento+': sin conexión con LogiLab. Usen un respaldo.</div>')}
+    llBox.innerHTML=out.join('');
+  }
+  llBtn.disabled=false;llBtn.textContent='📤 Enviar a LogiLab';
+  llBox.innerHTML+='<p class="small mut">Tomen captura de los recibos. Si corrigen algo, pueden volver a enviar: el instructor ve la última entrega.</p>';
+});
+}
+
+}
+</script>
+</body>
+</html>
