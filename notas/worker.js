@@ -105,15 +105,38 @@ async function publica(req, env, p) {
   if (!(await limitar(env, ipHash, tipo, tipo === 'ver' ? LIM_VERIFICAR : LIM_ENTREGAR)))
     return json({ ok: false, error: 'Demasiados intentos. Espera 10 minutos.' }, 429, h);
 
-  // La actividad define el grupo; el aprendiz debe pertenecer a ESE grupo.
-  const fila = await env.DB.prepare(
-    `SELECT a.id act_id, a.abierta, a.nombre act_nombre, e.id est_id, e.nombres
-       FROM actividades a JOIN grupos g ON g.id=a.grupo_id AND g.activo=1
-       JOIN estudiantes e ON e.grupo_id=a.grupo_id AND e.documento=?
-      WHERE a.codigo=?`).bind(documento, codigo).first();
-  // Mismo mensaje para "no existe" y "no pertenece": no revela quién está en qué grupo.
-  if (!fila) return json({ ok: false, error: 'Documento o actividad no válidos' }, 404, h);
-  if (!fila.abierta) return json({ ok: false, error: 'Esta actividad ya no recibe entregas' }, 403, h);
+  // 1) La actividad define el grupo. Si no existe pero el código es <PREFIJO><FICHA>-<NOMBRE>
+  //    (ej. GL3229854-SICETAC1) y la ficha ya está creada, se crea sola, abierta y con juicio A/D.
+  let act = await env.DB.prepare(
+    `SELECT a.id, a.abierta, a.nombre, a.grupo_id FROM actividades a
+       JOIN grupos g ON g.id=a.grupo_id AND g.activo=1 WHERE a.codigo=?`).bind(codigo).first();
+  if (!act) {
+    const m = codigo.match(/^[A-Z]{2,4}(\d{4,10})-[A-Z0-9-]{2,40}$/);
+    const grupo = m && await env.DB.prepare('SELECT id FROM grupos WHERE codigo=? AND activo=1').bind(m[1]).first();
+    if (!grupo) return json({ ok: false, error: 'La ficha de esta actividad no está creada en LogiLab Notas. Avisa al instructor.' }, 404, h);
+    const nomAct = String(body.nombre_actividad || codigo).trim().slice(0, 160);
+    await env.DB.prepare('INSERT INTO actividades(grupo_id,categoria_id,codigo,nombre,tipo,peso,fecha,abierta) VALUES (?,?,?,?,?,?,?,1) ON CONFLICT DO NOTHING')
+      .bind(grupo.id, null, codigo, nomAct, 'AD', 0, new Date(Date.now() - 5 * 3600e3).toISOString().slice(0, 10)).run();
+    act = await env.DB.prepare('SELECT id, abierta, nombre, grupo_id FROM actividades WHERE codigo=?').bind(codigo).first();
+    if (!act) return json({ ok: false, error: 'No se pudo crear la actividad' }, 500, h);
+  }
+  if (!act.abierta) return json({ ok: false, error: 'Esta actividad ya no recibe entregas' }, 403, h);
+
+  // 2) El aprendiz: si no está en la lista de la ficha, se inscribe solo, marcado "SIN VERIFICAR",
+  //    para que el instructor lo revise en el panel. Necesita escribir su nombre.
+  let est = await env.DB.prepare('SELECT id, nombres FROM estudiantes WHERE grupo_id=? AND documento=?').bind(act.grupo_id, documento).first();
+  const nombreEnviado = String(body.nombre || '').replace(/[^\p{L}\s.'-]/gu, ' ').replace(/\s+/g, ' ').trim().toUpperCase().slice(0, 80);
+  if (!est && tipo === 'ver') return json({ ok: true, nombre: (nombreEnviado.split(' ')[0] || 'aprendiz'), actividad: act.nombre, nuevo: true }, 200, h);
+  if (!est) {
+    if (nombreEnviado.length < 3) return json({ ok: false, error: 'Tu documento no está en la lista: escribe tu nombre completo junto al documento.' }, 400, h);
+    const partes = nombreEnviado.split(' ');
+    const nombres = partes.slice(0, Math.max(1, Math.ceil(partes.length / 2))).join(' ');
+    const apellidos = partes.slice(nombres.split(' ').length).join(' ');
+    await env.DB.prepare(`INSERT INTO estudiantes(grupo_id,tipo_doc,documento,nombres,apellidos,estado) VALUES (?,?,?,?,?,?) ON CONFLICT(grupo_id,documento) DO NOTHING`)
+      .bind(act.grupo_id, null, documento, nombres, apellidos, 'EN FORMACION · SIN VERIFICAR').run();
+    est = await env.DB.prepare('SELECT id, nombres FROM estudiantes WHERE grupo_id=? AND documento=?').bind(act.grupo_id, documento).first();
+  }
+  const fila = { act_id: act.id, act_nombre: act.nombre, est_id: est.id, nombres: est.nombres };
 
   const primerNombre = String(fila.nombres).split(' ')[0];
   if (tipo === 'ver') return json({ ok: true, nombre: primerNombre, actividad: fila.act_nombre }, 200, h);

@@ -166,9 +166,9 @@ a{color:var(--gd)}:root[data-theme="dark"] a{color:#7fd34a}
 <section class="tab" id="t5">
   <div class="card" id="llCard">
     <h2>Entregar en LogiLab (recomendado)</h2>
-    <p>La entrega llega directo al instructor para calificarla. Escriban el <b>documento de cada integrante</b> (sin puntos), uno por línea: cada uno queda con su entrega y su nota.</p>
-    <label for="llDocs">Documentos de los integrantes</label>
-    <textarea id="llDocs" inputmode="numeric" placeholder="1118123456&#10;1124987654" style="min-height:90px"></textarea>
+    <p>La entrega llega directo al instructor para calificarla. Escriban, <b>uno por línea</b>, el <b>documento</b> (sin puntos) y el <b>nombre completo</b> de cada integrante: cada uno queda con su entrega y su nota.</p>
+    <label for="llDocs">Documento y nombre de cada integrante</label>
+    <textarea id="llDocs" inputmode="numeric" placeholder="1118123456 Ana María Pérez Gómez&#10;1124987654 Luis Fernando Ipuana" style="min-height:90px"></textarea>
     <div class="btns"><button class="btn" type="button" id="llBtn">📤 Enviar a LogiLab</button></div>
     <div id="llRes"></div>
     <p class="small mut">Si sale un error, no se preocupen: usen abajo WhatsApp, correo, copiar o descargar.</p>
@@ -297,20 +297,20 @@ try{llDocs.value=localStorage.getItem('ll_docs_s2')||''}catch(e){}
 llDocs.addEventListener('input',()=>{try{localStorage.setItem('ll_docs_s2',llDocs.value)}catch(e){}});
 llBtn.addEventListener('click',async()=>{
   const ficha=String(S.ficha||'').replace(/\D/g,'');
-  const docs=[...new Set((llDocs.value.match(/\d[\d.]{4,}/g)||[]).map(d=>d.replace(/\D/g,'')))];
+  const vistos=new Set(),docs=[];llDocs.value.split(/\n/).forEach(l=>{const m=l.match(/(\d[\d.]{4,})/);if(!m)return;const d=m[1].replace(/\D/g,'');if(vistos.has(d))return;vistos.add(d);docs.push({d,n:l.replace(m[1],' ').replace(/[,;:\-–]/g,' ').replace(/\s+/g,' ').trim()})});
   if(!ficha){llBox.innerHTML='<div class="box warn">Escriban el número de ficha en la pestaña 0.</div>';return}
   if(!docs.length){llBox.innerHTML='<div class="box warn">Escriban al menos un documento.</div>';return}
   const llTxt=texto();
   const contenido={actividad:'SICETAC 2 · Escoge tu vehículo',equipo:S.equipo||null,reporte:llTxt.split('\n')};
   const actividad='GL'+ficha+'-SICETAC2';
   llBtn.disabled=true;const out=[];
-  for(const documento of docs){
+  for(const {d:documento,n:nombre} of docs){
     llBtn.textContent='Enviando '+(out.length+1)+' de '+docs.length+'…';
     try{
-      const r=await fetch(LL_API+'/api/entregar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({documento,actividad,contenido})});
+      const r=await fetch(LL_API+'/api/entregar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({documento,nombre,nombre_actividad:'SICETAC 2 · Escoge tu vehículo',actividad,contenido})});
       const j=await r.json().catch(()=>({ok:false,error:'Sin respuesta del servidor'}));
       if(j.ok)out.push('<div class="box ok">✔ '+llEsc(j.nombre)+' ('+documento+') · Recibo <b>'+llEsc(j.recibo)+'</b></div>');
-      else{let m=j.error||'Error';if(r.status===404)m='Este documento no está en la ficha '+ficha+' o la actividad aún no está creada. Revisen el número y avisen al instructor.';if(r.status===429)m='Muchos envíos desde esta red. Esperen 10 minutos o usen un respaldo.';if(r.status===403)m='La actividad no está recibiendo entregas. Usen un respaldo y avisen al instructor.';
+      else{let m=j.error||'Error';if(r.status===400&&/nombre/.test(m))m='Escriban el nombre completo junto a este documento y vuelvan a enviar.';if(r.status===429)m='Muchos envíos desde esta red. Esperen 10 minutos o usen un respaldo.';if(r.status===403)m='La actividad no está recibiendo entregas. Usen un respaldo y avisen al instructor.';
         out.push('<div class="box bad">✘ '+documento+': '+llEsc(m)+'</div>')}
     }catch(e){out.push('<div class="box bad">✘ '+documento+': sin conexión con LogiLab. Usen un respaldo.</div>')}
     llBox.innerHTML=out.join('');
