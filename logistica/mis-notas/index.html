@@ -33,6 +33,10 @@ input:focus,button:focus-visible{outline:2px solid var(--g)}
 .mut{color:var(--mut)}.small{font-size:.88rem}
 a{color:var(--gd)}
 footer{text-align:center;color:var(--mut);font-size:.85rem;padding:20px}
+.up textarea{width:100%;min-height:140px;padding:10px;border:1px solid var(--ln);border-radius:8px;font:13px/1.4 ui-monospace,monospace;background:var(--card);color:var(--dk)}
+select{width:100%;padding:10px;border:1px solid var(--ln);border-radius:8px;font:inherit;font-size:16px;background:var(--card);color:var(--dk)}
+.file{display:block;border:2px dashed var(--ln);border-radius:10px;padding:14px;text-align:center;cursor:pointer;font-weight:600;margin-top:10px}
+.okb{background:var(--okb);color:var(--ok)}
 </style>
 <script>try{const t=localStorage.getItem('ll_tema');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
@@ -49,6 +53,26 @@ footer{text-align:center;color:var(--mut);font-size:.85rem;padding:20px}
   <button class="btn" id="ver">Ver mis notas</button>
  </form>
  <div id="res" aria-live="polite"></div>
+
+ <form class="card up" id="fu">
+  <h2 style="margin:0 0 6px;font-size:1.2rem">¿Descargaste tu taller en .txt? Súbelo aquí</h2>
+  <p class="small mut" style="margin:0 0 6px">Si no pudiste enviarlo por LogiLab y lo guardaste con <b>Descargar .txt</b> (o lo copiaste), súbelo o pégalo aquí y le llega al instructor para calificar.</p>
+  <label>Actividad
+   <select id="uAct" required>
+    <option value="">Escoge la actividad…</option>
+    <option value="SICETAC1">SICETAC · Detective del flete</option>
+    <option value="SICETAC2">SICETAC 2 · Escoge tu vehículo</option>
+   </select></label>
+  <div class="row">
+   <label>Tu documento<input id="uDoc" inputmode="numeric" autocomplete="off" required></label>
+   <label>Ficha<input id="uFic" inputmode="numeric" value="3229854" required></label>
+  </div>
+  <label>Tu nombre completo<input id="uNom" autocomplete="name" placeholder="Nombres y apellidos" required></label>
+  <label class="file" for="uFile">📄 Escoger el archivo .txt<input id="uFile" type="file" accept=".txt,text/plain" style="display:none"></label>
+  <label>…o pega aquí el texto de tu taller<textarea id="uTxt" placeholder="SICETAC · DETECTIVE DEL FLETE · LogiLab SENA&#10;Ficha: 3229854 · Equipo …"></textarea></label>
+  <button class="btn" id="uBtn">📤 Enviar al instructor</button>
+  <div id="uRes" aria-live="polite"></div>
+ </form>
 </main>
 <footer>LogiLab SENA · <b>By Carlos Barrios · Instructor</b> · <a href="../../">Portal</a></footer>
 <script>
@@ -80,6 +104,28 @@ $('#f').addEventListener('submit',async e=>{
     <p class="small mut" style="margin:0">Entregas: ${n.entregas} · última: ${esc(fecha(n.ultima_entrega))}</p></div>`}).join('');
  }catch(x){$('#res').innerHTML='<div class="box bad">Sin conexión con LogiLab. Intenta de nuevo.</div>'}
  finally{b.disabled=false;b.textContent='Ver mis notas'}
+});
+
+/* ---- subir evidencia descargada en .txt ---- */
+const NOMBRES={SICETAC1:'SICETAC · Detective del flete',SICETAC2:'SICETAC 2 · Escoge tu vehículo'};
+function detectar(t){const u=t.toUpperCase();if(u.includes('DETECTIVE DEL FLETE'))$('#uAct').value='SICETAC1';else if(u.includes('ESCOGE TU VEH'))$('#uAct').value='SICETAC2';const f=t.match(/Ficha:?\s*(\d{6,8})/i);if(f)$('#uFic').value=f[1]}
+if(docs.length===1)$('#uDoc').value=docs[0];
+$('#uFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;if(f.size>60000){$('#uRes').innerHTML='<div class="box bad">El archivo es muy grande (máx. 60 KB).</div>';return}
+ const r=new FileReader();r.onload=()=>{$('#uTxt').value=String(r.result);detectar($('#uTxt').value);$('#uRes').innerHTML='<div class="box okb">Archivo cargado: revisa el texto y envía.</div>'};r.readAsText(f,'utf-8')});
+$('#uTxt').addEventListener('input',()=>detectar($('#uTxt').value));
+$('#fu').addEventListener('submit',async e=>{
+ e.preventDefault();const b=$('#uBtn'),out=$('#uRes');
+ const doc=$('#uDoc').value.replace(/\D/g,''),fic=$('#uFic').value.replace(/\D/g,''),act=$('#uAct').value,nom=$('#uNom').value.trim(),txt=$('#uTxt').value.trim();
+ if(!act||!doc||!fic||nom.length<3){out.innerHTML='<div class="box bad">Completa actividad, documento, ficha y nombre.</div>';return}
+ if(txt.length<80){out.innerHTML='<div class="box bad">Sube el archivo o pega el texto completo de tu taller.</div>';return}
+ b.disabled=true;b.textContent='Enviando…';
+ try{
+  const r=await fetch(API+'/api/entregar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({documento:doc,nombre:nom,nombre_actividad:NOMBRES[act],actividad:'GL'+fic+'-'+act,contenido:{actividad:NOMBRES[act],origen:'Subido desde .txt',reporte:txt.slice(0,55000).split('\n')}})});
+  const j=await r.json().catch(()=>({ok:false,error:'Sin respuesta del servidor'}));
+  if(j.ok){out.innerHTML='<div class="box okb">✔ Recibido, '+esc(j.nombre)+'. Recibo <b>'+esc(j.recibo)+'</b>. Tu instructor lo calificará y aquí arriba verás el resultado.</div>';try{const R=JSON.parse(localStorage.getItem('ll_recibos')||'{}');(R[doc]=R[doc]||[]).push(String(j.recibo).replace(/\D/g,''));localStorage.setItem('ll_recibos',JSON.stringify(R))}catch(x){}}
+  else out.innerHTML='<div class="box bad">'+esc(j.error||'Error')+'</div>';
+ }catch(x){out.innerHTML='<div class="box bad">Sin conexión con LogiLab. Intenta de nuevo.</div>'}
+ finally{b.disabled=false;b.textContent='📤 Enviar al instructor'}
 });
 $('#tema').addEventListener('click',()=>{const r=document.documentElement,o=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=o?'light':'dark';try{localStorage.setItem('ll_tema',r.dataset.theme)}catch(x){}});
 }
