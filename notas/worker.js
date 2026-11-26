@@ -4,6 +4,7 @@
 // Rutas públicas (las usan las actividades LogiLab):
 //   POST /api/verificar  {documento, actividad}            -> {ok, nombre}
 //   POST /api/entregar   {documento, actividad, contenido, puntaje?}
+//   POST /api/retro      {documento, recibo}                -> {ok, nombre, notas[]}
 // Rutas privadas (Cloudflare Access + verificación JWT aquí mismo):
 //   GET  /admin                     dashboard
 //   /admin/api/*                    API del dashboard
@@ -103,6 +104,7 @@ async function publica(req, env, p) {
   const ip = req.headers.get('cf-connecting-ip') || '0';
   const ipHash = (await sha256(ip + '|' + (env.IP_SALT || ''))).slice(0, 32);
   const documento = limpiaDoc(body.documento);
+  if (p === '/api/retro') return await retro(env, h, ipHash, documento, body);
   const codigo = limpiaCod(body.actividad);
   if (!documento || !codigo) return json({ ok: false, error: 'Falta documento o actividad' }, 400, h);
 
@@ -162,6 +164,28 @@ async function publica(req, env, p) {
   const r = await env.DB.prepare('INSERT INTO entregas(actividad_id,estudiante_id,contenido,puntaje_auto,origen,ip_hash) VALUES (?,?,?,?,?,?) RETURNING id, creado')
     .bind(fila.act_id, fila.est_id, contenido, puntaje, origen, ipHash).first();
   return json({ ok: true, nombre: primerNombre, recibo: 'LL-' + r.id, fecha: r.creado }, 200, h);
+}
+
+// El aprendiz consulta su juicio y la retroalimentación del instructor.
+// Necesita su documento + el número de recibo (LL-n) de cualquiera de SUS entregas: así nadie
+// ve las notas de otro solo con saber su documento.
+async function retro(env, h, ipHash, documento, body) {
+  const recibo = Number(String(body.recibo || '').replace(/\D/g, ''));
+  if (!documento || !recibo) return json({ ok: false, error: 'Escribe tu documento y tu número de recibo (LL-…)' }, 400, h);
+  if (!(await limitar(env, ipHash, 'ret', 60))) return json({ ok: false, error: 'Demasiadas consultas. Espera 10 minutos.' }, 429, h);
+  const est = await env.DB.prepare(
+    `SELECT e.id, e.nombres, e.grupo_id FROM entregas en JOIN estudiantes e ON e.id=en.estudiante_id
+      WHERE en.id=? AND e.documento=?`).bind(recibo, documento).first();
+  if (!est) return json({ ok: false, error: 'El documento y el recibo no coinciden. Revisa los dos números.' }, 404, h);
+  const { results } = await env.DB.prepare(
+    `SELECT a.nombre actividad, a.codigo, a.tipo,
+            (SELECT COUNT(*) FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?) entregas,
+            (SELECT MAX(x.creado) FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?) ultima_entrega,
+            c.valor, c.observacion, c.actualizado
+       FROM actividades a LEFT JOIN calificaciones c ON c.actividad_id=a.id AND c.estudiante_id=?
+      WHERE a.grupo_id=? AND (c.valor IS NOT NULL OR EXISTS (SELECT 1 FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?))
+      ORDER BY COALESCE(a.fecha,'9999'), a.id`).bind(est.id, est.id, est.id, est.grupo_id, est.id).all();
+  return json({ ok: true, nombre: String(est.nombres).split(' ')[0], notas: results }, 200, h);
 }
 
 // ───────────────────────── verificación de Access ─────────────────────────

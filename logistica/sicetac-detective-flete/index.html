@@ -215,6 +215,7 @@ a{color:var(--gd)}
     <div class="btns"><button class="btn" type="button" id="llBtn">📤 Enviar a LogiLab</button></div>
     <div id="llRes"></div>
     <p class="small mut">Si sale un error, no se preocupen: usen abajo WhatsApp, correo, copiar o descargar.</p>
+    <p class="small">¿Ya entregaron? <a href="../mis-notas/">Vean aquí su calificación y la retroalimentación del instructor →</a></p>
   </div>
   <div class="card">
     <h2>7 · Respaldo: WhatsApp, correo, copiar o descargar</h2>
@@ -428,14 +429,14 @@ llBtn.addEventListener('click',async()=>{
     try{
       const r=await fetch(LL_API+'/api/entregar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({documento,nombre,nombre_actividad:'SICETAC · Detective del flete',actividad,contenido,puntaje:S.quizNota!=null?Math.round(S.quizNota/6*100):null})});
       const j=await r.json().catch(()=>({ok:false,error:'Sin respuesta del servidor'}));
-      if(j.ok)out.push('<div class="box ok">✔ '+llEsc(j.nombre)+' ('+documento+') · Recibo <b>'+llEsc(j.recibo)+'</b></div>');
+      if(j.ok){out.push('<div class="box ok">✔ '+llEsc(j.nombre)+' ('+documento+') · Recibo <b>'+llEsc(j.recibo)+'</b></div>');try{const R=JSON.parse(localStorage.getItem('ll_recibos')||'{}');const n=String(j.recibo).replace(/\D/g,'');(R[documento]=R[documento]||[]).push(n);localStorage.setItem('ll_recibos',JSON.stringify(R))}catch(x){}}
       else{let m=j.error||'Error';if(r.status===400&&/nombre/.test(m))m='Escriban el nombre completo junto a este documento y vuelvan a enviar.';if(r.status===429)m='Muchos envíos desde esta red. Esperen 10 minutos o usen un respaldo.';if(r.status===403)m='La actividad no está recibiendo entregas. Usen un respaldo y avisen al instructor.';
         out.push('<div class="box bad">✘ '+documento+': '+llEsc(m)+'</div>')}
     }catch(e){out.push('<div class="box bad">✘ '+documento+': sin conexión con LogiLab. Usen un respaldo.</div>')}
     llBox.innerHTML=out.join('');
   }
   llBtn.disabled=false;llBtn.textContent='📤 Enviar a LogiLab';
-  llBox.innerHTML+='<p class="small mut">Tomen captura de los recibos. Si corrigen algo, pueden volver a enviar: el instructor ve la última entrega.</p>';
+  llBox.innerHTML+='<p class="small mut">Anoten o tomen captura del recibo: con su documento y ese recibo cada uno ve su calificación y la retroalimentación. Si corrigen algo, pueden volver a enviar: el instructor ve la última entrega.</p><p><a class="btn sec" href="../mis-notas/">Ver mi calificación y retroalimentación →</a></p>';
 });
 }
 

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mis notas · LogiLab SENA</title>
+<style>
+:root{--g:#39A900;--gd:#2b7a00;--dk:#14261a;--bg:#f6f8f2;--card:#fff;--ln:#d5ddd0;--mut:#5b6757;--okb:#e7f5dd;--ok:#2b7a00;--bad:#c0392b;--badb:#fbe5e1;--warn:#a86b00;--warnb:#fdf1d6}
+:root[data-theme="dark"]{--dk:#e6ede2;--bg:#11150f;--card:#1a2016;--ln:#2e3628;--mut:#9da897;--okb:#1e2d15;--badb:#3a1c17;--warnb:#352b10;--ok:#7fd34a;--gd:#7fd34a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--dk:#e6ede2;--bg:#11150f;--card:#1a2016;--ln:#2e3628;--mut:#9da897;--okb:#1e2d15;--badb:#3a1c17;--warnb:#352b10;--ok:#7fd34a;--gd:#7fd34a}}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--dk);line-height:1.5}
+header{background:#14261a;color:#f6f8f2;padding:18px 16px;border-left:8px solid var(--g)}
+header .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+header a,header button{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:15px;text-decoration:none;min-height:40px;display:inline-flex;align-items:center}
+header small{color:#7fd34a;font-weight:700}
+header h1{margin:6px 0 4px;font-size:1.6rem}header p{margin:0;color:#c9d6c4}
+main{max-width:720px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:14px}
+label{display:block;font-weight:600;margin:10px 0 4px}
+input{width:100%;padding:10px;border:1px solid var(--ln);border-radius:8px;font:inherit;font-size:16px;background:var(--card);color:var(--dk)}
+input:focus,button:focus-visible{outline:2px solid var(--g)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.row{grid-template-columns:1fr}}
+.btn{background:var(--g);color:#0f1d12;border:0;border-radius:8px;padding:12px 18px;font-weight:700;cursor:pointer;font-size:1rem;min-height:46px;margin-top:12px;width:100%}
+.box{border-radius:10px;padding:12px 14px;margin:10px 0}
+.warn{background:var(--warnb);color:var(--warn)}.bad{background:var(--badb);color:var(--bad)}
+.nota{border-left:6px solid var(--ln)}
+.nota.A{border-left-color:var(--g)}.nota.D{border-left-color:var(--bad)}
+.nota h3{margin:0 0 6px;font-size:1.05rem;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.jz{font-weight:800;border-radius:8px;padding:2px 10px;white-space:nowrap;font-size:.95rem}
+.jz.A{background:var(--okb);color:var(--ok)}.jz.D{background:var(--badb);color:var(--bad)}.jz.P{background:var(--warnb);color:var(--warn)}
+.obs{background:var(--bg);border-radius:8px;padding:10px 12px;margin:8px 0}
+.mut{color:var(--mut)}.small{font-size:.88rem}
+a{color:var(--gd)}
+footer{text-align:center;color:var(--mut);font-size:.85rem;padding:20px}
+</style>
+<script>try{const t=localStorage.getItem('ll_tema');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header>
+ <div class="top"><a href="../../">← Portal LogiLab</a><button id="tema" type="button" aria-label="Cambiar tema">Tema</button></div>
+ <small>LOGILAB SENA · CONSULTA DEL APRENDIZ</small>
+ <h1>Mis notas y retroalimentación</h1>
+ <p>Mira el juicio (A o D) y lo que te escribió el instructor en cada actividad que entregaste por LogiLab.</p>
+</header>
+<main>
+ <form class="card" id="f">
+  <div class="row">
+   <label>Tu documento<input id="doc" inputmode="numeric" autocomplete="off" placeholder="1118123456" required></label>
+   <label>Número de recibo<input id="rec" autocomplete="off" placeholder="LL-12" required></label>
+  </div>
+  <p class="small mut" style="margin:8px 0 0">El recibo es el código <b>LL-…</b> que te salió al enviar cualquier actividad. Si no lo tienes, pídelo a tu instructor.</p>
+  <button class="btn" id="ver">Ver mis notas</button>
+ </form>
+ <div id="res" aria-live="polite"></div>
+</main>
+<footer>LogiLab SENA · <b>By Carlos Barrios · Instructor</b> · <a href="../../">Portal</a></footer>
+<script>
+{
+const API='https://logilab-notas.cabarriosn.workers.dev';
+const URLS={'SICETAC1':'../sicetac-detective-flete/','SICETAC2':'../sicetac-escoge-tu-vehiculo/'};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let R={};try{R=JSON.parse(localStorage.getItem('ll_recibos'))||{}}catch(e){}
+const docs=Object.keys(R);
+if(docs.length===1){$('#doc').value=docs[0];$('#rec').value='LL-'+R[docs[0]].slice(-1)[0]}
+$('#doc').addEventListener('input',()=>{const d=$('#doc').value.replace(/\D/g,'');if(R[d]&&!$('#rec').value)$('#rec').value='LL-'+R[d].slice(-1)[0]});
+const fecha=t=>{if(!t)return'';const d=new Date(t.replace(' ','T')+'Z');return isNaN(d)?t:d.toLocaleString('es-CO',{dateStyle:'medium',timeStyle:'short'})};
+$('#f').addEventListener('submit',async e=>{
+ e.preventDefault();const b=$('#ver');b.disabled=true;b.textContent='Consultando…';
+ try{
+  const r=await fetch(API+'/api/retro',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({documento:$('#doc').value,recibo:$('#rec').value})});
+  const j=await r.json().catch(()=>({ok:false,error:'Sin respuesta del servidor'}));
+  if(!j.ok){$('#res').innerHTML=`<div class="box bad">${esc(j.error||'Error')}</div>`;return}
+  if(!j.notas.length){$('#res').innerHTML='<div class="box warn">Aún no tienes actividades registradas.</div>';return}
+  $('#res').innerHTML=`<h2 style="font-size:1.2rem">Hola, ${esc(j.nombre.charAt(0)+j.nombre.slice(1).toLowerCase())}</h2>`+j.notas.map(n=>{
+   const v=n.valor||'',cls=v==='A'||v==='D'?v:'P',txt=v==='A'?'A · Aprobado':v==='D'?'D · Por mejorar':v?esc(v):'Por calificar';
+   const nueva=v&&n.actualizado&&n.ultima_entrega>n.actualizado;
+   const cod=(n.codigo||'').split('-').slice(1).join('-'),url=URLS[cod];
+   return `<div class="card nota ${cls}"><h3><span>${esc(n.actividad)}</span><span class="jz ${cls}">${txt}</span></h3>
+    ${n.observacion?`<div class="obs"><b>Retroalimentación:</b><br>${esc(n.observacion)}</div>`:''}
+    ${!v?'<p class="small mut">Tu entrega llegó; el instructor aún no la ha calificado.</p>':''}
+    ${nueva?'<div class="box warn small">Enviaste una corrección después de esta calificación: el instructor la revisará.</div>':''}
+    ${v==='D'&&url?`<p><a href="${url}">Corregir y volver a entregar →</a></p>`:''}
+    <p class="small mut" style="margin:0">Entregas: ${n.entregas} · última: ${esc(fecha(n.ultima_entrega))}</p></div>`}).join('');
+ }catch(x){$('#res').innerHTML='<div class="box bad">Sin conexión con LogiLab. Intenta de nuevo.</div>'}
+ finally{b.disabled=false;b.textContent='Ver mis notas'}
+});
+$('#tema').addEventListener('click',()=>{const r=document.documentElement,o=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=o?'light':'dark';try{localStorage.setItem('ll_tema',r.dataset.theme)}catch(x){}});
+}
+</script>
+</body>
+</html>
