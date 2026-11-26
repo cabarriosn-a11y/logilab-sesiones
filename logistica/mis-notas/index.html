@@ -62,6 +62,7 @@ select{width:100%;padding:10px;border:1px solid var(--ln);border-radius:8px;font
     <option value="">Escoge la actividad…</option>
     <option value="SICETAC1">SICETAC · Detective del flete</option>
     <option value="SICETAC2">SICETAC 2 · Escoge tu vehículo</option>
+    <option value="CUBICAJE">Cubicaje y ocupación del vehículo (QPM)</option>
    </select></label>
   <div class="row">
    <label>Tu documento<input id="uDoc" inputmode="numeric" autocomplete="off" required></label>
@@ -78,7 +79,7 @@ select{width:100%;padding:10px;border:1px solid var(--ln);border-radius:8px;font
 <script>
 {
 const API='https://logilab-notas.cabarriosn.workers.dev';
-const URLS={'SICETAC1':'../sicetac-detective-flete/','SICETAC2':'../sicetac-escoge-tu-vehiculo/'};
+const URLS={'SICETAC1':'../sicetac-detective-flete/','SICETAC2':'../sicetac-escoge-tu-vehiculo/','CUBICAJE':'../cubicaje-ocupacion-vehiculo/'};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let R={};try{R=JSON.parse(localStorage.getItem('ll_recibos'))||{}}catch(e){}
@@ -107,8 +108,8 @@ $('#f').addEventListener('submit',async e=>{
 });
 
 /* ---- subir evidencia descargada en .txt ---- */
-const NOMBRES={SICETAC1:'SICETAC · Detective del flete',SICETAC2:'SICETAC 2 · Escoge tu vehículo'};
-function detectar(t){const u=t.toUpperCase();if(u.includes('DETECTIVE DEL FLETE'))$('#uAct').value='SICETAC1';else if(u.includes('ESCOGE TU VEH'))$('#uAct').value='SICETAC2';const f=t.match(/Ficha:?\s*(\d{6,8})/i);if(f)$('#uFic').value=f[1]}
+const NOMBRES={SICETAC1:'SICETAC · Detective del flete',SICETAC2:'SICETAC 2 · Escoge tu vehículo',CUBICAJE:'Cubicaje y ocupación del vehículo (QPM)'};
+function detectar(t){const u=t.toUpperCase();if(u.includes('DETECTIVE DEL FLETE'))$('#uAct').value='SICETAC1';else if(u.includes('ESCOGE TU VEH'))$('#uAct').value='SICETAC2';else if(u.includes('CUBICAJE'))$('#uAct').value='CUBICAJE';const f=t.match(/Ficha:?\s*(\d{6,8})/i);if(f)$('#uFic').value=f[1]}
 if(docs.length===1)$('#uDoc').value=docs[0];
 $('#uFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;if(f.size>60000){$('#uRes').innerHTML='<div class="box bad">El archivo es muy grande (máx. 60 KB).</div>';return}
  const r=new FileReader();r.onload=()=>{$('#uTxt').value=String(r.result);detectar($('#uTxt').value);$('#uRes').innerHTML='<div class="box okb">Archivo cargado: revisa el texto y envía.</div>'};r.readAsText(f,'utf-8')});

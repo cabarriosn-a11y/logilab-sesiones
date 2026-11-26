@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cubicaje y ocupación del vehículo con QPM · LogiLab SENA</title>
+<style>
+:root{--g:#39A900;--gd:#2b7a00;--dk:#14261a;--bg:#f6f8f2;--card:#fff;--ln:#d5ddd0;--mut:#5b6757;--ok:#2b7a00;--okb:#e7f5dd;--bad:#c0392b;--badb:#fbe5e1;--warn:#a86b00;--warnb:#fdf1d6;--info:#1f5fd1;--infob:#e3ecfd}
+:root[data-theme="dark"]{--dk:#e6ede2;--bg:#11150f;--card:#1a2016;--ln:#2e3628;--mut:#9da897;--okb:#1e2d15;--badb:#3a1c17;--warnb:#352b10;--infob:#172440;--ok:#7fd34a;--gd:#7fd34a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--dk:#e6ede2;--bg:#11150f;--card:#1a2016;--ln:#2e3628;--mut:#9da897;--okb:#1e2d15;--badb:#3a1c17;--warnb:#352b10;--infob:#172440;--ok:#7fd34a;--gd:#7fd34a}}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--dk);line-height:1.5}
+header{background:#14261a;color:#f6f8f2;padding:18px 16px;border-left:8px solid var(--g);display:flex;gap:12px;align-items:flex-start}
+header .t{flex:1}header small{color:#7fd34a;font-weight:700}
+header h1{margin:6px 0 4px;font-size:1.5rem}header p{margin:0;color:#c9d6c4;font-size:.95rem}
+header a,header button{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:15px;text-decoration:none;min-height:40px;display:inline-flex;align-items:center}
+@media(max-width:600px){header{flex-direction:column-reverse}}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:5}
+nav button{flex:0 0 auto;border:1px solid var(--ln);background:var(--card);color:var(--dk);padding:9px 14px;border-radius:999px;font-weight:600;cursor:pointer}
+nav button.on{background:var(--g);border-color:var(--g);color:#0f1d12}
+nav button .ck{margin-left:4px}
+main{max-width:920px;margin:0 auto;padding:16px}
+section.tab{display:none}section.tab.on{display:block}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:14px}
+h2{font-size:1.3rem;margin:4px 0 10px}h3{font-size:1.05rem;margin:14px 0 8px}
+label{display:block;font-weight:600;margin:10px 0 4px;font-size:.95rem}
+input,textarea,select{width:100%;padding:10px;border:1px solid var(--ln);border-radius:8px;font:inherit;font-size:16px;background:var(--card);color:var(--dk)}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--g);border-color:transparent}
+textarea{min-height:90px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.btn{background:var(--g);color:#0f1d12;border:0;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:.95rem;min-height:44px;text-decoration:none;display:inline-flex;align-items:center}
+.btn.sec{background:transparent;color:var(--dk);border:1px solid var(--ln)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.mut{color:var(--mut)}.small{font-size:.88rem}
+.box{border-radius:10px;padding:10px 14px;margin:8px 0;font-weight:500}
+.ok{background:var(--okb);color:var(--ok)}.bad{background:var(--badb);color:var(--bad)}.warn{background:var(--warnb);color:var(--warn)}.info{background:var(--infob);color:var(--info)}
+.caso{border-left:6px solid var(--g);background:var(--okb);border-radius:10px;padding:12px 14px;margin:8px 0}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{padding:7px 8px;border-bottom:1px solid var(--ln);text-align:left}
+th{background:#14261a;color:#f6f8f2}td.n,th.n{text-align:right;white-space:nowrap}
+.res{list-style:none;padding:0;margin:8px 0}.res li{padding:6px 10px;border-radius:8px;margin:4px 0;font-size:.93rem}
+.res li.ok{background:var(--okb)}.res li.bad{background:var(--badb)}.res li.warn{background:var(--warnb)}
+.fig{background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:8px;margin:8px 0}
+.fig svg{display:block;width:100%;height:auto}
+ol.pasos li{margin-bottom:6px}
+footer{text-align:center;color:var(--mut);font-size:.85rem;padding:20px}
+a{color:var(--gd)}
+</style>
+<script>try{const t=localStorage.getItem('ll_tema');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header>
+ <div class="t"><small>LOGILAB SENA · GESTIÓN LOGÍSTICA · ALMACENAMIENTO Y TRANSPORTE</small>
+ <h1>Cubicaje y ocupación del vehículo con QPM</h1>
+ <p>Resuelve cada caso en Quick Pallet Maker, registra tus resultados y la app te dice al momento si tus cálculos cuadran. Al final envías tu taller al instructor.</p></div>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><a href="../../">Portal</a><a href="../mis-notas/">Mis notas</a><button type="button" id="tema" aria-label="Cambiar tema">Tema</button></div>
+</header>
+<nav id="nav">
+ <button data-t="t0" class="on">0 · Conceptos</button>
+ <button data-t="t1">1 · Paletizar</button>
+ <button data-t="t2">2 · Estibas al furgón</button>
+ <button data-t="t3">3 · Mochilas</button>
+ <button data-t="t4">4 · Agua</button>
+ <button data-t="t5">5 · Contenedor</button>
+ <button data-t="t6">6 · Entregar</button>
+</nav>
+<main>
+
+<section class="tab on" id="t0">
+ <div class="card">
+  <h2>0 · Lo que debes saber antes de empezar</h2>
+  <p><b>Cubicaje</b> es calcular cuánta mercancía cabe en un espacio (una estiba, un furgón, un contenedor) según sus medidas. La <b>ocupación</b> dice qué tanto se aprovecha ese espacio, y se mide de dos formas:</p>
+  <ul>
+   <li><b>Ocupación por peso</b> = peso de la carga ÷ carga útil del vehículo × 100.</li>
+   <li><b>Ocupación por volumen</b> = volumen de la carga ÷ volumen interno del vehículo × 100.</li>
+  </ul>
+  <p>El <b>factor limitante</b> es el que se llena primero. Una carga <b>pesada y compacta</b> (agua, cemento, sal) llena el peso antes que el espacio. Una carga <b>liviana y voluminosa</b> (mochilas, icopor, colchones) llena el espacio y el camión va "lleno" con muy poco peso.</p>
+  <div class="box info">Regla rápida: compara la <b>densidad de tu carga</b> (kg/m³) con la del vehículo (carga útil ÷ volumen). Si tu carga es más densa que el vehículo, limita el <b>peso</b>; si es menos densa, limita el <b>volumen</b>.</div>
+  <h3>Medidas de referencia para este taller</h3>
+  <p class="small mut">Medidas internas típicas; cambian según el fabricante y la carrocería. Úsalas en QPM para que todos comparen con los mismos datos.</p>
+  <div class="scroll"><table>
+   <tr><th>Vehículo / unidad</th><th class="n">Largo (m)</th><th class="n">Ancho (m)</th><th class="n">Alto (m)</th><th class="n">Volumen (m³)</th><th class="n">Carga útil</th></tr>
+   <tbody id="tVeh"></tbody></table></div>
+  <p class="small mut">Estiba de este taller: <b>1,20 × 1,00 m</b>, alto 0,15 m, peso 25 kg.</p>
+  <h3>Cómo trabajar en QPM (Quick Pallet Maker)</h3>
+  <ol class="pasos">
+   <li>Crea el <b>producto</b>: largo, ancho, alto y peso de la caja.</li>
+   <li>En paletizado escoge la <b>estiba 1,20 × 1,00 m</b> y la <b>altura máxima</b> que pide el caso. Deja que QPM calcule el patrón y anota cajas por capa, capas y total.</li>
+   <li>Para cargar un vehículo o contenedor, crea la unidad con las <b>medidas internas</b> de la tabla y su carga útil, y carga las cajas sueltas o las estibas.</li>
+   <li>Anota cantidades, peso y porcentaje de ocupación. <b>Toma captura</b> de cada resultado de QPM.</li>
+  </ol>
+  <div class="box warn">¿No tienes QPM en tu equipo? Haz el cálculo a mano (cuántas caben a lo largo × a lo ancho × a lo alto) y anota lo que te dé. La app revisa igual. Si QPM te da más cajas que el cálculo a mano, ¡está bien!: QPM combina orientaciones.</div>
+  <h3>Tus datos</h3>
+  <div class="row">
+   <label>Documento<input id="doc" data-k="doc" inputmode="numeric" autocomplete="off"></label>
+   <label>Nombre completo<input data-k="nombre" autocomplete="name"></label>
+   <label>Ficha<input data-k="ficha" inputmode="numeric" placeholder="3229854"></label>
+  </div>
+  <div class="btns"><button class="btn" data-ir="t1">Empezar →</button></div>
+ </div>
+</section>
+
+<div id="ejercicios"></div>
+
+<section class="tab" id="t6">
+ <div class="card">
+  <h2>6 · Pregunta final y entrega</h2>
+  <label>En el taller del SICETAC varios escogieron el camión solo por el peso. Con lo que aprendiste hoy, ¿qué le dirías a un compañero que va a escoger un vehículo para 9 toneladas de mochilas? (mínimo 3 líneas)</label>
+  <textarea data-k="reflexion" style="min-height:110px"></textarea>
+  <div id="resumen"></div>
+ </div>
+ <div class="card">
+  <h2>Entregar en LogiLab (recomendado)</h2>
+  <p>Le llega directo al instructor para calificar. Con tu documento ves tu calificación y la retroalimentación en <a href="../mis-notas/">Mis notas</a>.</p>
+  <div class="btns"><button class="btn" type="button" id="llBtn">📤 Enviar a LogiLab</button></div>
+  <div id="llRes"></div>
+ </div>
+ <div class="card">
+  <h2>Respaldo: WhatsApp, correo, copiar o descargar</h2>
+  <p class="small mut">Envía también las capturas de QPM por el mismo medio. Si descargas el .txt, puedes subirlo después en <a href="../mis-notas/">Mis notas</a>.</p>
+  <textarea id="txt" readonly style="min-height:220px;font-family:ui-monospace,monospace;font-size:.85rem"></textarea>
+  <div class="btns" id="resp">
+   <button class="btn" data-m="wa">WhatsApp</button><button class="btn sec" data-m="mail">Correo</button>
+   <button class="btn sec" data-m="copy">Copiar</button><button class="btn sec" data-m="file">Descargar .txt</button>
+  </div>
+  <div id="m6"></div>
+ </div>
+</section>
+</main>
+<footer>LogiLab SENA · Gestión Logística · <b>By Carlos Barrios · Instructor</b> · <a href="../../">Portal</a></footer>
+
+<script>
+{
+const WHATSAPP='';   // opcional: número del instructor, ej. 573001234567
+const CORREO='';     // opcional: correo del instructor
+const LL_API='https://logilab-notas.cabarriosn.workers.dev';
+const LSK='ll_cubicaje_v1';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=(n,d=1)=>Number(n).toLocaleString('es-CO',{maximumFractionDigits:d});
+
+/* ---------- datos de referencia ---------- */
+const V={
+ C2:{n:'Camión sencillo C2 (furgón)',l:6.00,a:2.40,h:2.40,cu:8000},
+ C3:{n:'Doble troque C3 (furgón)',l:8.00,a:2.45,h:2.50,cu:17000},
+ S33:{n:'Tractomula 3S3 (furgón)',l:12.20,a:2.45,h:2.60,cu:34000},
+ C20:{n:"Contenedor 20' DRY",l:5.90,a:2.35,h:2.39,cu:28000},
+ C40:{n:"Contenedor 40' DRY",l:12.03,a:2.35,h:2.39,cu:26500},
+ C40H:{n:"Contenedor 40' High Cube",l:12.03,a:2.35,h:2.69,cu:26500}};
+const vol=k=>V[k].l*V[k].a*V[k].h;
+$('#tVeh').innerHTML=Object.values(V).map(v=>`<tr><td>${v.n}</td><td class="n">${fmt(v.l,2)}</td><td class="n">${fmt(v.a,2)}</td><td class="n">${fmt(v.h,2)}</td><td class="n">${fmt(v.l*v.a*v.h,1)}</td><td class="n">${fmt(v.cu/1000,1)} t</td></tr>`).join('');
+
+/* máximo de cajas en bloque (6 orientaciones, sin mezclar) */
+function bloque(L,A,H,c){const d=[c[0],c[1],c[2]],p=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];let m=0;for(const o of p){const n=Math.floor(L/d[o[0]]+1e-9)*Math.floor(A/d[o[1]]+1e-9)*Math.floor(H/d[o[2]]+1e-9);if(n>m)m=n}return m}
+/* cajas por capa con la altura de la caja fija (solo giro en el plano) */
+const capa=(L,A,a,b)=>Math.max(Math.floor(L/a+1e-9)*Math.floor(A/b+1e-9),Math.floor(L/b+1e-9)*Math.floor(A/a+1e-9));
+
+let S={};try{S=JSON.parse(localStorage.getItem(LSK))||{}}catch(e){}
+const save=()=>{try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}};
+const num=k=>{const v=String(S[k]??'').replace(',','.');return v===''?null:parseFloat(v)};
+const cerca=(v,r,tol)=>v!=null&&Math.abs(v-r)<=tol;
+
+/* ---------- ejercicios ---------- */
+const VEHSEL='<option value="">Escoge…</option><option value="C2">Camión sencillo C2</option><option value="C3">Doble troque C3</option><option value="S33">Tractomula 3S3</option>';
+const LIM='<option value="">Escoge…</option><option value="peso">El peso</option><option value="volumen">El volumen / el espacio</option>';
+const E=[
+{id:1,tit:'Paletizar la caja de repuestos',
+ caso:'Caja de repuestos de <b>40 × 30 × 25 cm</b> y <b>12 kg</b>. Estiba 1,20 × 1,00 m. Altura máxima de la estiba cargada: <b>1,60 m</b> (incluye los 0,15 m de la estiba). Las cajas no se pueden acostar: los 25 cm siempre van de alto.',
+ qpm:'En QPM: producto 400 × 300 × 250 mm, 12 kg; estiba 1200 × 1000; altura máxima 1600 mm.',
+ campos:[['e1_capa','Cajas por capa'],['e1_capas','Número de capas'],['e1_total','Total de cajas en la estiba'],['e1_peso','Peso de la estiba cargada (kg, con la estiba)'],['e1_base','Aprovechamiento de la base de la estiba (%)']],
+ revisar(){const r=[],c=num('e1_capa'),k=num('e1_capas'),t=num('e1_total'),p=num('e1_peso'),b=num('e1_base');
+  const cRef=capa(1.2,1.0,0.4,0.3),cMax=Math.floor(1.2*1.0/(0.4*0.3)+1e-9);
+  r.push(c==null?null:c>=cRef&&c<=cMax?['ok',`Cajas por capa: ${c}. Bien${c>cRef?' (QPM mezcló orientaciones)':''}.`]:['bad',`Cajas por capa: ${c}. Revisa: en 1,20 × 1,00 m caben al menos ${cRef} cajas de 40 × 30 y nunca más de ${cMax}.`]);
+  const kRef=Math.floor((1.60-0.15)/0.25+1e-9);
+  r.push(k==null?null:k===kRef?['ok','Capas: '+k+'. Bien.']:['bad',`Capas: ${k}. La carga puede medir hasta ${fmt(1.45,2)} m (1,60 − 0,15). ¿Cuántas cajas de 0,25 m caben de alto?`]);
+  r.push(t==null?null:c!=null&&k!=null&&t===c*k?['ok','Total: '+t+' cajas. Cuadra con capas × cajas por capa.']:['bad','Total: el total debe ser cajas por capa × número de capas.']);
+  r.push(p==null?null:t!=null&&cerca(p,t*12+25,2)?['ok',`Peso: ${fmt(p,0)} kg. Bien (incluye la estiba).`]:['bad','Peso: debe ser total de cajas × 12 kg + 25 kg de la estiba.']);
+  r.push(b==null?null:c!=null&&cerca(b,c*0.12/1.2*100,2)?['ok',`Aprovechamiento de la base: ${fmt(b)} %.`]:['bad','Aprovechamiento: (cajas por capa × área de una caja) ÷ área de la estiba × 100. Área de la caja = 0,40 × 0,30 m².']);
+  return r}},
+{id:2,tit:'Estibas al furgón del doble troque',
+ caso:'Las estibas del ejercicio 1 van en un <b>doble troque C3 furgón</b> (8,00 × 2,45 × 2,50 m; carga útil 17 t). <b>Las estibas NO se pueden apilar</b> (una encima de otra aplasta los repuestos).',
+ qpm:'En QPM: carga las estibas del ejercicio 1 en una unidad de 8000 × 2450 × 2500 mm, 17 000 kg, sin apilar.',
+ campos:[['e2_estibas','¿Cuántas estibas caben en el piso?'],['e2_peso','Peso total cargado (kg)'],['e2_ppeso','Ocupación por peso (%)'],['e2_pvol','Ocupación por volumen (%)'],['e2_lim','¿Qué limita la carga?','sel',LIM]],
+ revisar(){const r=[],n=num('e2_estibas'),p=num('e2_peso'),pp=num('e2_ppeso'),pv=num('e2_pvol'),pe=num('e1_peso'),k=num('e1_capas');
+  const ref=Math.max(Math.floor(8.0/1.2)*Math.floor(2.45/1.0),Math.floor(8.0/1.0)*Math.floor(2.45/1.2));
+  r.push(n==null?null:n===ref?['ok',`Estibas: ${n}. Bien: atravesadas (1,20 m a lo ancho) caben 2 por fila y 8 filas.`]:['bad',`Estibas: ${n}. Prueba girar la estiba: ¿cuántas caben si el lado de 1,20 m va a lo ancho del furgón (2,45 m)?`]);
+  r.push(p==null?null:n!=null&&pe!=null&&cerca(p,n*pe,n*2)?['ok',`Peso: ${fmt(p,0)} kg.`]:['bad','Peso: número de estibas × peso de una estiba cargada (ejercicio 1).']);
+  r.push(pp==null?null:p!=null&&cerca(pp,p/17000*100,1.5)?['ok',`Ocupación por peso: ${fmt(pp)} %.`]:['bad','Ocupación por peso = peso total ÷ 17 000 kg × 100.']);
+  const vEst=1.2*1.0*((k||5)*0.25+0.15);
+  r.push(pv==null?null:n!=null&&cerca(pv,n*vEst/vol('C3')*100,2)?['ok',`Ocupación por volumen: ${fmt(pv)} %.`]:['bad',`Ocupación por volumen = (estibas × 1,20 × 1,00 × alto de la estiba cargada) ÷ ${fmt(vol('C3'),1)} m³ × 100.`]);
+  r.push(!S.e2_lim?null:S.e2_lim==='volumen'?['ok','Correcto: se acaba el piso porque no se puede apilar; el peso queda de sobra.']:['bad','Revisa: el furgón aún aguanta mucho más peso. ¿Qué se acabó primero?']);
+  return r}},
+{id:3,tit:'Mochilas wayuu: liviano pero voluminoso',
+ caso:'Pedido de <b>700 cajas</b> de mochilas y artesanías wayuu. Cada caja mide <b>60 × 40 × 40 cm</b> y pesa <b>9 kg</b>. Van <b>sueltas, sin estiba</b>, y se pueden poner en cualquier posición. Escoge el vehículo más pequeño donde quepa todo el pedido en un solo viaje.',
+ qpm:'En QPM: producto 600 × 400 × 400 mm, 9 kg; carga suelta en el furgón; prueba C2, C3 y 3S3 con las medidas de la tabla.',
+ campos:[['e3_veh','Vehículo escogido','sel',VEHSEL],['e3_caben','¿Cuántas cajas caben en ese vehículo?'],['e3_pvol','Ocupación por volumen con las 700 cajas (%)'],['e3_ppeso','Ocupación por peso con las 700 cajas (%)'],['e3_lim','¿Qué limita la carga?','sel',LIM]],
+ revisar(){const r=[],v=S.e3_veh,c=num('e3_caben'),pv=num('e3_pvol'),pp=num('e3_ppeso'),cj=[0.6,0.4,0.4],vc=0.6*0.4*0.4;
+  const cabe=k=>bloque(V[k].l,V[k].a,V[k].h,cj);
+  r.push(!v?null:v==='S33'?['ok',`Vehículo: 3S3. Bien: en el C3 solo caben ${cabe('C3')} cajas.`]:['bad',`Vehículo: en ese vehículo no caben las 700 cajas (caben unas ${cabe(v)}). Prueba con uno más grande.`]);
+  r.push(c==null||!v?null:c>=cabe(v)&&c<=Math.floor(vol(v)/vc)?['ok',`Caben ${c} cajas${c>cabe(v)?' (QPM combinó orientaciones)':''}.`]:['bad',`Revisa: en bloque caben al menos ${cabe(v)} cajas en ese vehículo.`]);
+  r.push(pv==null||!v?null:cerca(pv,700*vc/vol(v)*100,2)?['ok',`Ocupación por volumen: ${fmt(pv)} %.`]:['bad',`Volumen de la carga = 700 × 0,60 × 0,40 × 0,40 m³ = ${fmt(700*vc,1)} m³. Divide entre el volumen del vehículo.`]);
+  r.push(pp==null||!v?null:cerca(pp,700*9/V[v].cu*100,1.5)?['ok',`Ocupación por peso: ${fmt(pp)} %. ¡El camión va lleno con poco peso!`]:['bad','Peso de la carga = 700 × 9 kg. Divide entre la carga útil del vehículo.']);
+  r.push(!S.e3_lim?null:S.e3_lim==='volumen'?['ok','Correcto: carga liviana y voluminosa, limita el espacio.']:['bad','Compara tus dos porcentajes: ¿cuál está más cerca del 100 %?']);
+  return r}},
+{id:4,tit:'Agua embotellada: pesado y compacto',
+ caso:'Pedido de <b>1.000 pacas</b> de agua. Cada paca mide <b>40 × 27 × 22 cm</b> y pesa <b>15 kg</b>. Van sueltas y se pueden apilar. Escoge el vehículo más pequeño que la lleve en un solo viaje.',
+ qpm:'En QPM: producto 400 × 270 × 220 mm, 15 kg; prueba C2, C3 y 3S3 con su carga útil.',
+ campos:[['e4_veh','Vehículo escogido','sel',VEHSEL],['e4_ppeso','Ocupación por peso (%)'],['e4_pvol','Ocupación por volumen (%)'],['e4_lim','¿Qué limita la carga?','sel',LIM]],
+ revisar(){const r=[],v=S.e4_veh,pp=num('e4_ppeso'),pv=num('e4_pvol'),pc=0.4*0.27*0.22,peso=15000;
+  r.push(!v?null:v==='C3'?['ok','Vehículo: C3. Bien: 15 t caben en sus 17 t.']:v==='C2'?['bad','Vehículo: el C2 solo carga 8 t y el pedido pesa 15 t.']:['warn','Vehículo: la 3S3 sí lo lleva, pero hay uno más pequeño (y más barato) que también puede.']);
+  r.push(pp==null||!v?null:cerca(pp,peso/V[v].cu*100,1.5)?['ok',`Ocupación por peso: ${fmt(pp)} %.`]:['bad','Peso = 1.000 × 15 kg = 15.000 kg. Divide entre la carga útil del vehículo.']);
+  r.push(pv==null||!v?null:cerca(pv,1000*pc/vol(v)*100,2)?['ok',`Ocupación por volumen: ${fmt(pv)} %. ¡Sobra espacio!`]:['bad',`Volumen de la carga = 1.000 × 0,40 × 0,27 × 0,22 m³ = ${fmt(1000*pc,1)} m³. Divide entre el volumen del vehículo.`]);
+  r.push(!S.e4_lim?null:S.e4_lim==='peso'?['ok','Correcto: carga pesada y compacta, limita el peso.']:['bad','Compara tus dos porcentajes: ¿cuál está más cerca del 100 %?']);
+  return r}},
+{id:5,tit:'Exportación en contenedor',
+ caso:'Una empresa exporta <b>800 cajas</b> de <b>50 × 40 × 30 cm</b> y <b>18 kg</b> cada una, sueltas. Escoge la opción más económica que lleve todo: <b>1 contenedor de 20\'</b>, <b>2 de 20\'</b>, <b>1 de 40\' DRY</b> o <b>1 de 40\' High Cube</b>. (Un 40\' cuesta menos que dos de 20\'; el High Cube cuesta un poco más que el 40\' DRY).',
+ qpm:"En QPM: producto 500 × 400 × 300 mm, 18 kg; carga en contenedor 20', 40' y 40' HC.",
+ campos:[['e5_cont','Opción escogida','sel',`<option value="">Escoge…</option><option value="1x20">1 contenedor de 20'</option><option value="2x20">2 contenedores de 20'</option><option value="1x40">1 contenedor de 40' DRY</option><option value="1x40H">1 contenedor de 40' High Cube</option>`],['e5_caben',"¿Cuántas cajas caben en un 40' DRY?"],['e5_pvol',"Ocupación por volumen del 40' DRY con las 800 cajas (%)"],['e5_ppeso',"Ocupación por peso del 40' DRY con las 800 cajas (%)"]],
+ revisar(){const r=[],o=S.e5_cont,c=num('e5_caben'),pv=num('e5_pvol'),pp=num('e5_ppeso'),cj=[0.5,0.4,0.3],vc=0.06;
+  const b20=bloque(V.C20.l,V.C20.a,V.C20.h,cj),b40=bloque(V.C40.l,V.C40.a,V.C40.h,cj);
+  r.push(!o?null:o==='1x40'?['ok',"Correcto: en un 40' DRY caben las 800 y es lo más económico."]:o==='1x40H'?['warn',"Cabe, pero el 40' DRY también alcanza y cuesta menos."]:o==='2x20'?['bad',`Dos de 20' llevan unas ${2*b20} cajas: no alcanzan, y además cuestan más que un 40'.`]:['bad',`En un 20' caben unas ${b20} cajas.`]);
+  r.push(c==null?null:c>=b40&&c<=Math.floor(vol('C40')/vc)?['ok',`Caben ${c} cajas en el 40' DRY.`]:['bad',`Revisa: en bloque caben al menos ${b40} cajas en un 40' DRY.`]);
+  r.push(pv==null?null:cerca(pv,800*vc/vol('C40')*100,2)?['ok',`Ocupación por volumen: ${fmt(pv)} %.`]:['bad',`Volumen de la carga = 800 × 0,06 m³ = 48 m³. Divide entre ${fmt(vol('C40'),1)} m³.`]);
+  r.push(pp==null?null:cerca(pp,800*18/26500*100,1.5)?['ok',`Ocupación por peso: ${fmt(pp)} %.`]:['bad','Peso = 800 × 18 kg. Divide entre 26.500 kg.']);
+  return r}}];
+
+$('#ejercicios').innerHTML=E.map(e=>`<section class="tab" id="t${e.id}"><div class="card">
+ <h2>${e.id} · ${e.tit}</h2><div class="caso">${e.caso}</div><p class="small mut">🖥️ ${e.qpm}</p>
+ <div class="row">${e.campos.map(([k,l,t,o])=>`<label>${l}${t==='sel'?`<select data-k="${k}">${o}</select>`:`<input data-k="${k}" inputmode="decimal">`}</label>`).join('')}</div>
+ <label>Explica en tus palabras qué hiciste y qué descubriste</label><textarea data-k="e${e.id}_exp"></textarea>
+ <div class="btns"><button class="btn" type="button" data-rev="${e.id}">✔ Revisar mis resultados</button></div>
+ <ul class="res" id="r${e.id}"></ul>
+ <div class="btns"><button class="btn sec" data-ir="t${e.id-1}">← Atrás</button><button class="btn" data-ir="t${e.id+1}">Siguiente →</button></div>
+</div></section>`).join('');
+
+document.querySelectorAll('[data-k]').forEach(el=>{el.value=S[el.dataset.k]??'';el.addEventListener('input',()=>{S[el.dataset.k]=el.value;save()})});
+function evaluar(e){return e.revisar().filter(Boolean)}
+function pintar(id){const e=E.find(x=>x.id==id),r=evaluar(e);$('#r'+id).innerHTML=r.length?r.map(([c,t])=>`<li class="${c}">${c==='ok'?'✔':c==='warn'?'⚠':'✘'} ${esc(t)}</li>`).join(''):'<li class="warn">Llena tus resultados y vuelve a revisar.</li>';marcas()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rev]');if(b)pintar(b.dataset.rev)});
+function puntos(){let ok=0,tot=0;E.forEach(e=>{const r=evaluar(e);tot+=e.campos.length;ok+=r.filter(x=>x[0]==='ok').length+r.filter(x=>x[0]==='warn').length*0.5});return{ok,tot,pct:Math.round(ok/tot*100)}}
+function marcas(){E.forEach(e=>{const r=evaluar(e),b=document.querySelector(`#nav button[data-t="t${e.id}"]`);b.querySelector('.ck')?.remove();if(r.length===e.campos.length&&r.every(x=>x[0]!=='bad'))b.insertAdjacentHTML('beforeend','<span class="ck">✔</span>')})}
+
+function texto(){const p=puntos();return `CUBICAJE Y OCUPACIÓN DEL VEHÍCULO CON QPM · LogiLab SENA
+Aprendiz: ${S.nombre||''} · Documento: ${S.doc||''} · Ficha: ${S.ficha||''}
+Revisión automática: ${p.pct} % de resultados correctos
+`+E.map(e=>`
+EJERCICIO ${e.id} · ${e.tit}
+`+e.campos.map(([k,l,t,o])=>{let v=S[k]||'';if(t==='sel'&&v){const m=o.match(new RegExp('value="'+v+'">([^<]*)'));v=m?m[1]:v}return `- ${l}: ${v||'(vacío)'}`}).join('\n')+`
+- Explicación: ${S['e'+e.id+'_exp']||''}
+- Revisión: `+(evaluar(e).map(x=>(x[0]==='ok'?'✔':x[0]==='warn'?'⚠':'✘')).join(' ')||'sin revisar')).join('\n')+`
+
+PREGUNTA FINAL: ${S.reflexion||''}
+
+(Adjuntar capturas de QPM)`}
+function entrega(){$('#txt').value=texto();const p=puntos(),f=[];if(!S.doc)f.push('documento');if(!S.nombre)f.push('nombre');if(!S.ficha)f.push('ficha');if((S.reflexion||'').length<60)f.push('pregunta final');
+ $('#resumen').innerHTML=`<div class="box ${p.pct>=70?'ok':'warn'}">Revisión automática: <b>${p.pct} %</b> de tus resultados cuadran. ${p.pct<70?'Revisa los ejercicios con ✘ antes de enviar.':''}</div>`+(f.length?`<div class="box warn">Te falta: ${f.join(', ')}.</div>`:'')}
+
+function ir(id){document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id===id));document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===id));if(id==='t6')entrega();scrollTo({top:0,behavior:'smooth'})}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)ir(b.dataset.t)});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ir]');if(b&&document.getElementById(b.dataset.ir))ir(b.dataset.ir)});
+
+$('#llBtn').addEventListener('click',async()=>{
+ const b=$('#llBtn'),out=$('#llRes'),doc=String(S.doc||'').replace(/\D/g,''),fic=String(S.ficha||'').replace(/\D/g,'');
+ if(!doc||!fic||(S.nombre||'').trim().length<3){out.innerHTML='<div class="box warn">Escribe tu documento, nombre y ficha en la pestaña 0.</div>';return}
+ b.disabled=true;b.textContent='Enviando…';const t=texto(),p=puntos();
+ try{const r=await fetch(LL_API+'/api/entregar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({documento:doc,nombre:S.nombre,nombre_actividad:'Cubicaje y ocupación del vehículo (QPM)',actividad:'GL'+fic+'-CUBICAJE',contenido:{actividad:'Cubicaje y ocupación del vehículo (QPM)',reporte:t.split('\n')},puntaje:p.pct})});
+  const j=await r.json().catch(()=>({ok:false,error:'Sin respuesta del servidor'}));
+  out.innerHTML=j.ok?`<div class="box ok">✔ Recibido, ${esc(j.nombre)}. Recibo <b>${esc(j.recibo)}</b>. Mira tu calificación en <a href="../mis-notas/">Mis notas</a>. Si corriges algo, puedes volver a enviar.</div>`:`<div class="box bad">${esc(j.error||'Error')}. Usa el respaldo de abajo.</div>`;
+ }catch(x){out.innerHTML='<div class="box bad">Sin conexión con LogiLab. Usa el respaldo de abajo.</div>'}
+ finally{b.disabled=false;b.textContent='📤 Enviar a LogiLab'}});
+$('#resp').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const t=texto(),m=b.dataset.m;
+ if(m==='wa')window.open('https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(t),'_blank');
+ if(m==='mail')location.href='mailto:'+CORREO+'?subject='+encodeURIComponent('Cubicaje QPM · '+(S.nombre||''))+'&body='+encodeURIComponent(t);
+ if(m==='copy'){try{await navigator.clipboard.writeText(t)}catch(x){$('#txt').select();document.execCommand('copy')}$('#m6').innerHTML='<div class="box ok">Copiado.</div>'}
+ if(m==='file'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'}));a.download='Cubicaje_QPM_'+(S.nombre||'aprendiz').replace(/\s+/g,'_')+'.txt';a.click();$('#m6').innerHTML='<div class="box ok">Archivo descargado.</div>'}});
+$('#tema').addEventListener('click',()=>{const r=document.documentElement,o=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=o?'light':'dark';try{localStorage.setItem('ll_tema',r.dataset.theme)}catch(x){}});
+try{const R=JSON.parse(localStorage.getItem('ll_recibos')||'{}'),d=Object.keys(R);if(!S.doc&&d.length===1){S.doc=d[0];$('#doc').value=d[0];save()}}catch(x){}
+if(!S.ficha){S.ficha='3229854';document.querySelector('[data-k="ficha"]').value='3229854';save()}
+marcas();
+}
+</script>
+</body>
+</html>
