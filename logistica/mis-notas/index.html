@@ -45,11 +45,7 @@ footer{text-align:center;color:var(--mut);font-size:.85rem;padding:20px}
 </header>
 <main>
  <form class="card" id="f">
-  <div class="row">
-   <label>Tu documento<input id="doc" inputmode="numeric" autocomplete="off" placeholder="1118123456" required></label>
-   <label>Número de recibo<input id="rec" autocomplete="off" placeholder="LL-12" required></label>
-  </div>
-  <p class="small mut" style="margin:8px 0 0">El recibo es el código <b>LL-…</b> que te salió al enviar cualquier actividad. Si no lo tienes, pídelo a tu instructor.</p>
+  <label>Tu número de documento<input id="doc" inputmode="numeric" autocomplete="off" placeholder="1118123456" required></label>
   <button class="btn" id="ver">Ver mis notas</button>
  </form>
  <div id="res" aria-live="polite"></div>
@@ -63,13 +59,12 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let R={};try{R=JSON.parse(localStorage.getItem('ll_recibos'))||{}}catch(e){}
 const docs=Object.keys(R);
-if(docs.length===1){$('#doc').value=docs[0];$('#rec').value='LL-'+R[docs[0]].slice(-1)[0]}
-$('#doc').addEventListener('input',()=>{const d=$('#doc').value.replace(/\D/g,'');if(R[d]&&!$('#rec').value)$('#rec').value='LL-'+R[d].slice(-1)[0]});
+if(docs.length===1)$('#doc').value=docs[0];
 const fecha=t=>{if(!t)return'';const d=new Date(t.replace(' ','T')+'Z');return isNaN(d)?t:d.toLocaleString('es-CO',{dateStyle:'medium',timeStyle:'short'})};
 $('#f').addEventListener('submit',async e=>{
  e.preventDefault();const b=$('#ver');b.disabled=true;b.textContent='Consultando…';
  try{
-  const r=await fetch(API+'/api/retro',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({documento:$('#doc').value,recibo:$('#rec').value})});
+  const r=await fetch(API+'/api/retro',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({documento:$('#doc').value})});
   const j=await r.json().catch(()=>({ok:false,error:'Sin respuesta del servidor'}));
   if(!j.ok){$('#res').innerHTML=`<div class="box bad">${esc(j.error||'Error')}</div>`;return}
   if(!j.notas.length){$('#res').innerHTML='<div class="box warn">Aún no tienes actividades registradas.</div>';return}
@@ -80,7 +75,7 @@ $('#f').addEventListener('submit',async e=>{
    return `<div class="card nota ${cls}"><h3><span>${esc(n.actividad)}</span><span class="jz ${cls}">${txt}</span></h3>
     ${n.observacion?`<div class="obs"><b>Retroalimentación:</b><br>${esc(n.observacion)}</div>`:''}
     ${!v?'<p class="small mut">Tu entrega llegó; el instructor aún no la ha calificado.</p>':''}
-    ${nueva?'<div class="box warn small">Enviaste una corrección después de esta calificación: el instructor la revisará.</div>':''}
+    ${nueva?'<div class="box warn small">Recibimos tu corrección. El instructor la revisará y actualizará tu juicio.</div>':''}
     ${v==='D'&&url?`<p><a href="${url}">Corregir y volver a entregar →</a></p>`:''}
     <p class="small mut" style="margin:0">Entregas: ${n.entregas} · última: ${esc(fecha(n.ultima_entrega))}</p></div>`}).join('');
  }catch(x){$('#res').innerHTML='<div class="box bad">Sin conexión con LogiLab. Intenta de nuevo.</div>'}

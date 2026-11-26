@@ -4,7 +4,6 @@
 // Rutas públicas (las usan las actividades LogiLab):
 //   POST /api/verificar  {documento, actividad}            -> {ok, nombre}
 //   POST /api/entregar   {documento, actividad, contenido, puntaje?}
-//   POST /api/retro      {documento, recibo}                -> {ok, nombre, notas[]}
 // Rutas privadas (Cloudflare Access + verificación JWT aquí mismo):
 //   GET  /admin                     dashboard
 //   /admin/api/*                    API del dashboard
@@ -104,8 +103,9 @@ async function publica(req, env, p) {
   const ip = req.headers.get('cf-connecting-ip') || '0';
   const ipHash = (await sha256(ip + '|' + (env.IP_SALT || ''))).slice(0, 32);
   const documento = limpiaDoc(body.documento);
-  if (p === '/api/retro') return await retro(env, h, ipHash, documento, body);
-  const codigo = limpiaCod(body.actividad);
+  if (p === '/api/retro') return await retroDoc(env, h, ipHash, documento);
+    if (p === '/api/retro') return await retro(env, h, ipHash, documento, body);
+    const codigo = limpiaCod(body.actividad);
   if (!documento || !codigo) return json({ ok: false, error: 'Falta documento o actividad' }, 400, h);
 
   const tipo = p === '/api/verificar' ? 'ver' : p === '/api/entregar' ? 'ent' : null;
@@ -166,29 +166,50 @@ async function publica(req, env, p) {
   return json({ ok: true, nombre: primerNombre, recibo: 'LL-' + r.id, fecha: r.creado }, 200, h);
 }
 
-// El aprendiz consulta su juicio y la retroalimentación del instructor.
-// Necesita su documento + el número de recibo (LL-n) de cualquiera de SUS entregas: así nadie
+async function retroDoc(env, h, ipHash, documento) {
+    if (!documento) return json({ ok: false, error: 'Escribe tu número de documento' }, 400, h);
+      if (!(await limitar(env, ipHash, 'ret', 60))) return json({ ok: false, error: 'Demasiadas consultas. Espera 10 minutos.' }, 429, h);
+        const { results: ests } = await env.DB.prepare(
+            'SELECT e.id, e.nombres, e.grupo_id FROM estudiantes e JOIN grupos g ON g.id=e.grupo_id AND g.activo=1 WHERE e.documento=?').bind(documento).all();
+              if (!ests.length) return json({ ok: false, error: 'No encontramos entregas con ese documento. Revisa el número.' }, 404, h);
+                let notas = [];
+                  for (const est of ests) {
+                      const { results } = await env.DB.prepare(
+                            `SELECT a.nombre actividad, a.codigo, a.tipo,
+                                          (SELECT COUNT(*) FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?) entregas,
+                                                        (SELECT MAX(x.creado) FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?) ultima_entrega,
+                                                                      c.valor, c.observacion, c.actualizado
+                                                                               FROM actividades a LEFT JOIN calificaciones c ON c.actividad_id=a.id AND c.estudiante_id=?
+                                                                                       WHERE a.grupo_id=? AND (c.valor IS NOT NULL OR EXISTS (SELECT 1 FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?))
+                                                                                               ORDER BY COALESCE(a.fecha,'9999'), a.id`).bind(est.id, est.id, est.id, est.grupo_id, est.id).all();
+                                                                                                   notas = notas.concat(results);
+                                                                                                     }
+                                                                                                       return json({ ok: true, nombre: String(ests[0].nombres).split(' ')[0], notas }, 200, h);
+                                                                                                       }
+                                                                                                       
+                                                                                                       // El aprendiz consulta su juicio y la retroalimentación del instructor.
+// // Necesita su documento + el número de recibo (LL-n) de cualquiera de SUS entregas: así nadie
 // ve las notas de otro solo con saber su documento.
 async function retro(env, h, ipHash, documento, body) {
   const recibo = Number(String(body.recibo || '').replace(/\D/g, ''));
-  if (!documento || !recibo) return json({ ok: false, error: 'Escribe tu documento y tu número de recibo (LL-…)' }, 400, h);
-  if (!(await limitar(env, ipHash, 'ret', 60))) return json({ ok: false, error: 'Demasiadas consultas. Espera 10 minutos.' }, 429, h);
-  const est = await env.DB.prepare(
-    `SELECT e.id, e.nombres, e.grupo_id FROM entregas en JOIN estudiantes e ON e.id=en.estudiante_id
-      WHERE en.id=? AND e.documento=?`).bind(recibo, documento).first();
-  if (!est) return json({ ok: false, error: 'El documento y el recibo no coinciden. Revisa los dos números.' }, 404, h);
-  const { results } = await env.DB.prepare(
-    `SELECT a.nombre actividad, a.codigo, a.tipo,
-            (SELECT COUNT(*) FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?) entregas,
-            (SELECT MAX(x.creado) FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?) ultima_entrega,
-            c.valor, c.observacion, c.actualizado
-       FROM actividades a LEFT JOIN calificaciones c ON c.actividad_id=a.id AND c.estudiante_id=?
-      WHERE a.grupo_id=? AND (c.valor IS NOT NULL OR EXISTS (SELECT 1 FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?))
-      ORDER BY COALESCE(a.fecha,'9999'), a.id`).bind(est.id, est.id, est.id, est.grupo_id, est.id).all();
-  return json({ ok: true, nombre: String(est.nombres).split(' ')[0], notas: results }, 200, h);
-}
-
-// ───────────────────────── verificación de Access ─────────────────────────
+    if (!documento || !recibo) return json({ ok: false, error: 'Escribe tu documento y tu número de recibo (LL-…)' }, 400, h);
+      if (!(await limitar(env, ipHash, 'ret', 60))) return json({ ok: false, error: 'Demasiadas consultas. Espera 10 minutos.' }, 429, h);
+        const est = await env.DB.prepare(
+            `SELECT e.id, e.nombres, e.grupo_id FROM entregas en JOIN estudiantes e ON e.id=en.estudiante_id
+                  WHERE en.id=? AND e.documento=?`).bind(recibo, documento).first();
+                    if (!est) return json({ ok: false, error: 'El documento y el recibo no coinciden. Revisa los dos números.' }, 404, h);
+                      const { results } = await env.DB.prepare(
+                          `SELECT a.nombre actividad, a.codigo, a.tipo,
+                                      (SELECT COUNT(*) FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?) entregas,
+                                                  (SELECT MAX(x.creado) FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?) ultima_entrega,
+                                                              c.valor, c.observacion, c.actualizado
+                                                                     FROM actividades a LEFT JOIN calificaciones c ON c.actividad_id=a.id AND c.estudiante_id=?
+                                                                           WHERE a.grupo_id=? AND (c.valor IS NOT NULL OR EXISTS (SELECT 1 FROM entregas x WHERE x.actividad_id=a.id AND x.estudiante_id=?))
+                                                                                 ORDER BY COALESCE(a.fecha,'9999'), a.id`).bind(est.id, est.id, est.id, est.grupo_id, est.id).all();
+                                                                                   return json({ ok: true, nombre: String(est.nombres).split(' ')[0], notas: results }, 200, h);
+                                                                                   }
+                                                                                   
+                                                                                   // ───────────────────────── verificación de Access ─────────────────────────
 let CERTS = { t: 0, keys: [] };
 function b64url(s) {
   s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
@@ -238,7 +259,35 @@ async function verificarClave(req, env) {
 }
 
 // ───────────────────────── API privada ─────────────────────────
-async function admin(req, env, ruta, url) {
+async function adminLectura(DB, ruta, seg2) {
+    const ult = 'SELECT actividad_id, estudiante_id, MAX(creado) ultima FROM entregas GROUP BY 1,2';
+      if (ruta === 'grupos') {
+          const { results } = await DB.prepare(
+                `SELECT g.*, (SELECT COUNT(*) FROM estudiantes e WHERE e.grupo_id=g.id) n_est,
+                              (SELECT COUNT(*) FROM actividades a WHERE a.grupo_id=g.id) n_act,
+                                            (SELECT COUNT(*) FROM (${ult}) u JOIN actividades a ON a.id=u.actividad_id
+                                                             LEFT JOIN calificaciones c ON c.actividad_id=u.actividad_id AND c.estudiante_id=u.estudiante_id
+                                                                             WHERE a.grupo_id=g.id AND (c.valor IS NULL OR c.actualizado < u.ultima)) por_calificar
+                                                                                      FROM grupos g ORDER BY g.activo DESC, g.institucion, g.codigo`).all();
+                                                                                          return json({ ok: true, grupos: results });
+                                                                                            }
+                                                                                              const id = Number(seg2[1]);
+                                                                                                const g = await DB.prepare('SELECT * FROM grupos WHERE id=?').bind(id).first();
+                                                                                                  if (!g) return json({ ok: false, error: 'Grupo no existe' }, 404);
+                                                                                                    const [cat, act, est, cal, ent] = await DB.batch([
+                                                                                                        DB.prepare('SELECT * FROM categorias WHERE grupo_id=? ORDER BY orden, id').bind(id),
+                                                                                                            DB.prepare("SELECT * FROM actividades WHERE grupo_id=? ORDER BY COALESCE(fecha,'9999'), id").bind(id),
+                                                                                                                DB.prepare('SELECT id,tipo_doc,documento,nombres,apellidos,estado FROM estudiantes WHERE grupo_id=? ORDER BY apellidos, nombres').bind(id),
+                                                                                                                    DB.prepare(`SELECT c.* FROM calificaciones c JOIN actividades a ON a.id=c.actividad_id WHERE a.grupo_id=?
+                                                                                                                           AND NOT EXISTS (SELECT 1 FROM entregas x WHERE x.actividad_id=c.actividad_id AND x.estudiante_id=c.estudiante_id AND x.creado > c.actualizado)`).bind(id),
+                                                                                                                               DB.prepare(`SELECT en.actividad_id, en.estudiante_id, COUNT(*) n, MAX(en.id) ultima_id, MAX(en.creado) ultima, MAX(en.puntaje_auto) puntaje
+                                                                                                                                                 FROM entregas en JOIN actividades a ON a.id=en.actividad_id WHERE a.grupo_id=? GROUP BY 1,2`).bind(id)
+                                                                                                                                                   ]);
+                                                                                                                                                     return json({ ok: true, grupo: g, categorias: cat.results, actividades: act.results, estudiantes: est.results,
+                                                                                                                                                         calificaciones: cal.results, entregas: ent.results });
+                                                                                                                                                         }
+                                                                                                                                                         
+                                                                                                                                                         async function admin(req, env, ruta, url) {
   const m = req.method;
   const DB = env.DB;
   // Protección CSRF: solo aceptar escrituras con content-type JSON y mismo origen
@@ -249,6 +298,7 @@ async function admin(req, env, ruta, url) {
   }
   const body = m === 'GET' ? null : await req.json().catch(() => ({}));
   const seg2 = ruta.split('/');
+  if (m === 'GET' && (ruta === 'grupos' || (seg2[0] === 'grupo' && seg2[1]))) return await adminLectura(DB, ruta, seg2);
 
   if (m === 'GET' && ruta === 'grupos') {
     const { results } = await DB.prepare(
